@@ -54,8 +54,11 @@ function RunUninstall {
     $log = Join-Path $ResultDir ("uninstall-$script:runIndex.log")
     $cmd = (Get-ItemProperty $UninstKey).UninstallString.Trim('"')
     $p = Start-Process -FilePath $cmd -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=$log" -Wait -PassThru
-    for ($i = 0; $i -lt 60 -and (Test-Path $UninstKey); $i++) { Start-Sleep -Seconds 1 }
+    for ($i = 0; $i -lt 30 -and (Test-Path $UninstKey); $i++) { Start-Sleep -Seconds 1 }
     Start-Sleep -Seconds 2
+    Write-Host "--- uninstall log ($log), exit $($p.ExitCode):"
+    if (Test-Path $log) { Get-Content $log | ForEach-Object { Write-Host "    $_" } }
+    Get-Process -Name Revit -ErrorAction SilentlyContinue | ForEach-Object { Write-Host "    running: Revit pid $($_.Id) $($_.Path)" }
     return $p.ExitCode
 }
 
