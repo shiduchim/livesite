@@ -1,4 +1,4 @@
-EK TRIANGLE - SIMPLE INSTALLER 1.0.0
+EK TRIANGLE - SIMPLE INSTALLER 1.0.1
 
 1. Extract the complete EK_Triangle_SIMPLE_Installer.zip to an IT-approved local folder.
 2. Close ALL Revit windows. Double-click INSTALL.cmd as your normal Windows user.
