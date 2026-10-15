@@ -17,7 +17,7 @@ EXE is included or launched. No compilation or downloads occur on your computer.
 The existing Core library is included as engine/EKTriangle.Core.dll and loaded by
 PowerShell as a normal .NET Framework 4.8 assembly. Its compatibility checks,
 manifest ownership/migration logic and verified restore engine are reused unchanged.
-The same eight compiled application DLLs are included: Revit 2024 (.NET 4.8),
+The exact eight application DLLs from release 1.0.2 are included unchanged: Revit 2024 (.NET 4.8),
 2025/2026 (.NET 8), and 2027 (.NET 10), each with the existing x64 native glyph hook.
 The glyph engine and Project Browser replacement are unchanged: small filled
 #555555 right/down triangles without a surrounding square or border.

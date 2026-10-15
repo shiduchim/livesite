@@ -1,7 +1,22 @@
-param([string]$Payload='out/payload',[string]$Destination='out/simple-package')
+param([string]$Destination='out/simple-package')
 $ErrorActionPreference='Stop'
 $root=Split-Path -Parent $PSScriptRoot
-$Payload=(Resolve-Path $Payload).Path
+# Reuse the exact already-released application binaries, including their hashes.
+# The application is still compiled/tested by CI, but its installer redesign
+# must not silently change loader/hook binaries or their source-revision metadata.
+$applicationZip=Join-Path $root 'release/1.0.2/EK_Triangle_CMD_Installer.zip'
+$applicationFiles=Join-Path $root 'out/simple-original-application'
+if (Test-Path $applicationFiles) { Remove-Item $applicationFiles -Recurse -Force }
+Expand-Archive $applicationZip $applicationFiles
+$Payload=Join-Path $applicationFiles 'EK_Triangle_CMD_Installer/payload'
+$approved=@{}
+foreach ($line in Get-Content (Join-Path $root 'release/1.0.2/SHA256SUMS.txt')) {
+    if ($line -match '^([A-F0-9]{64})  payload\\(Revit202[4-7]\\EKTriangle(?:Hook)?\.dll)$') { $approved[$matches[2]]=$matches[1] }
+}
+if ($approved.Count -ne 8) { throw 'Existing release application inventory must contain exactly eight DLLs' }
+foreach ($relative in $approved.Keys) {
+    if ((Get-FileHash (Join-Path $Payload $relative) -Algorithm SHA256).Hash -ne $approved[$relative]) { throw "Existing application DLL hash mismatch: $relative" }
+}
 $Destination=[IO.Path]::GetFullPath((Join-Path (Get-Location) $Destination))
 if (Test-Path $Destination) { Remove-Item $Destination -Recurse -Force }
 $package=Join-Path $Destination 'EK_Triangle_SIMPLE_Installer'

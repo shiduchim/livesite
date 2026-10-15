@@ -52,6 +52,12 @@ foreach ($file in Get-ChildItem $pkg -File | Where-Object Extension -In '.cmd','
         Ok ($errors.Count -eq 0) "PowerShell syntax valid: $($file.Name)"
     }
 }
+$baseline=Join-Path $PSScriptRoot '../../release/1.0.2/SHA256SUMS.txt'
+foreach ($line in Get-Content $baseline) {
+    if ($line -match '^([A-F0-9]{64})  (payload\\Revit202[4-7]\\EKTriangle(?:Hook)?\.dll)$') {
+        Ok ((Hash (Join-Path $pkg $matches[2])) -eq $matches[1]) "application DLL is byte-identical to existing 1.0.2 release: $($matches[2])"
+    }
+}
 if ($VerifyOnly) { Finish; return }
 # The full test is deliberately confined to GitHub's disposable Windows runner.
 if ($env:GITHUB_ACTIONS -ne 'true' -or $env:RUNNER_OS -ne 'Windows') { throw 'E2E requires a disposable GitHub Windows runner' }
