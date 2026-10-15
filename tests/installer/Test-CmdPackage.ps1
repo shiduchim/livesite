@@ -117,6 +117,29 @@ foreach ($y in 2024,2025,2026,2027) {
     $ours = @(Get-ChildItem (Addins $y) -Filter '*.addin' | Where-Object { (Get-Content $_.FullName -Raw).Contains($ourId) })
     Ok ($ours.Count -eq 1) "exactly one active manifest for $y"
 }
+# Simulate an approved payload update by changing the documented settings and
+# regenerating its inventory; binaries remain the same compiled artifacts.
+[xml]$oldManifest = Get-Content (Manifest 2024)
+$oldLoader = [string]$oldManifest.RevitAddIns.AddIn.Assembly
+$config = Join-Path $pkg 'payload/glyph.ini'
+$hashList = Join-Path $pkg 'SHA256SUMS.txt'
+$savedConfig = [IO.File]::ReadAllBytes($config)
+$savedHashes = [IO.File]::ReadAllBytes($hashList)
+Add-Content $config '; simulated approved upgrade'
+$updatedLines = Get-Content $hashList | ForEach-Object {
+    if ($_ -match '^([A-F0-9]{64})  payload/glyph.ini$') { (Hash $config) + '  payload/glyph.ini' } else { $_ }
+}
+$updatedLines | Set-Content $hashList -Encoding ASCII
+try {
+    Ok ((Run 'INSTALL.cmd' '--yes') -eq 4) 'payload upgrade succeeds with unsupported browser explicitly skipped'
+    [xml]$newManifest = Get-Content (Manifest 2024)
+    $newLoader = [string]$newManifest.RevitAddIns.AddIn.Assembly
+    Ok (($newLoader -ne $oldLoader) -and (Test-Path $newLoader) -and (Test-Path $oldLoader)) 'upgrade activates a verified immutable payload while retaining the previous version'
+    Ok (@(Get-ChildItem (Addins 2024) -Filter '*.addin' | Where-Object { (Get-Content $_.FullName -Raw).Contains($ourId) }).Count -eq 1) 'upgrade keeps a single active manifest'
+} finally {
+    [IO.File]::WriteAllBytes($config, $savedConfig)
+    [IO.File]::WriteAllBytes($hashList, $savedHashes)
+}
 Ok ((Run 'INSTALL.cmd' '--yes --years 2024') -eq 0) 'version deselection succeeds'
 foreach ($y in 2025,2026,2027) { Ok (-not (Test-Path (Manifest $y))) "deselected $y manifest removed" }
 Ok (((Hash (MainJs 2026)) -eq $original[2026]) -and ((Hash (MainJs 2027)) -eq $original[2027])) 'deselected browser files restored exactly'

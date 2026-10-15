@@ -309,8 +309,10 @@ namespace EKTriangle.Core
                     return new ItemResult(ItemOutcome.AlreadyDone,
                         "no EK Triangle changes present (contains the earlier EK SymbolSwap T symbol; left unchanged)");
                 case BrowserState.Unsupported:
-                    if (st.Analysis.EkCollapsedCount > 0 || st.Analysis.EkExpandedCount > 0)
-                        return new ItemResult(ItemOutcome.Failed, "main.js contains EK icons in an unexpected form (" +
+                    if (st.Analysis.EkCollapsedCount > 0 || st.Analysis.EkExpandedCount > 0 ||
+                        st.Analysis.Reason.IndexOf("altered EK Triangle", StringComparison.Ordinal) >= 0 ||
+                        (rec != null && rec["Phase"] != "Restored" && rec["Phase"] != "NotApplied"))
+                        return new ItemResult(ItemOutcome.Failed, "main.js cannot be verified free of EK changes (" +
                             st.Analysis.Reason + "); NOT modified. Original backup kept in " + _env.BrowserStore(year));
                     return new ItemResult(ItemOutcome.AlreadyDone, "no EK changes present");
             }

@@ -66,6 +66,20 @@ namespace EKTriangle.Tests
         }
 
         [Fact]
+        public void Both_altered_icons_are_unresolved_even_if_no_exact_EK_literal_remains()
+        {
+            using var m = new Machine();
+            m.InstallRevit(2024, Js.Bytes(Js.Original()));
+            var mgr = new BrowserManager(m.Env, null);
+            mgr.Apply(2024);
+            string altered = File.ReadAllText(m.MainJs(2024)).Replace("#555555", "#000000");
+            File.WriteAllText(m.MainJs(2024), altered);
+            Assert.Equal(ItemOutcome.Failed, mgr.Restore(2024).Outcome);
+            Assert.Equal(altered, File.ReadAllText(m.MainJs(2024)));
+            Assert.Contains(2024, Operations.YearsNeedingBrowserRestore(m.Env));
+        }
+
+        [Fact]
         public void Missing_native_dll_is_not_reported_as_installed()
         {
             using var m = new Machine();

@@ -80,8 +80,10 @@ namespace EKTriangle.Core
             s.Legacy.AddRange(FindLegacy(year, _env.MachineAddinsDir(year), true));
             foreach (var l in s.Legacy)
                 if (l.MachineWide && s.Conflict == null)
-                    s.Conflict = "the experimental EKGlyph add-in is installed for all users at " + l.Manifest +
-                                 " - remove it (administrator), then run EK Triangle Setup again";
+                    s.Conflict = l.Note == "mixed manifest requires administrator review"
+                        ? "mixed legacy manifest requires review; unrelated add-ins left unchanged: " + l.Manifest
+                        : "the experimental EKGlyph add-in is installed for all users at " + l.Manifest +
+                          " - remove it (administrator), then run EK Triangle Setup again";
             return s;
         }
 

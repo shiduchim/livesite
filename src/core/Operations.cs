@@ -205,7 +205,8 @@ namespace EKTriangle.Core
             {
                 var s = mgr.Inspect(y);
                 if (s.Analysis != null && (s.Analysis.State == BrowserState.Patched ||
-                    s.Analysis.EkCollapsedCount > 0 || s.Analysis.EkExpandedCount > 0))
+                    s.Analysis.EkCollapsedCount > 0 || s.Analysis.EkExpandedCount > 0) ||
+                    s.Record != null && s.Record["Phase"] != "Restored" && s.Record["Phase"] != "NotApplied")
                     list.Add(y);
             }
             return list;
