@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- EK Triangle loader for Revit 2026 (net8.0-windows), compiled against the Revit 2026 API. -->
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyName>EKTriangle</AssemblyName>
+    <RootNamespace>EKTriangle.Loader</RootNamespace>
+    <AssemblyTitle>EK Triangle loader for Revit 2026</AssemblyTitle>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="..\App.cs" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="2026.0.4" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="2026.0.4" ExcludeAssets="runtime" PrivateAssets="all" />
+  </ItemGroup>
+</Project>

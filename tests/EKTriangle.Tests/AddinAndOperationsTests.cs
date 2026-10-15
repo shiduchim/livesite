@@ -269,5 +269,25 @@ namespace EKTriangle.Tests
             Assert.Equal("tool", File.ReadAllText(m.Env.EmergencyRestoreExe));
             Assert.True(File.Exists(Path.Combine(m.Env.MachineStore, "README.txt")));
         }
+    
+        [Fact]
+        public void Upgrade_with_a_deselected_year_removes_and_restores_only_that_year()
+        {
+            using var m = FourYears(out var js2024, out _, out var js2027);
+            string payload = m.Payload();
+            Operations.InstallUser(m.Env, null, new[] { 2024, 2027 }, payload, new Report());
+            Operations.BrowserApply(m.Env, null, new[] { 2024, 2027 }, new Report(), null);
+
+            var rep = new Report();
+            Assert.Equal(Operations.ExitOk, Operations.InstallUser(m.Env, null, new[] { 2024 }, payload, rep, new[] { 2027 }));
+            Assert.Equal(Operations.ExitOk, Operations.BrowserApply(m.Env, null, new[] { 2024 }, rep, null, new[] { 2027 }));
+            Assert.Equal("Removed", rep.Get("2027", "NativeResult"));
+            Assert.Equal("Restored", rep.Get("2027", "BrowserResult"));
+            Assert.Equal(FileUtil.Sha256(js2027), FileUtil.Sha256File(m.MainJs(2027)));
+            Assert.False(File.Exists(Path.Combine(m.Env.UserAddinsDir(2027), Product.ManifestFileName)));
+            Assert.True(File.Exists(Path.Combine(m.Env.UserAddinsDir(2024), Product.ManifestFileName)));
+            Assert.Equal(new[] { 2024 }, Operations.YearsNeedingBrowserRestore(m.Env));
+            Assert.Equal("2024", Operations.Scan(m.Env, payload).Get("Summary", "NeedsBrowserRestore"));
+        }
     }
 }

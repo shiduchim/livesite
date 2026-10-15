@@ -1,0 +1,36 @@
+#include <winver.h>
+#ifdef EKT_HAVE_VERSION_H
+#include "ekt_version.h"
+#endif
+#ifndef EKT_VERSION_RC
+#define EKT_VERSION_RC 1,0,0,0
+#define EKT_VERSION_STR "1.0.0"
+#endif
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION EKT_VERSION_RC
+ PRODUCTVERSION EKT_VERSION_RC
+ FILEFLAGSMASK 0x3fL
+ FILEFLAGS 0x0L
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_DLL
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "CompanyName", "EK"
+            VALUE "FileDescription", "EK Triangle native glyph renderer (loaded only inside Revit.exe)"
+            VALUE "FileVersion", EKT_VERSION_STR
+            VALUE "InternalName", "EKTriangleHook"
+            VALUE "LegalCopyright", "Copyright (c) EK. Uses MinHook (BSD 2-Clause)."
+            VALUE "OriginalFilename", "EKTriangleHook.dll"
+            VALUE "ProductName", "EK Triangle"
+            VALUE "ProductVersion", EKT_VERSION_STR
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END

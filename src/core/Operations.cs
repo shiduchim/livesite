@@ -82,6 +82,7 @@ namespace EKTriangle.Core
             }
             var running = env.RevitBlocking(Product.SupportedYears);
             rep.Set("Summary", "Years", string.Join(",", installed));
+            rep.Set("Summary", "NeedsBrowserRestore", string.Join(",", YearsNeedingBrowserRestore(env)));
             rep.Set("Summary", "Running", Env.DescribeRunning(running));
             rep.Set("Summary", "Result", "OK");
             return rep;
@@ -106,10 +107,12 @@ namespace EKTriangle.Core
         }
 
         /// <summary>Per-user part of setup: dialog add-in for each selected year (+ legacy migration).</summary>
-        public static int InstallUser(Env env, Log log, IList<int> years, string payloadDir, Report rep)
+        public static int InstallUser(Env env, Log log, IList<int> years, string payloadDir, Report rep, IList<int> removeYears = null)
         {
-            log?.Info("Install (add-in) for " + string.Join(",", years) + " from " + payloadDir);
-            if (AnyBlockingRevit(env, years, rep, log)) return ExitBlocked;
+            removeYears = removeYears ?? new int[0];
+            log?.Info("Install (add-in) for " + string.Join(",", years) + " from " + payloadDir +
+                      (removeYears.Count > 0 ? "; remove for " + string.Join(",", removeYears) : ""));
+            if (AnyBlockingRevit(env, years.Concat(removeYears), rep, log)) return ExitBlocked;
             var addins = new AddinManager(env, log);
             bool problems = false;
             foreach (int y in years)
@@ -120,20 +123,30 @@ namespace EKTriangle.Core
                 log?.Info("Revit " + y + " add-in: " + Line(r));
                 problems |= r.IsProblem;
             }
+            foreach (int y in removeYears.Where(y => !years.Contains(y)))
+            {
+                var r = addins.Uninstall(y);
+                rep.Set(y.ToString(), "NativeResult", r.Outcome == ItemOutcome.Done ? "Removed" : r.Outcome.ToString());
+                rep.Set(y.ToString(), "NativeResultText", r.Detail);
+                log?.Info("Revit " + y + " add-in (deselected): " + Line(r));
+                problems |= r.IsProblem;
+            }
             Finish(rep, problems, log, "Install (add-in)");
             return problems ? ExitProblems : ExitOk;
         }
 
         /// <summary>Administrator part of setup: Project Browser for each selected year.</summary>
-        public static int BrowserApply(Env env, Log log, IList<int> years, Report rep, string selfExe)
+        public static int BrowserApply(Env env, Log log, IList<int> years, Report rep, string selfExe, IList<int> restoreYears = null)
         {
-            log?.Info("Install (Project Browser) for " + string.Join(",", years));
+            restoreYears = restoreYears ?? new int[0];
+            log?.Info("Install (Project Browser) for " + string.Join(",", years) +
+                      (restoreYears.Count > 0 ? "; restore for " + string.Join(",", restoreYears) : ""));
             if (!env.IsAdmin())
             {
                 rep.Set("Summary", "Result", "NeedsAdmin");
                 return ExitNeedsAdmin;
             }
-            if (AnyBlockingRevit(env, years, rep, log)) return ExitBlocked;
+            if (AnyBlockingRevit(env, years.Concat(restoreYears), rep, log)) return ExitBlocked;
             CopyEmergencyTool(env, log, selfExe);
             var mgr = new BrowserManager(env, log);
             bool problems = false;
@@ -145,6 +158,16 @@ namespace EKTriangle.Core
                 rep.Set(y.ToString(), "BrowserResult", r.Outcome.ToString());
                 rep.Set(y.ToString(), "BrowserResultText", r.Detail);
                 log?.Info("Revit " + y + " Project Browser: " + Line(r));
+                problems |= r.IsProblem;
+            }
+            foreach (int y in restoreYears.Where(y => !years.Contains(y)))
+            {
+                ItemResult r;
+                try { r = mgr.Restore(y); }
+                catch (Exception ex) { r = new ItemResult(ItemOutcome.Failed, ex.Message); }
+                rep.Set(y.ToString(), "BrowserResult", r.Outcome == ItemOutcome.Done ? "Restored" : r.Outcome.ToString());
+                rep.Set(y.ToString(), "BrowserResultText", r.Detail);
+                log?.Info("Revit " + y + " Project Browser (deselected): " + Line(r));
                 problems |= r.IsProblem;
             }
             Finish(rep, problems, log, "Install (Project Browser)");
