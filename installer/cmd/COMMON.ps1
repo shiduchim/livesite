@@ -3,6 +3,13 @@
 # it does not compile C# and does not start another installer process.
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+# Resolve built-in modules from this Windows PowerShell host, rather than
+# inheriting a PowerShell 7 module selection from an IDE or CI parent process.
+# These are the normal signed Windows modules; failure is fatal, not bypassed.
+foreach ($systemModule in @('Microsoft.PowerShell.Utility','Microsoft.PowerShell.Management','Microsoft.PowerShell.Security','Microsoft.PowerShell.Diagnostics')) {
+    $manifest = Join-Path $PSHOME ('Modules\' + $systemModule + '\' + $systemModule + '.psd1')
+    Import-Module -Name $manifest -ErrorAction Stop
+}
 $script:PackageRoot = $PSScriptRoot
 $script:SupportedYears = @(2024, 2025, 2026, 2027)
 
@@ -93,12 +100,12 @@ function Show-Status {
         if ($null -ne $status.Record) { Write-Host ('  Recovery: ' + $status.Record['Phase'] + '; ' + $script:Machine.BrowserStore($year)) }
     }
     $running = @([EKTriangle.Core.Env]::FindRevitProcesses())
-    Write-Host ('Running Revit: ' + $(if ($running.Count) { [EKTriangle.Core.Env]::DescribeRunning($running) } else { 'none' }))
+    Write-Host ('Running Revit: ' + $(if ($running.Count) { [EKTriangle.Core.Env]::DescribeRunning([EKTriangle.Core.RunningRevit[]]$running) } else { 'none' }))
 }
 
 function Assert-RevitClosed {
     $running = @([EKTriangle.Core.Env]::FindRevitProcesses())
-    if ($running.Count) { throw ('Close ALL Revit instances first: ' + [EKTriangle.Core.Env]::DescribeRunning($running)) }
+    if ($running.Count) { throw ('Close ALL Revit instances first: ' + [EKTriangle.Core.Env]::DescribeRunning([EKTriangle.Core.RunningRevit[]]$running)) }
 }
 
 function Enter-InstallLock {

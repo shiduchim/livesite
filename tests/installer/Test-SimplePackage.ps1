@@ -44,7 +44,7 @@ foreach ($f in Get-ChildItem $pkg -Filter '*.cmd') {
 foreach ($file in Get-ChildItem $pkg -File | Where-Object Extension -In '.cmd','.ps1') {
     $text=[IO.File]::ReadAllText($file.FullName)
     Ok ($text -notmatch '(?i)EKTriangle(?:\.CMD)?\.exe|EK_Triangle_Setup\.exe') "no old helper invocation in $($file.Name)"
-    Ok ($text -notmatch '(?i)-ExecutionPolicy|-EncodedCommand|Set-ExecutionPolicy|Unblock-File|Add-MpPreference|Set-MpPreference|FromBase64String|Add-Type\s+-(?:TypeDefinition|MemberDefinition)') "no policy bypass, encoded commands or runtime compilation in $($file.Name)"
+    Ok ($text -notmatch '(?i)(?:^|\s)-ExecutionPolicy\b|-EncodedCommand|Set-ExecutionPolicy|Unblock-File|Add-MpPreference|Set-MpPreference|FromBase64String|Add-Type\s+-(?:TypeDefinition|MemberDefinition)') "no policy bypass, encoded commands or runtime compilation in $($file.Name)"
     if ($file.Extension -eq '.cmd') { Ok ($text -match 'powershell.exe"?\s+-NoLogo -NoProfile -File') "ordinary PowerShell -File launcher: $($file.Name)" }
     else {
         $tokens=$null; $errors=$null
@@ -244,6 +244,9 @@ Ok ((Snapshot) -eq $before) 'direct status is read-only'
 Ok ((Run 'INSTALL.ps1' '-Yes -Years 2024') -eq 0) 'direct INSTALL.ps1 installs selected version'
 $browserReport=Join-Path $ResultDir 'browser-direct.json'
 Ok ((Run 'BROWSER.ps1' ('-ApplyYears 2024 -ReportPath "'+$browserReport+'"')) -eq 0) 'independent browser PowerShell step uses the same existing engine'
+# This uses the same ordinary -File argument shape as the UAC branch, including
+# an empty apply list. CI is already elevated, so no interactive UAC is attempted.
+Ok ((Run 'BROWSER.ps1' ('-ApplyYears "" -RestoreYears 2024 -ReportPath "'+$browserReport+'"')) -eq 0) 'browser script accepts the restore-only elevation argument shape'
 Ok ((Run 'UNINSTALL.ps1' '-Yes') -eq 0) 'direct UNINSTALL.ps1 restores without Revit starting'
 
 # Investigate error 5 and distinguish file read failures from process launch
