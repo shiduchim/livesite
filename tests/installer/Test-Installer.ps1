@@ -16,7 +16,11 @@ param(
     [string]$ResultDir = (Join-Path $PSScriptRoot 'results')
 )
 $ErrorActionPreference = 'Stop'
-New-Item -ItemType Directory -Force -Path $ResultDir | Out-Null
+# Absolute paths: the Inno uninstaller relaunches itself from %TEMP%, so a relative /LOG path would fail.
+$ResultDir = (New-Item -ItemType Directory -Force -Path $ResultDir).FullName
+$Setup = (Resolve-Path $Setup).Path
+$Fixtures = (Resolve-Path $Fixtures).Path
+$FakeRevitExe = (Resolve-Path $FakeRevitExe).Path
 $script:failed = 0
 $script:passed = 0
 $report = New-Object System.Collections.Generic.List[string]
