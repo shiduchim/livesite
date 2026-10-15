@@ -1,0 +1,19 @@
+Project Browser 2024 known React SVG resource, observed in actual main.js:
+
+var Po,Go=function(e){return o.createElement("svg",Ho({width:16,height:16},e),qo||(qo=o.createElement("path",{d:"M7 7V4h2v3h3v2H9v3H7V9H4V7h3z"})))};
+
+Nearby SVG literal in the same bundle:
+  d:"M7 7V2h2v5h5v2H9v5H7V9H2V7h5z"
+  d:"M4 7h8v2H4z"
+
+The legacy installer targeted only the first exact SVG plus-shaped path, and used a recognition guard that required an SVG path and width/height of 16. These other nearby paths may be unrelated; they are provided as investigation clues, NOT license to edit all of them.
+
+Prior replaced design (T, not target):
+  d:"M7 3h2v5h4v2H3V8h4z"
+
+New desired icons for both collapsed and expanded states, in the relevant renderer's 16x16 coordinate space:
+  Collapsed example: M5 3 L12 8 L5 13 Z
+  Expanded example:  M3 5 L13 5 L8 12 Z
+  Color: #555555
+
+TRACE WHICH PATH IS USED FOR CLOSED/OPENED. Test with actual project browser; do not blindly map all plus symbols to the collapsed triangle. If the expanded state is CSS rotation of one path, adjust accordingly rather than layering duplicate graphics.
