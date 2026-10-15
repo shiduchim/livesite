@@ -1,13 +1,13 @@
 @echo off
 setlocal DisableDelayedExpansion
 pushd "%~dp0" || exit /b 1
-if not exist "EKTriangle.CMD.exe" goto missing
-"%~dp0EKTriangle.CMD.exe" install %*
+if not exist "%~dp0INSTALL.ps1" goto missing
+"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoLogo -NoProfile -File "%~dp0INSTALL.ps1" %*
 set "EKT_RESULT=%ERRORLEVEL%"
+if not "%EKT_RESULT%"=="0" echo Read the result above. If PowerShell did not start, script policy or file permissions may have blocked it. Ask IT; keep security enabled.
 goto done
 :missing
-echo STOPPED: EKTriangle.CMD.exe is missing. Extract the complete ZIP.
-echo If company security blocked it, ask IT to review the inventory. Keep security enabled.
+echo STOPPED: INSTALL.ps1 is missing. Extract the complete SIMPLE ZIP or ask IT if it was quarantined.
 set "EKT_RESULT=1"
 :done
 echo.

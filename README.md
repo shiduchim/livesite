@@ -9,17 +9,28 @@ Replaces Revit's **+ / −** expand/collapse symbols with small dark-gray
 
 Supports Revit **2024, 2025, 2026 and 2027**. Expanding and collapsing work exactly as before.
 
-## CMD installer
+## SIMPLE installer (CMD + PowerShell)
 
-Download **EK_Triangle_CMD_Installer.zip** from the [CMD release](https://github.com/shiduchim/revit-triangle-/releases/tag/cmd-v1.0.2).
-Extract the entire ZIP, close Revit and double-click **INSTALL.cmd**. Press Enter
-for all detected versions or type the years to keep. Only the Project Browser
-worker requests UAC. **UNINSTALL.cmd** restores/removes; **CHECK_STATUS.cmd** is
-read-only. No compilation or dependency downloads occur on the user's PC.
+Download **EK_Triangle_SIMPLE_Installer.zip** from the [SIMPLE release](https://github.com/shiduchim/revit-triangle-/releases/tag/simple-v1.0.0).
+Extract the complete ZIP, close Revit and double-click **INSTALL.cmd**. Press Enter
+for all detected versions or type the years to keep. **UNINSTALL.cmd** removes and
+restores; **CHECK_STATUS.cmd** reads status without administrator privileges.
 
-This uses the existing engine and precompiled DLLs. See the included README,
-executable inventory, SHA-256 checksums and Windows test report. Actual Revit
-acceptance and company IT approval are still required before distribution.
+Each CMD launches an ordinary readable `.ps1` file. The package contains **no EXEs**.
+PowerShell loads the existing `EKTriangle.Core.dll` compatibility/install/restore
+library directly; all eight application DLLs are precompiled. No compilation or
+dependency download occurs on the user's computer. Only protected Project Browser
+work requests UAC. The current glyph and Project Browser engines are unchanged.
+
+See the included inventory, SHA-256 checksums, Windows test report and
+[launch investigation](docs/LAUNCH-INVESTIGATION.md). The user's original browser
+and native installer examples informed the staging, ownership, backup and restore
+workflow. Their old bypass flags and development compilation steps are omitted.
+If company policy blocks scripts or DLLs, stop for IT review; security controls
+and execution policies are preserved. Actual Revit acceptance is still required.
+
+The former EXE-dependent CMD package is superseded by SIMPLE. Previous release
+artifacts remain available for review; the SIMPLE scripts do not launch them.
 
 ## Install (separate EXE option)
 

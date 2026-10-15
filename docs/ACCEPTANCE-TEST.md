@@ -4,7 +4,7 @@ Do this once in **Revit 2024**. For 2025, 2026 or 2027, repeat it only for the
 versions you actually use – these have been built and tested automatically but
 have **not yet been opened in real Revit**.
 
-1. Close Revit. For the CMD package, extract the entire ZIP and run **INSTALL.cmd**,
+1. Close Revit. For the SIMPLE CMD/PowerShell package, extract the entire ZIP and run **INSTALL.cmd**,
    press Enter for the detected versions, and allow UAC for the Project Browser step.
    Read the result for each version. The separate EXE option uses `EK_Triangle_Setup.exe`.
 2. Start Revit 2024 (choose **Always Load** if asked about EK Triangle) and open
@@ -18,7 +18,7 @@ have **not yet been opened in real Revit**.
 6. Close Revit and run **UNINSTALL.cmd** for a CMD installation (or use
    **Settings → Apps → Installed apps → EK Triangle** for an EXE installation).
    Read the restoration results, then restart Revit: original + / − symbols return
-   in both places. For CMD, **CHECK_STATUS.cmd** must report no dialog add-in and
+   in both places. For SIMPLE, **CHECK_STATUS.cmd** must report no dialog add-in and
    original Project Browser icons. Keep backups if any restoration is unresolved.
 
 If something looks wrong, uninstall (step 6) and send these two folders:

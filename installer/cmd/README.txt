@@ -1,67 +1,65 @@
-EK TRIANGLE - CMD INSTALLER 1.0.2
+EK TRIANGLE - SIMPLE INSTALLER 1.0.0
 
-1. Extract the entire ZIP to a local folder approved by your IT team.
-2. Close every Revit window and double-click INSTALL.cmd as your normal user.
-3. Press Enter for all detected versions, or type the years to keep, e.g. 2024,2027.
-4. Allow Windows UAC for the Project Browser step when requested.
-5. Read the result for each version. Start Revit for the acceptance check.
+1. Extract the complete EK_Triangle_SIMPLE_Installer.zip to an IT-approved local folder.
+2. Close ALL Revit windows. Double-click INSTALL.cmd as your normal Windows user.
+3. Press Enter for all detected Revit versions, or type years to keep, e.g. 2024,2027.
+4. Allow standard Windows UAC only if compatible protected Project Browser files need work.
+5. Read the result for each version; press a key to close the CMD window.
 
-UNINSTALL.cmd removes the dialog add-in for your Windows account, restores
-recognized Project Browser changes, and removes verified CMD-installed DLLs.
-It works without starting Revit. CHECK_STATUS.cmd is read-only and needs no UAC.
-Run the scripts as the same Windows user who installed the add-in. Running the
-whole INSTALL/UNINSTALL script under another administrator account targets that
-account; the program elevates only the machine-wide browser worker itself.
+UNINSTALL.cmd removes this user's owned EK Triangle manifests and verified payloads
+and restores recognized Project Browser changes without starting Revit.
+CHECK_STATUS.cmd is read-only, needs no administrator privileges, and includes
+read-only launch/policy context. The underlying .ps1 scripts can also be run directly.
 
-No build tools, downloads, PowerShell scripts or separately installed .NET SDK
-are needed. The helpers use .NET Framework 4.8, included in supported Windows
-10/11 installations. The loaders use Revit's own runtime: 2024 .NET 4.8;
-2025/2026 .NET 8; 2027 .NET 10. All eight managed/native DLLs are included.
+CONTENTS / RUNTIMES
+The three CMD files launch ordinary Windows PowerShell 5.1 scripts. No EK installer
+EXE is included or launched. No compilation or downloads occur on your computer.
+The existing Core library is included as engine/EKTriangle.Core.dll and loaded by
+PowerShell as a normal .NET Framework 4.8 assembly. Its compatibility checks,
+manifest ownership/migration logic and verified restore engine are reused unchanged.
+The same eight compiled application DLLs are included: Revit 2024 (.NET 4.8),
+2025/2026 (.NET 8), and 2027 (.NET 10), each with the existing x64 native glyph hook.
+The glyph engine and Project Browser replacement are unchanged: small filled
+#555555 right/down triangles without a surrounding square or border.
 
-This package calls the existing installation/restoration engine, not Setup.exe.
-The separate EXE installer remains available. Both formats use the same AddInId
-and canonical manifest. Installing CMD over an EXE installation repoints that
-manifest without a second add-in. The old EXE's application files and Installed
-Apps entry are retained for its uninstaller; CMD never deletes its directory.
-Either uninstaller removes the shared feature. Re-run the desired installer
-after changing formats if necessary. Do not run installers simultaneously.
+SAFETY / SECURITY
+Keep security controls enabled. Scripts use the configured execution policy.
+If a script or required DLL is blocked, STOP and ask IT to approve the inventory.
+No policy bypass, encoded PowerShell, exclusions or alternate execution fallback
+is used. Scripts are unsigned; organizations requiring signatures must have IT
+review and sign them. LAUNCH-INVESTIGATION.md explains exit 5 and the limits of
+read-only diagnosis. Lack of a security event does not establish permission.
 
-Compatibility is checked automatically. Unknown browser layouts and machine-wide
-legacy/mixed add-in registrations are reported and left unchanged. IT must review
-an all-users conflict before that component can be installed. Known user EKGlyph
-prototypes and duplicate EK Triangle registrations are moved to recovery storage.
-Unrelated EK applications and their manifests are preserved.
+Only the browser script requests UAC. Keep the main installer running as the user
+who owns the Revit add-in; alternate administrator credentials are used only for
+the machine-wide browser step. Unknown Autodesk resources are skipped. All-users
+legacy registrations and mixed/foreign manifests are left unchanged for IT review.
+Known user EKGlyph prototypes and duplicate owned manifests are backed up safely.
 
-The small filled triangles stay #555555: right when collapsed, down when expanded,
-without a border/square. Native hook and Project Browser patch designs are reused.
-Automated simulation is not actual Revit acceptance. See ACCEPTANCE-TEST.md.
+RECOVERY / OWNERSHIP
+Original Project Browser backups and state: %PROGRAMDATA%\EKTriangle\Browser
+Legacy/duplicate backups: %LOCALAPPDATA%\EKTriangle\LegacyBackup
+Logs: %LOCALAPPDATA%\EKTriangle\Logs and %PROGRAMDATA%\EKTriangle\Logs
+Verified payloads: %LOCALAPPDATA%\EKTriangle\SIMPLE\Payloads
+Incomplete copies end in .pending-... and are never referenced by a manifest.
+Unresolved restoration preserves payloads and recovery data; retry after resolving
+its reported cause. A recognized modified Autodesk file is reversed precisely;
+old backups are never copied over updated Autodesk content. Originals and legacy
+backups remain after successful uninstall. Keep this ZIP for future recovery.
 
-RECOVERY
-Browser originals, records and the existing emergency restore tool are retained:
-  %PROGRAMDATA%\EKTriangle
-Legacy add-in backups and logs:
-  %LOCALAPPDATA%\EKTriangle\LegacyBackup
-  %LOCALAPPDATA%\EKTriangle\Logs
-Verified versioned CMD payloads:
-  %LOCALAPPDATA%\EKTriangle\CMD\Payloads
-Incomplete copies end in .pending-... and are never referenced by an add-in.
-They are preserved for inspection. Retry INSTALL.cmd after resolving the cause.
-If restoration is unresolved, keep the extracted package and all recovery data.
-Never copy an old main.js backup over a newer Autodesk file. Restoration verifies
-exact reversal of EK changes and preserves unrelated later content.
+The prior CMD/EXE versions use the same AddInId. Installing SIMPLE repoints the
+canonical manifest, avoids duplicate registrations, and reuses existing browser
+records. Uninstall also cleans verified owned payloads from the prior CMD format.
+Files belonging to the old EXE's Installed Apps entry are retained for its own
+uninstaller. No old executable is launched by these scripts.
 
-SECURITY / IT REVIEW
-No security settings, exclusions or execution-policy changes are made. Nothing
-is encoded or disguised. A missing, changed, blocked or quarantined component
-stops the affected operation; ask IT to approve it through your normal process.
-SHA256SUMS.txt covers every package file except itself. EXECUTABLE-INVENTORY.csv
-lists each EXE, DLL and CMD file with role, size and SHA-256. Check the ZIP's
-external SHA-256 against the release checksum to establish distribution integrity.
-Checksums detect changes; they are not a code-signing or trust decision.
+IT review: CODE-INVENTORY.csv lists all nine DLLs, five PS1 scripts and three CMD
+entry points with role, size and SHA-256. SHA256SUMS.txt covers package contents
+except itself. SIMPLE-SHA256SUMS.txt on the release page covers the complete ZIP.
+Hashes detect changes; IT approval and any required signing remain separate.
+TEST-RESULTS.md reports Windows automated simulations, not actual Revit operation.
 
-Exit codes: 0 completed; 1 unresolved/error; 2 blocked/cancelled; 3 usage;
-4 completed with skipped components; 5 administrator permission required.
-Automation: INSTALL.cmd --yes [--years 2024,2027], UNINSTALL.cmd --yes.
-Set EKTRIANGLE_NO_PAUSE=1 to suppress the final CMD pause for automation.
-
-See TEST-RESULTS.md for this build's Windows simulation results and limitations.
+Exit codes: 0 completed; 1 error/unresolved; 2 Revit running/cancelled;
+4 completed with skipped components; 5 PowerShell language restriction.
+Automation: INSTALL.cmd -Yes [-Years 2024,2027]; UNINSTALL.cmd -Yes.
+Set EKTRIANGLE_NO_PAUSE=1 to omit only the final keypress for automation.
