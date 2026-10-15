@@ -21,7 +21,7 @@ foreach ($trx in Get-ChildItem $ResultDir -Recurse -Filter '*.trx') {
     $fw = if ($storage -match 'net48') { '.NET Framework 4.8' } elseif ($storage -match 'net8') { '.NET 8' } else { '' }
     $lines.Add("- $fw : total $($c.total), passed $($c.passed), failed $($c.failed)")
 }
-foreach ($f in 'native-tests.txt', 'payload-checks.txt', 'e2e\installer-e2e.txt') {
+foreach ($f in 'native-tests.txt', 'payload-checks.txt', 'e2e\installer-e2e.txt', 'cmd\cmd-e2e.txt') {
     $p = Join-Path $ResultDir $f
     if (Test-Path $p) {
         $lines.Add('')

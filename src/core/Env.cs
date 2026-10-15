@@ -47,7 +47,7 @@ namespace EKTriangle.Core
             var list = new List<RunningRevit>();
             Process[] procs;
             try { procs = Process.GetProcessesByName("Revit"); }
-            catch { return list; }
+            catch (Exception ex) { throw new IOException("Cannot enumerate Revit processes; installation stopped safely.", ex); }
             foreach (var p in procs)
             {
                 var r = new RunningRevit { ProcessId = p.Id };

@@ -289,6 +289,9 @@ namespace EKTriangle.Core
         public ItemResult Restore(int year)
         {
             var st = Inspect(year);
+            if (st.RevitInstalled && !st.FileFound && st.Record != null &&
+                st.Record["Phase"] != "Restored" && st.Record["Phase"] != "NotApplied")
+                return new ItemResult(ItemOutcome.Failed, "Project Browser file is missing; restoration NOT verified. Backup kept in " + _env.BrowserStore(year));
             if (!st.RevitInstalled || !st.FileFound)
                 return new ItemResult(ItemOutcome.NotApplicable, "Revit " + year + " Project Browser not present" +
                     (st.Record != null ? " (backup kept in " + _env.BrowserStore(year) + ")" : ""));

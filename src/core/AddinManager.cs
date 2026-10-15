@@ -54,10 +54,27 @@ namespace EKTriangle.Core
             if (File.Exists(s.Manifest))
             {
                 var info = ReadManifest(s.Manifest);
-                if (info == null || !info.IsOurs)
+                if (info == null || !info.IsOurs || info.HasOtherAddins || info.IsLegacy)
                     s.Conflict = "a different add-in already uses the file name " + s.Manifest;
                 else
-                    s.Installed = info.AssemblyPath != null && File.Exists(info.AssemblyPath);
+                    s.Installed = info.AssemblyPath != null && File.Exists(info.AssemblyPath) &&
+                                  File.Exists(Path.Combine(Path.GetDirectoryName(info.AssemblyPath), Product.NativeFileName));
+            }
+            foreach (string dir in new[] { _env.UserAddinsDir(year), _env.MachineAddinsDir(year) })
+            {
+                if (!Directory.Exists(dir)) continue;
+                foreach (string manifest in Directory.GetFiles(dir, "*.addin"))
+                {
+                    var info = ReadManifest(manifest);
+                    if (info == null || !info.IsOurs) continue;
+                    if (dir == _env.MachineAddinsDir(year))
+                        s.Conflict = "EK Triangle is installed for all users at " + manifest + "; ask the administrator to remove that registration first";
+                    else if (info.HasOtherAddins || info.IsLegacy)
+                        s.Conflict = "mixed add-in manifest requires review; left unchanged: " + manifest;
+                    else if (info.AssemblyPath != null && File.Exists(info.AssemblyPath) &&
+                             File.Exists(Path.Combine(Path.GetDirectoryName(info.AssemblyPath), Product.NativeFileName)))
+                        s.Installed = true;
+                }
             }
             s.Legacy.AddRange(FindLegacy(year, _env.UserAddinsDir(year), false));
             s.Legacy.AddRange(FindLegacy(year, _env.MachineAddinsDir(year), true));
@@ -70,7 +87,7 @@ namespace EKTriangle.Core
 
         sealed class ManifestInfo
         {
-            public bool IsOurs, IsLegacy;
+            public bool IsOurs, IsLegacy, HasOtherAddins;
             public string AssemblyPath;
         }
 
@@ -92,7 +109,11 @@ namespace EKTriangle.Core
                     string id = (addin.SelectSingleNode("AddInId")?.InnerText ?? addin.SelectSingleNode("ClientId")?.InnerText ?? "").Trim();
                     string cls = (addin.SelectSingleNode("FullClassName")?.InnerText ?? "").Trim();
                     string asm = (addin.SelectSingleNode("Assembly")?.InnerText ?? "").Trim();
-                    if (string.Equals(id, Product.AddInId, StringComparison.OrdinalIgnoreCase)) info.IsOurs = true;
+                    bool ours = string.Equals(id, Product.AddInId, StringComparison.OrdinalIgnoreCase);
+                    bool legacy = string.Equals(id, Product.LegacyAddInId, StringComparison.OrdinalIgnoreCase) ||
+                                  string.Equals(cls, Product.LegacyClass, StringComparison.Ordinal);
+                    if (ours) info.IsOurs = true;
+                    if (!ours && !legacy) info.HasOtherAddins = true;
                     if (string.Equals(id, Product.LegacyAddInId, StringComparison.OrdinalIgnoreCase) ||
                         string.Equals(cls, Product.LegacyClass, StringComparison.Ordinal))
                         info.IsLegacy = true;
@@ -108,9 +129,8 @@ namespace EKTriangle.Core
             }
             catch
             {
-                // Unparseable manifest: identify only by our GUIDs appearing in the text.
-                info.IsOurs = text.IndexOf(Product.AddInId, StringComparison.OrdinalIgnoreCase) >= 0;
-                info.IsLegacy = text.IndexOf(Product.LegacyAddInId, StringComparison.OrdinalIgnoreCase) >= 0;
+                // A GUID in a comment or corrupt XML is not proof of ownership.
+                return null;
             }
             return info;
         }
@@ -123,6 +143,13 @@ namespace EKTriangle.Core
             {
                 var info = ReadManifest(m);
                 if (info == null || !info.IsLegacy || info.IsOurs) continue;
+                if (info.HasOtherAddins)
+                {
+                    // Never move a manifest that also registers an unrelated app.
+                    list.Add(new LegacyAddin { Year = year, Manifest = m, MachineWide = true,
+                        Note = "mixed manifest requires administrator review" });
+                    continue;
+                }
                 var l = new LegacyAddin { Year = year, Manifest = m, AssemblyPath = info.AssemblyPath, MachineWide = machine };
                 if (info.AssemblyPath != null)
                 {
@@ -161,6 +188,7 @@ namespace EKTriangle.Core
             var running = _env.RevitBlocking(new[] { year });
             if (running.Count > 0) return new ItemResult(ItemOutcome.Blocked, "close " + Env.DescribeRunning(running));
 
+            byte[] previousManifest = File.Exists(s.Manifest) ? File.ReadAllBytes(s.Manifest) : null;
             var moved = new List<KeyValuePair<string, string>>();
             string backupDir = null;
             try
@@ -193,6 +221,25 @@ namespace EKTriangle.Core
                     _log?.Info("Revit " + year + ": experimental EKGlyph add-in moved to " + backupDir);
                 }
 
+                // Deactivate renamed/duplicated owned manifests transactionally.
+                // Keep a recoverable copy; never touch a mixed or foreign file.
+                string userDir = _env.UserAddinsDir(year);
+                if (Directory.Exists(userDir))
+                foreach (string manifest in Directory.GetFiles(userDir, "*.addin"))
+                {
+                    if (string.Equals(manifest, ManifestPath(year), StringComparison.OrdinalIgnoreCase)) continue;
+                    var info = ReadManifest(manifest);
+                    if (info == null || !info.IsOurs || info.HasOtherAddins || info.IsLegacy) continue;
+                    if (backupDir == null)
+                    {
+                        backupDir = Path.Combine(_env.LegacyBackupRoot, year + "-duplicates-" + FileUtil.Nonce());
+                        Directory.CreateDirectory(backupDir);
+                    }
+                    string dest = Path.Combine(backupDir, FileUtil.Nonce() + "-" + Path.GetFileName(manifest));
+                    File.Move(manifest, dest);
+                    moved.Add(new KeyValuePair<string, string>(dest, manifest));
+                    File.AppendAllText(Path.Combine(backupDir, "duplicate-paths.txt"), dest + " => " + manifest + "\r\n");
+                }
                 WriteManifest(year, loaderPath);
                 var after = Inspect(year);
                 if (!after.Installed || after.Legacy.Count > 0)
@@ -202,6 +249,14 @@ namespace EKTriangle.Core
             {
                 // Put everything back the way it was.
                 RemoveOurManifest(year);
+                if (previousManifest != null)
+                {
+                    try
+                    {
+                        if (!File.Exists(s.Manifest)) FileUtil.WriteNewVerified(s.Manifest, previousManifest, FileUtil.Sha256(previousManifest));
+                    }
+                    catch (Exception rex) { _log?.Error("could not restore previous manifest: " + rex.Message); }
+                }
                 for (int i = moved.Count - 1; i >= 0; i--)
                 {
                     try
@@ -244,7 +299,7 @@ namespace EKTriangle.Core
         {
             string path = ManifestPath(year);
             var info = File.Exists(path) ? ReadManifest(path) : null;
-            if (info == null || !info.IsOurs) return false;
+            if (info == null || !info.IsOurs || info.HasOtherAddins || info.IsLegacy) return false;
             File.Delete(path);
             return true;
         }
@@ -252,13 +307,26 @@ namespace EKTriangle.Core
         /// <summary>Removes every manifest carrying our AddInId for that year (current user). Nothing else.</summary>
         public ItemResult Uninstall(int year)
         {
+            string machineDir = _env.MachineAddinsDir(year);
+            if (Directory.Exists(machineDir))
+            foreach (string manifest in Directory.GetFiles(machineDir, "*.addin"))
+            {
+                var info = ReadManifest(manifest);
+                if (info != null && info.IsOurs)
+                    return new ItemResult(ItemOutcome.Failed, "all-users EK Triangle registration requires administrator review: " + manifest);
+            }
             string dir = _env.UserAddinsDir(year);
             if (!Directory.Exists(dir)) return new ItemResult(ItemOutcome.AlreadyDone, "no add-in folder");
             var ours = new List<string>();
             foreach (var m in Directory.GetFiles(dir, "*.addin"))
             {
                 var info = ReadManifest(m);
-                if (info != null && info.IsOurs) ours.Add(m);
+                if (info != null && info.IsOurs)
+                {
+                    if (info.HasOtherAddins || info.IsLegacy)
+                        return new ItemResult(ItemOutcome.Failed, "mixed manifest NOT removed; unrelated add-ins preserved: " + m);
+                    ours.Add(m);
+                }
             }
             if (ours.Count == 0) return new ItemResult(ItemOutcome.AlreadyDone, "dialog triangles not installed");
             var running = _env.RevitBlocking(new[] { year });

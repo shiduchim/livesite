@@ -9,11 +9,23 @@ Replaces Revit's **+ / −** expand/collapse symbols with small dark-gray
 
 Supports Revit **2024, 2025, 2026 and 2027**. Expanding and collapsing work exactly as before.
 
-## Install
+## CMD installer
+
+Download **EK_Triangle_CMD_Installer.zip** from the [CMD release](https://github.com/shiduchim/revit-triangle-/releases/tag/cmd-v1.0.1).
+Extract the entire ZIP, close Revit and double-click **INSTALL.cmd**. Press Enter
+for all detected versions or type the years to keep. Only the Project Browser
+worker requests UAC. **UNINSTALL.cmd** restores/removes; **CHECK_STATUS.cmd** is
+read-only. No compilation or dependency downloads occur on the user's PC.
+
+This uses the existing engine and precompiled DLLs. See the included README,
+executable inventory, SHA-256 checksums and Windows test report. Actual Revit
+acceptance and company IT approval are still required before distribution.
+
+## Install (separate EXE option)
 
 1. Close Revit.
 2. Run **`EK_Triangle_Setup.exe`** (in [`release/`](release/)).
-   *If Windows SmartScreen says "Windows protected your PC", click **More info → Run anyway** (the file is not code-signed).*
+   *If company security or Windows blocks a component, stop and ask IT to review the release inventory and checksums.*
 3. Leave the detected Revit versions ticked and click **Install**. Allow the administrator prompt (needed only for the Project Browser).
 4. Start Revit. If it asks whether to load **EK Triangle**, choose **Always Load**.
 

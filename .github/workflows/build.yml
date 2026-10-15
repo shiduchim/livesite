@@ -45,9 +45,17 @@ jobs:
         run: |
           $fx = Join-Path $env:RUNNER_TEMP 'fixtures'
           $env:EKT_FIXTURE_DIR = $fx
+          "EKT_FIXTURE_DIR=$fx" >> $env:GITHUB_ENV
           dotnet test tests/EKTriangle.Tests -c Release --no-build -f net8.0 --filter "FullyQualifiedName~FixtureExport" --nologo
           ./tests/installer/Test-Installer.ps1 -Setup out/installer/EK_Triangle_Setup.exe -Fixtures $fx `
             -FakeRevitExe out/native/Revit.exe -ResultDir out/test-results/e2e
+
+      - name: Build and test genuine CMD installer (all four simulated Revit versions)
+        shell: pwsh
+        run: |
+          ./build/Build-CmdPackage.ps1
+          ./tests/installer/Test-CmdPackage.ps1 -Zip out/cmd-package/EK_Triangle_CMD_Installer.zip `
+            -Fixtures $env:EKT_FIXTURE_DIR -FakeRevitExe out/native/Revit.exe
 
       - name: Test summary
         if: always()
@@ -56,6 +64,22 @@ jobs:
           $v = (Select-Xml -Path Directory.Build.props -XPath '//Version').Node.InnerText
           ./tests/ci/Write-TestSummary.ps1 -ResultDir out/test-results -OutFile out/TEST-RESULTS.md -Version $v
           Get-Content out/TEST-RESULTS.md | Out-File -Append $env:GITHUB_STEP_SUMMARY
+
+      - name: Finalize CMD ZIP with test report and verify extracted archive
+        shell: pwsh
+        run: |
+          ./build/Build-CmdPackage.ps1
+          ./tests/installer/Test-CmdPackage.ps1 -Zip out/cmd-package/EK_Triangle_CMD_Installer.zip -VerifyOnly
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EK_Triangle_CMD_Installer
+          path: |
+            out/cmd-package/EK_Triangle_CMD_Installer.zip
+            out/cmd-package/SHA256SUMS.txt
+            out/cmd-package/EK_Triangle_CMD_Installer/EXECUTABLE-INVENTORY.csv
+            out/TEST-RESULTS.md
+          if-no-files-found: error
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -82,6 +106,9 @@ jobs:
           New-Item -ItemType Directory -Force -Path $dest | Out-Null
           Copy-Item out/installer/EK_Triangle_Setup.exe, out/installer/SHA256SUMS.txt, out/TEST-RESULTS.md $dest -Force
           Copy-Item out/test-results/native-glyphs.bmp "$dest/native-glyphs-windows.bmp" -ErrorAction SilentlyContinue
+          Copy-Item out/cmd-package/EK_Triangle_CMD_Installer.zip $dest -Force
+          Copy-Item out/cmd-package/SHA256SUMS.txt "$dest/CMD-SHA256SUMS.txt" -Force
+          Copy-Item out/cmd-package/EK_Triangle_CMD_Installer/EXECUTABLE-INVENTORY.csv $dest -Force
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add release
@@ -91,3 +118,29 @@ jobs:
             git pull --rebase origin "${env:GITHUB_REF_NAME}"
             git push origin "HEAD:${env:GITHUB_REF_NAME}"
           }
+
+      - name: Publish tested CMD package and separate EXE option
+        if: github.event_name != 'pull_request' && success()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = (Select-Xml -Path Directory.Build.props -XPath '//Version').Node.InnerText
+          $tag = "cmd-v$v"
+          $notes = @"
+          EK Triangle CMD installer: extract the ZIP and run INSTALL.cmd.
+          Includes all precompiled Revit 2024-2027 loaders and native DLLs, the existing restore worker, three CMD entry points, executable inventory, SHA-256 checksums and the automated test report.
+          Uses the existing installation and restoration engine. The EXE installer is provided separately.
+          Windows automated simulation passed; actual Revit acceptance and company IT approval remain required before wider distribution.
+          Source: $env:GITHUB_SHA
+          "@
+          $notes | Set-Content out/RELEASE-NOTES.md -Encoding UTF8
+          Copy-Item out/cmd-package/SHA256SUMS.txt out/cmd-package/CMD-SHA256SUMS.txt
+          Copy-Item out/installer/SHA256SUMS.txt out/installer/EXE-SHA256SUMS.txt
+          gh release create $tag --target $env:GITHUB_SHA --title "EK Triangle $v - CMD installer" --prerelease --notes-file out/RELEASE-NOTES.md `
+            out/cmd-package/EK_Triangle_CMD_Installer.zip `
+            out/cmd-package/CMD-SHA256SUMS.txt `
+            out/cmd-package/EK_Triangle_CMD_Installer/EXECUTABLE-INVENTORY.csv `
+            out/TEST-RESULTS.md out/installer/EK_Triangle_Setup.exe `
+            out/installer/EXE-SHA256SUMS.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
