@@ -80,6 +80,21 @@ namespace EKTriangle.Tests
         }
 
         [Fact]
+        public void Reinstall_rebuilds_a_missing_backup_before_reporting_already_installed()
+        {
+            using var m = new Machine();
+            byte[] original = Js.Bytes(Js.Original());
+            m.InstallRevit(2024, original);
+            var mgr = new BrowserManager(m.Env, null);
+            mgr.Apply(2024);
+            var state = KeyValueFile.Load(Path.Combine(m.Env.BrowserStore(2024), "state.txt"));
+            File.Delete(state["Backup"]);
+            Assert.Equal(ItemOutcome.AlreadyDone, mgr.Apply(2024).Outcome);
+            state = KeyValueFile.Load(Path.Combine(m.Env.BrowserStore(2024), "state.txt"));
+            Assert.Equal(FileUtil.Sha256(original), FileUtil.Sha256File(state["Backup"]));
+        }
+
+        [Fact]
         public void Missing_native_dll_is_not_reported_as_installed()
         {
             using var m = new Machine();

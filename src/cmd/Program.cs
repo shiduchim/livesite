@@ -35,7 +35,7 @@ namespace EKTriangle.Cmd
                     throw new ArgumentException("Unknown or incomplete option: " + args[i - (i == args.Length ? 1 : 0)]);
                 }
                 var env = Env.Machine();
-                Console.WriteLine("EK Triangle CMD 1.0.1 - " + command);
+                Console.WriteLine("EK Triangle CMD 1.0.2 - " + command);
                 if (command == "status") { ShowStatus(env); return 0; }
                 // Per-user manifests must never be redirected to an alternate
                 // administrator account. Only the browser worker requests UAC.
@@ -195,10 +195,18 @@ namespace EKTriangle.Cmd
                 Console.WriteLine("Revit " + y + " Project Browser: SKIPPED - " + scan.Get(y.ToString(), "BrowserText"));
                 partial = true;
             }
+            var work = compatible.Where(y => !BrowserRecordVerified(env, y)).ToList();
+            // Refresh the recovery worker on upgrades, but do not request UAC
+            // for a verified, unchanged reinstall.
+            if (compatible.Count > 0 && (!File.Exists(env.EmergencyRestoreExe) ||
+                FileUtil.Sha256File(env.EmergencyRestoreExe) != FileUtil.Sha256File(Path.Combine(payload, "EKTriangle.exe"))) && work.Count == 0)
+                work.Add(compatible[0]);
+            foreach (int y in compatible.Except(work))
+                Console.WriteLine("Revit " + y + " Project Browser: AlreadyDone - patch and original backup verified; no administrator step required.");
             var restore = RecoveryYears(env).Intersect(removed).ToList();
-            if (compatible.Count > 0 || restore.Count > 0)
+            if (work.Count > 0 || restore.Count > 0)
             {
-                int code = BrowserStep(env, payload, "browser-apply", compatible, restore);
+                int code = BrowserStep(env, payload, "browser-apply", work, restore);
                 if (code != 0) return code;
             }
             foreach (int y in years)
@@ -213,6 +221,15 @@ namespace EKTriangle.Cmd
             Console.WriteLine(partial ? "Completed with skipped components (exit 4). See each version above." : "Installation verified. Start Revit for the acceptance check.");
             Console.WriteLine("Logs: " + env.UserLogDir + "; browser backups: " + env.MachineStore);
             return partial ? Partial : 0;
+        }
+
+        static bool BrowserRecordVerified(Env env, int year)
+        {
+            var s = new BrowserManager(env, null).Inspect(year);
+            return s.Code == "Applied" && s.Record != null && s.Record["Phase"] == "Applied" &&
+                s.Record["PatchedSHA256"] == s.Sha256 && s.Record["Backup"] != null &&
+                FileUtil.IsUnder(s.Record["Backup"], env.BrowserStore(year)) && File.Exists(s.Record["Backup"]) &&
+                FileUtil.Sha256File(s.Record["Backup"]) == s.Record["OriginalSHA256"];
         }
 
         static List<int> RecoveryYears(Env env)

@@ -11,7 +11,7 @@ Supports Revit **2024, 2025, 2026 and 2027**. Expanding and collapsing work exac
 
 ## CMD installer
 
-Download **EK_Triangle_CMD_Installer.zip** from the [CMD release](https://github.com/shiduchim/revit-triangle-/releases/tag/cmd-v1.0.1).
+Download **EK_Triangle_CMD_Installer.zip** from the [CMD release](https://github.com/shiduchim/revit-triangle-/releases/tag/cmd-v1.0.2).
 Extract the entire ZIP, close Revit and double-click **INSTALL.cmd**. Press Enter
 for all detected versions or type the years to keep. Only the Project Browser
 worker requests UAC. **UNINSTALL.cmd** restores/removes; **CHECK_STATUS.cmd** is

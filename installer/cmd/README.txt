@@ -1,4 +1,4 @@
-EK TRIANGLE - CMD INSTALLER 1.0.1
+EK TRIANGLE - CMD INSTALLER 1.0.2
 
 1. Extract the entire ZIP to a local folder approved by your IT team.
 2. Close every Revit window and double-click INSTALL.cmd as your normal user.

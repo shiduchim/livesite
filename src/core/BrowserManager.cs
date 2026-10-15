@@ -211,7 +211,9 @@ namespace EKTriangle.Core
         void EnsureRecordForPatched(int year, BrowserStatus st, BrowserPatch.Decoded decoded)
         {
             string patchedHash = st.Sha256;
-            if (st.Record != null && st.Record["PatchedSHA256"] == patchedHash && st.Record["Phase"] == "Applied") return;
+            if (st.Record != null && st.Record["PatchedSHA256"] == patchedHash && st.Record["Phase"] == "Applied" &&
+                st.Record["Backup"] != null && FileUtil.IsUnder(st.Record["Backup"], _env.BrowserStore(year)) &&
+                File.Exists(st.Record["Backup"]) && SafeHash(st.Record["Backup"]) == st.Record["OriginalSHA256"]) return;
             byte[] original = BrowserPatch.Encode(new BrowserPatch.Decoded { HasBom = decoded.HasBom, Text = BrowserPatch.Reverse(decoded.Text) });
             string originalHash = FileUtil.Sha256(original);
             string backup = EnsureBackup(year, original, originalHash);

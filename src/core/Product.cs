@@ -7,7 +7,7 @@ namespace EKTriangle.Core
     public static class Product
     {
         public const string Name = "EK Triangle";
-        public const string Version = "1.0.1";
+        public const string Version = "1.0.2";
 
         /// <summary>Revit AddInId of the release add-in (new; deliberately different from the legacy test).</summary>
         public const string AddInId = "D24DC5EF-6D2B-4013-B5D0-37B8F2763892";

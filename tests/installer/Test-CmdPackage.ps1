@@ -113,6 +113,7 @@ Ok (@(Get-ChildItem (Join-Path $userStore 'LegacyBackup') -Recurse -Filter '*leg
 
 Copy-Item (Manifest 2024) (Join-Path (Addins 2024) 'renamed-triangle.addin')
 Ok ((Run 'INSTALL.cmd' '--yes') -eq 4) 'reinstall succeeds with an explicit partial result'
+Ok (-not $lastOutput.Contains('Project Browser step')) 'verified reinstall does not invoke an unnecessary administrator worker'
 foreach ($y in 2024,2025,2026,2027) {
     $ours = @(Get-ChildItem (Addins $y) -Filter '*.addin' | Where-Object { (Get-Content $_.FullName -Raw).Contains($ourId) })
     Ok ($ours.Count -eq 1) "exactly one active manifest for $y"
