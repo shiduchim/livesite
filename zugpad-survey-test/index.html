@@ -11,7 +11,7 @@
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--back);font-size:15px;line-height:1.48}
 .container{width:min(100% - 32px,750px);margin:0 auto;padding-bottom:48px}
 header{padding:22px 0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-.logo{font-size:15px;font-weight:600;letter-spacing:0;white-space:nowrap;color:var(--sub);display:flex;align-items:baseline;gap:0}.logo .brand-pad{color:#6A82B4}
+.logo{font-size:15px;font-weight:600;letter-spacing:0;white-space:nowrap;color:var(--sub);display:flex;align-items:baseline;gap:0;direction:ltr}.logo .brand-pad{color:#6A82B4}
 .lang{display:flex;gap:4px;padding:4px;border:1px solid var(--line);background:white;border-radius:30px;direction:ltr}.lang button{padding:7px 13px;border:0;border-radius:20px;background:transparent;color:var(--sub);cursor:pointer}.lang button.active{background:var(--pale);color:var(--blue);font-weight:750}
 .hero{margin-bottom:17px}.hero h1{margin:0 0 9px;font-size:clamp(21px,3vw,25px);font-weight:650;line-height:1.3;letter-spacing:-.3px}.hero p{margin:0 0 11px;color:var(--sub);max-width:630px}.meta{display:flex;gap:14px;flex-wrap:wrap;color:#365e9e;font-size:13px;font-weight:650}
 .demo{background:#e9f1fc;color:#244773;border:1px solid #cbdcf3;border-radius:12px;padding:11px 14px;font-size:13px;margin:15px 0}
@@ -165,10 +165,35 @@ function hasAnswers(){
   key.endsWith('_other') ? !!String(val||'').trim() :
   Array.isArray(val) ? val.length>0 : !!String(val||'').trim());
 }
-// Apps Script's POST response is cross-origin and may be unreadable.
-// Send without Google credentials, then independently confirm the saved ID via
-// a read-only JSONP status lookup. No confirmation = no success screen.
+// Apps Script's doPost answers {ok:true} only after the row is written and
+// flushed, so reading that answer is the confirmation (one round trip, no
+// polling). A text/plain POST needs no CORS preflight, and credentials:'omit'
+// keeps Google account cookies (multi-account sign-in) out of every request.
+// If the answer can't be read, confirm the ID via the read-only status lookup.
+// No confirmation = no success screen.
 let attemptNumber = 0;
+async function readBackend(url, options, timeoutMs) {
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+  const res=await fetch(url,{...options,credentials:'omit',signal:controller.signal});
+  return res.ok?await res.text():null;
+ }catch(err){return null}
+ finally{clearTimeout(timer)}
+}
+async function postAnswers(payload) {
+ const text=await readBackend(BACKEND_URL,{method:'POST',
+  headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)},15000);
+ try{return !!text&&JSON.parse(text).ok===true}catch(err){return false}
+}
+// Same lookup as JSONP, read without cookies; null = unreadable, so try JSONP.
+async function savedStatusFetch(id, timeoutMs) {
+ const callback='zugpadStatus_'+Date.now()+'_'+(++attemptNumber);
+ const query=new URLSearchParams({zugpad_status:id,zugpad_callback:callback});
+ const text=await readBackend(BACKEND_URL+'?'+query.toString(),{},timeoutMs);
+ const match=/\(\{"saved":(true|false)\}\);?\s*$/.exec(text||'');
+ return match?match[1]==='true':null;
+}
 function savedStatusOnce(id, timeoutMs = 5500) {
  return new Promise(resolve => {
   const callback='zugpadStatus_'+Date.now()+'_'+(++attemptNumber);
@@ -188,11 +213,12 @@ function savedStatusOnce(id, timeoutMs = 5500) {
  });
 }
 async function confirmSaved(id) {
- const until=Date.now()+27000;
- await new Promise(resolve=>setTimeout(resolve,1200));
+ const until=Date.now()+8000;
  while(Date.now()<until) {
-  if(await savedStatusOnce(id))return true;
-  if(Date.now()+1300>=until)break;
+  let saved=await savedStatusFetch(id,Math.min(5500,until-Date.now()));
+  if(saved===null&&Date.now()<until)saved=await savedStatusOnce(id,Math.min(5500,until-Date.now()));
+  if(saved)return true;
+  if(navigator.onLine===false||Date.now()+1300>=until)break;
   await new Promise(resolve=>setTimeout(resolve,1300));
  }
  return false;
@@ -203,21 +229,14 @@ root.addEventListener('submit',async function(e){
  const d=dict[language];
  if(!hasAnswers()){showMessage(d.empty);return;}
  if(!isHosted){showMessage(d.demo);return;}
- isSending=true;
+ isSending=true;hideMessage();
  const btn=root.querySelector('.submit');
  if(btn){btn.disabled=true;btn.textContent=d.sending;}
  const payload={submissionId:submissionId,language:language,
   answers:JSON.parse(JSON.stringify(answers))};
- // Start the POST; do not rely on the opaque response as proof of success.
- const controller=new AbortController();
- const abortTimer=setTimeout(()=>controller.abort(),20000);
- const post=fetch(BACKEND_URL,{method:'POST',mode:'no-cors',credentials:'omit',
-  headers:{'Content-Type':'text/plain;charset=utf-8'},
-  body:JSON.stringify(payload),signal:controller.signal})
-  .catch(()=>null).finally(()=>clearTimeout(abortTimer));
- const verified=await confirmSaved(submissionId);
- // We intentionally don't wait for the POST redirect response: it may be opaque.
- void post;
+ // Offline phones fail at once; retries reuse submissionId (server dedupes).
+ const verified=navigator.onLine!==false&&
+  (await postAnswers(payload)||await confirmSaved(submissionId));
  isSending=false;
  if(verified){isSubmitted=true;render();}
  else {render();showMessage(dict[language].sendError);}
