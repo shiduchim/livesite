@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="robots" content="noindex,nofollow" />
+<title>ZugPad — Shadchan Survey</title>
+<style>
+:root{--ink:#26364d;--sub:#5e6c7e;--blue:#3c68b5;--pale:#ecf3fd;--line:#dde6f1;--paper:#fff;--back:#f7f9fc}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--back);font-size:15px;line-height:1.48}
+.container{width:min(100% - 32px,750px);margin:0 auto;padding-bottom:48px}
+header{padding:22px 0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:13px;font-weight:600;letter-spacing:0;white-space:nowrap;color:var(--sub);display:flex;align-items:baseline;gap:8px}
+.lang{display:flex;gap:4px;padding:4px;border:1px solid var(--line);background:white;border-radius:30px;direction:ltr}.lang button{padding:7px 13px;border:0;border-radius:20px;background:transparent;color:var(--sub);cursor:pointer}.lang button.active{background:var(--pale);color:var(--blue);font-weight:750}
+.hero{margin-bottom:17px}.hero h1{margin:0 0 9px;font-size:clamp(21px,3vw,25px);font-weight:650;line-height:1.3;letter-spacing:-.3px}.hero p{margin:0 0 11px;color:var(--sub);max-width:630px}.meta{display:flex;gap:14px;flex-wrap:wrap;color:#365e9e;font-size:13px;font-weight:650}
+.demo{background:#e9f1fc;color:#244773;border:1px solid #cbdcf3;border-radius:12px;padding:11px 14px;font-size:13px;margin:15px 0}
+form{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px #142d5208;padding:25px 27px}
+fieldset{border:0;padding:0;margin:0;min-width:0}fieldset+fieldset{border-top:1px solid #e9eef5;margin-top:22px;padding-top:22px}
+legend{width:100%;font-size:17px;font-weight:690;line-height:1.45;padding:0;margin:0 0 10px}.num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--pale);color:var(--blue);border-radius:50%;font-size:13px;margin-inline-end:8px;vertical-align:middle}
+.hint{font-size:13px;color:var(--sub);margin:0 0 12px}.options{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.option{display:flex;gap:9px;align-items:center;min-height:47px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;cursor:pointer;line-height:1.3;user-select:none}
+.option:hover{background:#f8fbff;border-color:#a8bfe6}.option:has(input:checked){background:var(--pale);border-color:#8aa9da;color:#234977;font-weight:600}.option:has(input:focus-visible){outline:3px solid #799add;outline-offset:2px}
+.option input{accent-color:var(--blue);width:17px;height:17px;margin:0;flex-shrink:0}
+textarea{display:block;width:100%;border:1px solid var(--line);border-radius:12px;font:inherit;padding:13px;background:#fbfcff;color:var(--ink);min-height:88px;resize:vertical}textarea:focus{outline:2px solid #91ade0}
+.other-detail{margin-top:11px;padding:12px 14px;background:#f8fbff;border:1px solid var(--line);border-radius:11px}
+.other-detail[hidden]{display:none}
+.other-detail label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}
+.other-detail textarea{min-height:67px}
+footer{padding-top:22px}.safety{color:var(--sub);font-size:13px;margin:0 0 17px}.submit{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:13px 28px;cursor:pointer;min-height:48px}.submit:hover{background:#32589a}
+.submit:disabled{opacity:.6;cursor:wait}.thankyou{padding:48px 12px;text-align:center}.thankyou h2{font-size:23px;font-weight:650;margin:0 0 10px}.thankyou p{color:var(--sub);margin:0}.msg{margin-top:16px;color:#244773;background:#ecf3fd;border-radius:10px;padding:13px 15px;font-size:14px;display:none}.msg.show{display:block}
+.policy{margin:15px 4px 0;color:var(--sub);font-size:12px;line-height:1.55}
+@media(max-width:600px){header{padding-top:18px}.options{grid-template-columns:1fr}form{padding:19px 17px}.hero h1{font-size:22px}.container{width:calc(100% - 24px)}fieldset+fieldset{margin-top:20px;padding-top:20px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header><div class="logo">ZugPad</div><nav class="lang" aria-label="Language"><button id="en" class="active" type="button" aria-pressed="true">English</button><button id="he" type="button" aria-pressed="false">עברית</button></nav></header>
+<section class="hero"><h1 id="heading"></h1><p id="intro"></p><div class="meta"><span id="meta1"></span><span id="meta2"></span></div></section>
+<div class="demo" id="demo" hidden></div>
+<form id="survey" novalidate></form>
+<div class="policy" id="policy"></div>
+</div>
+<script>
+'use strict';
+const dict={
+ en:{heading:'A short survey about your shidduch work',intro:'I’m exploring a free, simple organizer for singles and shadchanim. I’d like to understand which everyday tasks a phone or computer app could make easier.',meta1:'About 2 minutes',meta2:'No name or sign-in needed',demo:'Local preview only. Open the GitHub Pages test link to submit a test answer.',policy:'Test version. Responses are stored in a separate test tab of a private Google Sheet. No names or emails are requested. Google and GitHub may process technical data to serve the form. Please do not include identifying details about singles or families.',submit:'Submit',done:'Thank you! Your answers were received.',sending:'Sending…',sendError:'Could not save your answers. Please try again.',empty:'Please answer at least one question before submitting.',error:'Please choose no more than two answers where indicated.',other:'Something else',specify:'Please specify (optional)',otherPlaceholder:'You can type your answer here…',placeholder:'One short example is enough (optional). Please don’t include identifying details.',
+ questions:[
+ {id:'tools',type:'checks',title:'How do you currently keep track of your shidduch work?',hint:'Select all that apply.',options:[['wa','WhatsApp or messages'],['email','Email'],['paper','Notebook or paper'],['sheet','Excel or spreadsheets'],['app','A shidduch app or website'],['memory','Mostly memory'],['other','Something else']]},
+ {id:'friction',type:'checks',max:2,title:'Which tasks are the most time-consuming or difficult to keep organized?',hint:'Choose up to two. “None” is also a useful answer.',options:[['intake','Saving new profiles and contact details'],['find','Finding information about people I already know'],['updates','Keeping profiles and details up to date'],['duplicates','Avoiding duplicate suggestions'],['status','Tracking offers and responses from both sides'],['followup','Remembering whom to contact again'],['sharing','Coordinating with families or other shadchanim'],['none','None of these is a significant problem'],['other','Something else']]},
+ {id:'incident',type:'text',title:'Can you describe one recent example of wasted time or a missed step?',hint:'Optional. A sentence is enough; please omit personal details.'},
+ {id:'feature',type:'radio',title:'If a simple app could help with just ONE thing, which would be most useful?',hint:'Choose one. There’s no need to choose an app feature if you don’t want one.',options:[['capture','Save details quickly from messages or emails'],['search','Find and filter people quickly'],['status','See the status of each suggestion in one place'],['reminder','Remember follow-ups without entering them twice'],['duplicate','Spot duplicate introductions'],['share','Share and update profiles with permission'],['none','None — I don’t need an app'],['other','Something else']]},
+ {id:'device',type:'radio',title:'Where would you most likely use such a tool?',hint:'Choose one.',options:[['phone','Mainly on my phone'],['desktop','Mainly on a computer'],['both','Both phone and computer'],['neither','I would not use it']]},
+ {id:'barrier',type:'checks',max:2,title:'What might stop you from trying a new organizer?',hint:'Choose up to two, or skip.',options:[['double','Having to enter information twice'],['privacy','Privacy or confidentiality concerns'],['learn','Time to learn or move existing records'],['enough','My current method works well'],['noapp','I don’t want another app'],['other','Something else']]}
+ ]},
+ he:{heading:'שאלון קצר על עבודת השידוכים',intro:'אני בודק אפשרות לכלי חינמי ופשוט לארגון שידוכים עבור רווקים, רווקות, שדכנים ושדכניות. אשמח להבין אילו משימות יומיומיות אפליקציה בטלפון או במחשב יכולה להקל.',meta1:'כשתי דקות',meta2:'ללא צורך בשם או בהרשמה',demo:'זו תצוגה מקומית בלבד. כדי לשלוח תשובות, פתחו את הקישור לבדיקה.',policy:'גרסת בדיקה. התשובות נשמרות בלשונית בדיקה נפרדת בגיליון Google פרטי. אין צורך בשם או בדוא״ל. Google ו-GitHub עשויות לעבד מידע טכני כדי להציג את השאלון. נא לא לכלול פרטים מזהים על מועמדים או משפחות.',submit:'שליחת תשובות',done:'תודה! התשובות התקבלו ונשמרו.',sending:'שולח…',sendError:'לא הצלחנו לשמור את התשובות. אנא נסו שוב.',empty:'אנא ענו לפחות על שאלה אחת לפני השליחה.',error:'בשאלות המסומנות אפשר לבחור עד שתי תשובות בלבד.',other:'משהו אחר',specify:'אפשר לפרט כאן (רשות)',otherPlaceholder:'כתבו כאן את תשובתכם…',placeholder:'מספיק משפט קצר (רשות). בבקשה בלי פרטים מזהים.',
+ questions:[
+ {id:'tools',type:'checks',title:'איך אתם עוקבים כיום אחר עבודת השידוכים שלכם?',hint:'אפשר לבחור כמה תשובות.',options:[['wa','וואטסאפ או הודעות'],['email','דואר אלקטרוני'],['paper','מחברת או דפים'],['sheet','אקסל או גיליון נתונים'],['app','אתר או אפליקציה לשידוכים'],['memory','בעיקר מהזיכרון'],['other','משהו אחר']]},
+ {id:'friction',type:'checks',max:2,title:'אילו משימות דורשות מכם הכי הרבה זמן או קשה לנהל אותן?',hint:'בחרו עד שתי תשובות. אפשר גם לבחור שאין קושי מיוחד.',options:[['intake','שמירת פרופילים ופרטי קשר חדשים'],['find','מציאת מידע על אנשים שכבר מוכרים לי'],['updates','עדכון פרופילים ופרטים שהשתנו'],['duplicates','מניעת הצעות כפולות'],['status','מעקב אחרי הצעות ותשובות משני הצדדים'],['followup','לזכור למי צריך לחזור'],['sharing','תיאום עם משפחות או שדכנים אחרים'],['none','אין לי קושי משמעותי בתחומים האלה'],['other','משהו אחר']]},
+ {id:'incident',type:'text',title:'תוכלו לתאר דוגמה מהזמן האחרון שבה התבזבז זמן או התפספס שלב?',hint:'רשות. מספיק משפט אחד, בלי פרטים אישיים.'},
+ {id:'feature',type:'radio',title:'אם אפליקציה פשוטה הייתה מקלה על דבר אחד בלבד, מה היה הכי מועיל?',hint:'בחרו תשובה אחת. אפשר גם לציין שאין צורך באפליקציה.',options:[['capture','שמירת מידע במהירות מהודעות או ממיילים'],['search','חיפוש וסינון מהיר של אנשים'],['status','הצגת מצב כל הצעה במקום אחד'],['reminder','תזכורות למעקב בלי הזנה כפולה'],['duplicate','זיהוי הצעות כפולות'],['share','שיתוף ועדכון פרופילים באישור'],['none','אין לי צורך באפליקציה'],['other','משהו אחר']]},
+ {id:'device',type:'radio',title:'היכן הייתם משתמשים בכלי כזה?',hint:'בחרו תשובה אחת.',options:[['phone','בעיקר בטלפון'],['desktop','בעיקר במחשב'],['both','בטלפון ובמחשב'],['neither','לא הייתי משתמש/ת']]},
+ {id:'barrier',type:'checks',max:2,title:'מה עלול למנוע מכם לנסות כלי ארגון חדש?',hint:'בחרו עד שתי תשובות, או דלגו.',options:[['double','הצורך להזין מידע פעמיים'],['privacy','חששות לפרטיות ולסודיות'],['learn','זמן למידה או העברת רשומות קיימות'],['enough','השיטה הנוכחית עובדת היטב'],['noapp','לא מעוניין/ת בעוד אפליקציה'],['other','משהו אחר']]}
+ ]}
+};
+let language='en', isSending=false, isSubmitted=false;
+const root=document.getElementById('survey'), answers={};
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwj-CnzBCJSxC-vU-z42cEYijvzH9uCLbwGgIEuvz-NKngNGYEDaQHMYalz2RaSxMURuw/exec';
+// This is the separate static-host testing page, not the live survey.
+const isHosted = location.protocol === 'https:';
+const submissionId='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,14);
+function el(s){return document.createElement(s)};
+function collect(){root.querySelectorAll('input,textarea').forEach(e=>{if(e.type==='checkbox'){if(!answers[e.name])answers[e.name]=[];if(e.checked&&!answers[e.name].includes(e.value))answers[e.name].push(e.value)}else if(e.type==='radio'){if(e.checked)answers[e.name]=e.value}else if(e.tagName==='TEXTAREA')answers[e.name]=e.value});}
+function render(){
+ const d=dict[language];
+ document.documentElement.lang=language;
+ document.documentElement.dir=language==='he'?'rtl':'ltr';
+ for(const k of ['heading','intro','meta1','meta2','policy'])document.getElementById(k).textContent=d[k];
+ const demo=document.getElementById('demo');
+ demo.hidden=isHosted;
+ demo.textContent=d.demo;
+ for(const k of ['en','he']){
+  const b=document.getElementById(k);
+  b.classList.toggle('active',k===language);
+  b.setAttribute('aria-pressed',String(k===language));
+ }
+ if(isSubmitted){renderThanks();return;}
+ root.innerHTML='';
+ for(let i=0;i<d.questions.length;i++){
+  const q=d.questions[i],fs=el('fieldset'),legend=el('legend'),num=el('span');
+  num.className='num';num.textContent=i+1;
+  legend.append(num,document.createTextNode(q.title));fs.append(legend);
+  const hint=el('p');hint.className='hint';hint.textContent=q.hint;fs.append(hint);
+  if(q.type==='text'){
+   const input=el('textarea');input.name=q.id;input.id=q.id;
+   input.placeholder=d.placeholder;input.maxLength=500;input.value=answers[q.id]||'';input.dir='auto';
+   input.addEventListener('input',()=>{answers[q.id]=input.value});fs.append(input);
+  }else{
+   const options=el('div');options.className='options';
+   let refreshOther=()=>{};
+   for(const [id,label] of q.options){
+    const wrapper=el('label');wrapper.className='option';
+    const input=el('input');input.type=q.type==='checks'?'checkbox':'radio';
+    input.name=q.id;input.value=id;
+    input.checked=q.type==='checks'?(answers[q.id]||[]).includes(id):answers[q.id]===id;
+    input.addEventListener('change',()=>{
+     if(q.type==='radio'){
+      answers[q.id]=id;
+     }else{
+      let selected=[...(answers[q.id]||[])];
+      if(input.checked){
+       if(id==='none')selected=['none'];
+       else{
+        selected=selected.filter(v=>v!=='none');
+        if(q.max && selected.length>=q.max){
+         input.checked=false;showMessage(d.error);return;
+        }
+        selected.push(id);
+       }
+      }else selected=selected.filter(v=>v!==id);
+      answers[q.id]=selected;
+      options.querySelectorAll('input').forEach(x=>{x.checked=selected.includes(x.value)});
+     }
+     refreshOther();hideMessage();
+    });
+    wrapper.append(input,document.createTextNode(label));options.append(wrapper);
+   }
+   fs.append(options);
+   if(q.options.some(opt=>opt[0]==='other')){
+    const otherKey=q.id+'_other',box=el('div'),label=el('label'),input=el('textarea');
+    box.className='other-detail';
+    input.id=otherKey;input.name=otherKey;input.maxLength=250;input.rows=2;input.dir='auto';
+    input.placeholder=d.otherPlaceholder;input.value=answers[otherKey]||'';
+    label.htmlFor=otherKey;label.textContent=d.specify;
+    input.addEventListener('input',()=>{answers[otherKey]=input.value});
+    box.append(label,input);fs.append(box);
+    refreshOther=()=>{
+     const selected=q.type==='checks'?(answers[q.id]||[]).includes('other'):answers[q.id]==='other';
+     box.hidden=!selected;
+     if(!selected){delete answers[otherKey];input.value=''}
+    };
+    refreshOther();
+   }
+  }
+  root.append(fs);
+ }
+ const footer=el('footer'),safe=el('p');safe.className='safety';
+ safe.textContent=language==='he'?'השאלות הן לצורך מחקר בלבד. כל שאלה ניתנת לדילוג.':'Research only. Every question may be skipped.';
+ const button=el('button');button.className='submit';button.type='submit';button.disabled=isSending;button.textContent=isSending?d.sending:d.submit;
+ footer.append(safe,button);root.append(footer);
+ const msg=el('div');msg.className='msg';msg.id='message';msg.setAttribute('role','status');root.append(msg);
+}
+function showMessage(s){let node=document.getElementById('message');node.textContent=s;node.classList.add('show');node.scrollIntoView({behavior:'smooth',block:'nearest'})}function hideMessage(){let node=document.getElementById('message');if(node){node.classList.remove('show');node.textContent=''}}
+function renderThanks(){
+ const d=dict[language];
+ root.innerHTML='';
+ const card=el('section');card.className='thankyou';
+ const heading=el('h2');heading.textContent=d.done;
+ const detail=el('p');
+ detail.textContent=language==='he'?'תודה על הזמן שהקדשתם לשיתוף הניסיון שלכם.':'Thank you for sharing your experience.';
+ card.append(heading,detail);root.append(card);
+}
+function hasAnswers(){
+ return Object.entries(answers).some(([key,val])=>
+  key.endsWith('_other') ? !!String(val||'').trim() :
+  Array.isArray(val) ? val.length>0 : !!String(val||'').trim());
+}
+// Apps Script's POST response is cross-origin and may be unreadable.
+// Send without Google credentials, then independently confirm the saved ID via
+// a read-only JSONP status lookup. No confirmation = no success screen.
+let attemptNumber = 0;
+function savedStatusOnce(id, timeoutMs = 5500) {
+ return new Promise(resolve => {
+  const callback='zugpadStatus_'+Date.now()+'_'+(++attemptNumber);
+  const script=el('script');let done=false;
+  let timer;
+  function finish(result) {
+   if(done)return;
+   done=true;clearTimeout(timer);
+   delete window[callback];script.remove();resolve(result);
+  }
+  window[callback]=result=>finish(!!(result&&result.saved));
+  script.onerror=()=>finish(false);
+  timer=setTimeout(()=>finish(false),timeoutMs);
+  const query=new URLSearchParams({zugpad_status:id,zugpad_callback:callback});
+  script.src=BACKEND_URL+'?'+query.toString();
+  document.head.appendChild(script);
+ });
+}
+async function confirmSaved(id) {
+ const until=Date.now()+27000;
+ await new Promise(resolve=>setTimeout(resolve,1200));
+ while(Date.now()<until) {
+  if(await savedStatusOnce(id))return true;
+  if(Date.now()+1300>=until)break;
+  await new Promise(resolve=>setTimeout(resolve,1300));
+ }
+ return false;
+}
+root.addEventListener('submit',async function(e){
+ e.preventDefault();
+ if(isSending || isSubmitted)return;
+ const d=dict[language];
+ if(!hasAnswers()){showMessage(d.empty);return;}
+ if(!isHosted){showMessage(d.demo);return;}
+ isSending=true;
+ const btn=root.querySelector('.submit');
+ if(btn){btn.disabled=true;btn.textContent=d.sending;}
+ const payload={submissionId:submissionId,language:language,
+  answers:JSON.parse(JSON.stringify(answers))};
+ // Start the POST; do not rely on the opaque response as proof of success.
+ const controller=new AbortController();
+ const abortTimer=setTimeout(()=>controller.abort(),20000);
+ const post=fetch(BACKEND_URL,{method:'POST',mode:'no-cors',credentials:'omit',
+  headers:{'Content-Type':'text/plain;charset=utf-8'},
+  body:JSON.stringify(payload),signal:controller.signal})
+  .catch(()=>null).finally(()=>clearTimeout(abortTimer));
+ const verified=await confirmSaved(submissionId);
+ // We intentionally don't wait for the POST redirect response: it may be opaque.
+ void post;
+ isSending=false;
+ if(verified){isSubmitted=true;render();}
+ else {render();showMessage(dict[language].sendError);}
+});
+document.getElementById('en').addEventListener('click',()=>{language='en';render()});
+document.getElementById('he').addEventListener('click',()=>{language='he';render()});
+render();
+</script>
+</body></html>
