@@ -7,20 +7,20 @@
 <meta name="robots" content="noindex,nofollow" />
 <title>ZugDesk — A short survey for shadchanim</title>
 <link rel="canonical" href="https://shiduchim.github.io/livesite/survey/" />
-<meta name="description" content="Share how you organize shidduch work. A short survey in six languages. No name or sign-in needed." />
+<meta name="description" content="Share how you organize shidduch work. A short survey. No name or sign-in needed." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="ZugDesk" />
 <meta property="og:title" content="ZugDesk | Short survey for shadchanim" />
-<meta property="og:description" content="Share how you organize shidduch work. A short survey in six languages. No name or sign-in needed." />
+<meta property="og:description" content="Share how you organize shidduch work. A short survey. No name or sign-in needed." />
 <meta property="og:url" content="https://shiduchim.github.io/livesite/survey/" />
 <meta property="og:image" content="https://shiduchim.github.io/livesite/survey/zugdesk-preview.png" />
 <meta property="og:image:type" content="image/png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
-<meta property="og:image:alt" content="ZugDesk — A short survey for shadchanim, available in six languages" />
+<meta property="og:image:alt" content="ZugDesk — A short survey for shadchanim" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="ZugDesk | Short survey for shadchanim" />
-<meta name="twitter:description" content="Share your experience in a short, six-language survey. No name or sign-in needed." />
+<meta name="twitter:description" content="Share your experience in a short survey. No name or sign-in needed." />
 <meta name="twitter:image" content="https://shiduchim.github.io/livesite/survey/zugdesk-preview.png" />
 <style>
 :root{--ink:#26364d;--sub:#5e6c7e;--blue:#3c68b5;--pale:#ecf3fd;--line:#dde6f1;--paper:#fff;--back:#f7f9fc}
@@ -89,10 +89,10 @@ for (const [code,t] of Object.entries(extras)) {
 }
 dict.en.safety='Research only. Every question may be skipped.';
 dict.en.thanksDetail='Thank you for sharing your experience.';
-Object.assign(dict.en,{"moreLanguages":"More","sharePrompt":"If you know another shadchan who might like to contribute, you're welcome to share this survey.","shareWhatsApp":"Share on WhatsApp","copyLink":"Copy link","copied":"Link copied","copyFailed":"Please copy the survey link from your browser.","shareMessage":"ZugDesk: a short survey for people who help make shidduchim. No name or sign-in needed. Available in six languages:"});
+Object.assign(dict.en,{"moreLanguages":"More","sharePrompt":"If you know another shadchan who might like to contribute, you're welcome to share this survey.","shareWhatsApp":"Share on WhatsApp","copyLink":"Copy link","copied":"Link copied","copyFailed":"Please copy the survey link from your browser.","shareMessage":"ZugDesk: a short survey for people who help make shidduchim. No name or sign-in needed."});
 dict.he.safety='השאלות הן לצורך מחקר בלבד. כל שאלה ניתנת לדילוג.';
 dict.he.thanksDetail='תודה על הזמן שהקדשתם לשיתוף הניסיון שלכם.';
-Object.assign(dict.he,{"moreLanguages":"עוד","sharePrompt":"אם אתם מכירים שדכן או שדכנית נוספים שירצו להשתתף, אפשר להעביר להם את השאלון.","shareWhatsApp":"שיתוף בוואטסאפ","copyLink":"העתקת קישור","copied":"הקישור הועתק","copyFailed":"אפשר להעתיק את הקישור משורת הכתובת בדפדפן.","shareMessage":"ZugDesk: שאלון קצר לשדכנים ולשדכניות. אין צורך בשם או בהרשמה. השאלון זמין בשש שפות:"});
+Object.assign(dict.he,{"moreLanguages":"עוד","sharePrompt":"אם אתם מכירים שדכן או שדכנית נוספים שירצו להשתתף, אפשר להעביר להם את השאלון.","shareWhatsApp":"שיתוף בוואטסאפ","copyLink":"העתקת קישור","copied":"הקישור הועתק","copyFailed":"אפשר להעתיק את הקישור משורת הכתובת בדפדפן.","shareMessage":"ZugDesk: שאלון קצר לשדכנים ולשדכניות. אין צורך בשם או בהרשמה."});
 let language='en', isSending=false, isSubmitted=false;
 const root=document.getElementById('survey'), answers={};
 const SHARE_URL='https://shiduchim.github.io/livesite/survey/';
