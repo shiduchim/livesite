@@ -18,12 +18,14 @@ in `survey/index.html` stays the same.
    `var SPREADSHEET_URL = 'PASTE_YOUR_GOOGLE_SHEET_URL_HERE';` paste that
    same Sheet URL between the quotes. Click **Save**.
 4. Choose **checkColumns** in the function list → **Run** (approve access if
-   asked). It writes nothing and logs one line per field, for example
-   `tools -> column 4 "Current tools"`. Every line should name an existing
-   column. A line marked `NEW` means no matching header was found: add that
+   asked). It writes nothing and logs one line for each of the 16 v1 and v2
+   fields, for example `tools -> column 5 "Current tools"`, then a summary.
+   The last line should read
+   `16 of 16 fields found in existing columns; nothing will be added`. A line marked `NEW` means no matching header was found: add that
    column's exact header text to the field's list in `HEADERS` (near the top),
    Save, and run **checkColumns** again until only intended new columns show
-   `NEW`.
+   `NEW`. A line marked `SAME COLUMN AS` means two fields matched one
+   column; fix that before deploying.
 5. Choose **testSave** → **Run**. The log should show `"first":{"ok":true}`
    and `"retry":{"ok":true,"duplicate":true}`, and the Sheet gets exactly one
    row whose Submission ID starts with `selftest-`, with values in the right
@@ -45,9 +47,11 @@ names in `HEADERS` (case, spaces and punctuation are ignored). Existing
 columns and responses are never moved or overwritten. Only a field with no
 matching header gets a new column at the right end of row 1, and only once.
 
-Answers are stored as option codes (for example `wa, notes`, `6_20`), the
-same codes in every language; the language column shows which language was
-used.
+Answers are stored as the English answer text that respondents saw (for
+example `WhatsApp or other messages; Email`), whatever language they used,
+like the earlier backend; the language column shows which language was used.
+Several choices in one answer are separated by `LABEL_SEPARATOR` (`; `),
+because some answer texts contain commas. Historical rows are not changed.
 
 ## If saving fails after deploying
 

@@ -13,13 +13,15 @@ const ROOT = path.resolve(__dirname, '../..');
 const PAGE = 'https://shiduchim.github.io/livesite/survey/';
 
 // ---- Minimal Apps Script services backed by a 2-D array ----------------------
-// Header names from the live Responses tab (as reported by the owner) plus likely ones for the rest.
-// "Survey version" is deliberately absent to check that a missing column is added exactly once.
-const LEGACY_HEADERS = ['Timestamp', 'Submission ID', 'Language', 'Current tools', 'Current tools (other)',
+// The 16 Responses headers. Exact names from the owner: Submitted at, Current tools, Difficult tasks,
+// Recent example, Recent workload (v2), Current device used (v2), Adoption barriers, Preferred device.
+// The other eight are likely names; checkColumns() confirms them on the real Sheet.
+const LEGACY_HEADERS = ['Submitted at', 'Submission ID', 'Survey version', 'Language', 'Current tools', 'Current tools (other)',
   'Difficult tasks', 'Difficult tasks (other)', 'Recent example', 'Most useful feature', 'Most useful feature (other)',
-  'Device', 'Barriers', 'Barriers (other)', 'Recent workload (v2)', 'Current device used (v2)'];
-const LEGACY_ROW = ['2026-10-17 21:00', 'sOLDROW123456', 'en', 'wa, paper', '', 'status', '',
-  'old answer', 'search', '', 'phone', 'privacy', '', '', ''];
+  'Preferred device', 'Adoption barriers', 'Barriers (other)', 'Recent workload (v2)', 'Current device used (v2)'];
+const LEGACY_ROW = ['2026-10-17 21:00', 'sOLDROW123456', '', 'en', 'WhatsApp or messages, Notebook or paper', '',
+  'Tracking offers and responses from both sides', '', 'old answer', 'Find and filter people quickly', '',
+  'Mainly on my phone', 'Privacy or confidentiality concerns', '', '', ''];
 let grid = [LEGACY_HEADERS.slice(), LEGACY_ROW.slice()];
 const width = () => grid.reduce((m, r) => Math.max(m, r.length), 0);
 const cell = (r, c) => (grid[r] && grid[r][c] !== undefined ? grid[r][c] : '');
@@ -132,7 +134,7 @@ const lastId = async page => page.evaluate(() => submissionId);
       assert.ok(server[q.id], 'server missing question ' + q.id);
       if (q.type === 'text') { assert.strictEqual(server[q.id].type, 'text'); continue; }
       assert.strictEqual(server[q.id].type, q.type, q.id);
-      assert.deepStrictEqual(server[q.id].options, q.options.map(o => o[0]), q.id);
+      assert.deepStrictEqual(server[q.id].options, q.options, q.id + ' codes and English labels');
       assert.strictEqual(server[q.id].limit, q.max, q.id + ' limit');
       if (q.options.some(o => o[0] === 'other')) assert.ok(server[q.id + '_other'], q.id + '_other');
     }
@@ -179,8 +181,8 @@ const lastId = async page => page.evaluate(() => submissionId);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
     assert.ok(r, 'row saved');
-    assert.strictEqual(r.language, 'en'); assert.strictEqual(r.tools, 'wa, notes');
-    assert.strictEqual(r.incident, 'A follow-up was forgotten for two weeks.'); assert.strictEqual(r.friction, 'followup');
+    assert.strictEqual(r.language, 'en'); assert.strictEqual(r.tools, 'WhatsApp or other messages; A notes app (Google Keep, Apple Notes, etc.)');
+    assert.strictEqual(r.incident, 'A follow-up was forgotten for two weeks.'); assert.strictEqual(r.friction, 'Remembering whom to contact or follow up with');
     assert.strictEqual(r.surveyVersion, 'v2');
     await page.close();
   });
@@ -204,7 +206,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
-    assert.strictEqual(r.language, lang); assert.strictEqual(r.barrier, 'privacy');
+    assert.strictEqual(r.language, lang); assert.strictEqual(r.barrier, 'Privacy or confidentiality concerns');
     await page.close();
   });
 
@@ -214,7 +216,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
-    assert.strictEqual(r.device_current, 'phone'); assert.strictEqual(r.tools, ''); assert.strictEqual(r.incident, '');
+    assert.strictEqual(r.device_current, 'Mainly my phone'); assert.strictEqual(r.tools, ''); assert.strictEqual(r.incident, '');
     await page.close();
   });
 
@@ -237,7 +239,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
-    assert.strictEqual(r.tools, 'other'); assert.strictEqual(r.tools_other, `'=HYPERLINK("x") my own system`);
+    assert.strictEqual(r.tools, 'Something else'); assert.strictEqual(r.tools_other, `'=HYPERLINK("x") my own system`);
     assert.strictEqual(r.friction_other, 'Finding time'); assert.strictEqual(r.barrier_other, 'Cost');
     await page.close();
   });
@@ -250,7 +252,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     assert.match(await page.textContent('#message'), /no more than two/);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    assert.strictEqual(newRows().find(x => x.submissionId === id).friction, 'candidates, duplicates');
+    assert.strictEqual(newRows().find(x => x.submissionId === id).friction, 'Finding suitable people to suggest; Avoiding repeated or duplicate suggestions');
     await page.close();
   });
 
@@ -262,7 +264,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
-    assert.strictEqual(r.barrier, 'none'); assert.strictEqual(r.friction, 'none'); assert.strictEqual(r.workload, 'none');
+    assert.strictEqual(r.barrier, 'Nothing in particular'); assert.strictEqual(r.friction, 'None of these'); assert.strictEqual(r.workload, 'None');
     await page.close();
   });
 
@@ -272,7 +274,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     const r = newRows().find(x => x.submissionId === id);
-    assert.strictEqual(r.workload, '21_50'); assert.strictEqual(r.device_current, 'both');
+    assert.strictEqual(r.workload, '21–50'); assert.strictEqual(r.device_current, 'Phone and computer about equally');
     await page.close();
   });
 
@@ -357,14 +359,39 @@ const lastId = async page => page.evaluate(() => submissionId);
     await page.close();
   });
 
-  await test('Sheet: legacy columns and old row untouched; new columns appended at the right', async () => {
+  await test('v1 page cached in a browser: saved with the original labels, Preferred device column', async () => {
+    const body = JSON.stringify({ submissionId: 'sV1CACHED0001', language: 'he',
+      answers: { tools: ['wa', 'memory'], feature: 'search', device: 'both', barrier: ['noapp'] } });
+    assert.deepStrictEqual(JSON.parse(gas.doPost({ postData: { contents: body } }).content), { ok: true });
+    const r = newRows().find(x => x.submissionId === 'sV1CACHED0001');
+    assert.strictEqual(r.tools, 'WhatsApp or messages; Mostly memory'); assert.strictEqual(r.feature, 'Find and filter people quickly');
+    assert.strictEqual(r.device, 'Both phone and computer'); assert.strictEqual(r.barrier, 'I don’t want another app');
+    assert.strictEqual(r.surveyVersion, 'v1'); assert.strictEqual(r.device_current, '');
+  });
+
+  await test('A sheet missing one column gets it added once, at the right', async () => {
+    const saved = grid;
+    grid = [LEGACY_HEADERS.filter(h => h !== 'Survey version')];
+    for (const id of ['sMISSING00001', 'sMISSING00002']) {
+      const body = JSON.stringify({ surveyVersion: 'v2', submissionId: id, language: 'en', answers: { workload: '6_20' } });
+      assert.ok(JSON.parse(gas.doPost({ postData: { contents: body } }).content).ok);
+    }
+    assert.deepStrictEqual(grid[0], [...LEGACY_HEADERS.filter(h => h !== 'Survey version'), 'Survey version']);
+    assert.strictEqual(grid.length, 3);
+    grid = saved;
+  });
+
+  await test('Sheet: all 16 columns recognized, old row untouched, no column added', async () => {
     assert.deepStrictEqual(grid[0].slice(0, LEGACY_HEADERS.length), LEGACY_HEADERS);
     assert.deepStrictEqual(grid[1], LEGACY_ROW);
-    assert.deepStrictEqual(grid[0].slice(LEGACY_HEADERS.length), ['Survey version'], 'only the missing column is added, once');
+    assert.deepStrictEqual(grid[0], LEGACY_HEADERS, 'no column added');
     const check = [...gas.checkColumns()].join('\n');
-    assert.match(check, /tools -> column 4 "Current tools"/); assert.match(check, /friction -> column 6 "Difficult tasks"/);
-    assert.match(check, /incident -> column 8 "Recent example"/); assert.match(check, /workload -> column 14 "Recent workload \(v2\)"/);
-    assert.match(check, /device_current -> column 15 "Current device used \(v2\)"/); assert.ok(!/NEW/.test(check), check);
+    for (const [key, col, name] of [['timestamp', 1, 'Submitted at'], ['tools', 5, 'Current tools'], ['friction', 7, 'Difficult tasks'],
+      ['incident', 9, 'Recent example'], ['device', 12, 'Preferred device'], ['barrier', 13, 'Adoption barriers'],
+      ['workload', 15, 'Recent workload (v2)'], ['device_current', 16, 'Current device used (v2)']])
+      assert.ok(check.includes(`${key} -> column ${col} "${name}"`), key + '\n' + check);
+    assert.ok(check.includes('16 of 16 fields found in existing columns; nothing will be added'), check);
+    assert.ok(!/NEW|SAME COLUMN/.test(check), check);
     const ids = newRows().map(r => r.submissionId);
     assert.strictEqual(new Set(ids).size, ids.length, 'duplicate rows');
   });
