@@ -98,7 +98,7 @@ window.zugpadExtraTranslations = {
     "copyLink": "Копировать ссылку",
     "copied": "Ссылка скопирована",
     "copyFailed": "Скопируйте ссылку из адресной строки браузера.",
-    "shareMessage": "ZugDesk: короткий опрос для шадханов. Имя и регистрация не требуются. Доступен на шести языках:"
+    "shareMessage": "ZugDesk: короткий опрос для шадханов. Имя и регистрация не требуются."
   },
   "fr": {
     "heading": "Un court questionnaire sur votre activité de chadkhanout",
@@ -198,7 +198,7 @@ window.zugpadExtraTranslations = {
     "copyLink": "Copier le lien",
     "copied": "Lien copié",
     "copyFailed": "Veuillez copier le lien dans la barre d'adresse de votre navigateur.",
-    "shareMessage": "ZugDesk : un court questionnaire pour les chadkhanim. Aucun nom ni inscription nécessaire. Disponible en six langues :"
+    "shareMessage": "ZugDesk : un court questionnaire pour les chadkhanim. Aucun nom ni inscription nécessaire."
   },
   "es": {
     "heading": "Una breve encuesta sobre tu trabajo de shidujim",
@@ -298,7 +298,7 @@ window.zugpadExtraTranslations = {
     "copyLink": "Copiar enlace",
     "copied": "Enlace copiado",
     "copyFailed": "Copia el enlace desde la barra de direcciones de tu navegador.",
-    "shareMessage": "ZugDesk: una breve encuesta para shadjaním. No requiere nombre ni registro. Disponible en seis idiomas:"
+    "shareMessage": "ZugDesk: una breve encuesta para shadjaním. No requiere nombre ni registro."
   },
   "yi": {
     "heading": "אַ קורצע אַנקעטע וועגן אייער שידוכים־אַרבעט",
@@ -398,6 +398,6 @@ window.zugpadExtraTranslations = {
     "copyLink": "קאָפּירן לינק",
     "copied": "דער לינק איז קאָפּירט",
     "copyFailed": "ביטע קאָפּירט דעם לינק פֿון דער אַדרעס־שורה.",
-    "shareMessage": "ZugDesk: אַ קורצער פֿראַגעבויגן פֿאַר שדכנים. אָן נאָמען אָדער רעגיסטראַציע. אין זעקס שפּראַכן:"
+    "shareMessage": "ZugDesk: אַ קורצער פֿראַגעבויגן פֿאַר שדכנים. אָן נאָמען אָדער רעגיסטראַציע."
   }
 };
