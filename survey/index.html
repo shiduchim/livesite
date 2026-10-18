@@ -12,7 +12,7 @@
 .container{width:min(100% - 32px,750px);margin:0 auto;padding-bottom:48px}
 header{padding:22px 0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;direction:rtl}
 .logo{font-size:18px;font-weight:600;letter-spacing:0;white-space:nowrap;color:var(--sub);display:flex;align-items:baseline;gap:0;direction:ltr}.logo .brand-pad{color:#6A82B4}
-.lang{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);background:white;border-radius:30px;direction:ltr;flex-shrink:0}.lang button{padding:7px 10px;border:0;border-radius:20px;background:transparent;color:var(--sub);cursor:pointer;white-space:nowrap}.lang button.active{background:var(--pale);color:var(--blue);font-weight:750}.lang select{min-width:92px;max-width:115px;cursor:pointer;border:0;border-radius:20px;padding:7px 6px;background:transparent;color:var(--sub);font:inherit;font-size:13px;direction:ltr}.lang select.active{background:var(--pale);color:var(--blue);font-weight:700}.lang :focus-visible{outline:2px solid #799add;outline-offset:2px}
+.lang{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);background:white;border-radius:30px;direction:ltr;flex-shrink:0}.lang button{padding:7px 10px;border:0;border-radius:20px;background:transparent;color:var(--sub);cursor:pointer;white-space:nowrap;font:inherit;font-size:13px}.lang button.active{background:var(--pale);color:var(--blue);font-weight:750}.lang :focus-visible{outline:2px solid #799add;outline-offset:2px}.lang-more{position:relative;direction:ltr}.lang .more-button{display:flex;align-items:center;justify-content:center;gap:5px;border-radius:20px;min-width:65px}.lang .more-button .chevron{width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);flex-shrink:0}.lang .more-button[aria-expanded="true"] .chevron{transform:translateY(2px) rotate(225deg)}.lang-menu{position:absolute;z-index:50;top:calc(100% + 9px);left:0;min-width:165px;display:grid;gap:3px;padding:7px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 9px 25px #142d5225}.lang-menu[hidden]{display:none}.lang .lang-choice{width:100%;text-align:left;border-radius:20px;padding:9px 12px;font-size:13px}.lang .lang-choice:hover{background:#f7faff}.lang .lang-choice[aria-pressed="true"]{background:var(--pale);color:var(--blue);font-weight:750}
 .hero{margin-bottom:17px}.hero h1{margin:0 0 9px;font-size:clamp(21px,3vw,25px);font-weight:650;line-height:1.3;letter-spacing:-.3px}.hero p{margin:0 0 11px;color:var(--sub);max-width:630px}.meta{display:flex;gap:14px;flex-wrap:wrap;color:#365e9e;font-size:13px;font-weight:650}
 .demo{background:#e9f1fc;color:#244773;border:1px solid #cbdcf3;border-radius:12px;padding:11px 14px;font-size:13px;margin:15px 0}
 form{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px #142d5208;padding:25px 27px}
@@ -30,12 +30,12 @@ textarea{display:block;width:100%;border:1px solid var(--line);border-radius:12p
 footer{padding-top:22px}.safety{color:var(--sub);font-size:13px;margin:0 0 17px}.submit{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:13px 28px;cursor:pointer;min-height:48px}.submit:hover{background:#32589a}
 .submit:disabled{opacity:.6;cursor:wait}.thankyou{padding:48px 12px;text-align:center}.thankyou h2{font-size:23px;font-weight:650;margin:0 0 10px}.thankyou p{color:var(--sub);margin:0}.msg{margin-top:16px;color:#244773;background:#ecf3fd;border-radius:10px;padding:13px 15px;font-size:14px;display:none}.msg.show{display:block}
 .policy{margin:15px 4px 0;color:var(--sub);font-size:12px;line-height:1.55}
-@media(max-width:600px){header{padding-top:18px;gap:7px}.lang{gap:1px;padding:3px}.lang button{font-size:12px;padding:7px 7px}.lang select{font-size:12px;min-width:82px;max-width:92px;padding:7px 2px}.options{grid-template-columns:1fr}form{padding:19px 17px}.hero h1{font-size:22px}.container{width:calc(100% - 24px)}fieldset+fieldset{margin-top:20px;padding-top:20px}}
+@media(max-width:600px){header{padding-top:18px;gap:7px}.lang{gap:1px;padding:3px}.lang button{font-size:12px;padding:7px 7px}.lang .more-button{font-size:12px;min-width:55px;padding:7px 6px}.lang .lang-choice{font-size:12px}.options{grid-template-columns:1fr}form{padding:19px 17px}.hero h1{font-size:22px}.container{width:calc(100% - 24px)}fieldset+fieldset{margin-top:20px;padding-top:20px}}
 </style>
 </head>
 <body>
 <div class="container">
-<header><div class="logo"><span class="brand-zug">Zug</span><span class="brand-pad">Pad</span></div><nav class="lang" aria-label="Language"><button id="en" class="active" type="button" aria-pressed="true">English</button><button id="he" type="button" aria-pressed="false">עברית</button><select id="extraLang" aria-label="Other languages"><option value="">More</option><option value="yi">ייִדיש</option><option value="ru">Русский</option><option value="fr">Français</option><option value="es">Español</option></select></nav></header>
+<header><div class="logo"><span class="brand-zug">Zug</span><span class="brand-pad">Pad</span></div><nav class="lang" aria-label="Language"><button id="en" class="active" type="button" aria-pressed="true">English</button><button id="he" type="button" aria-pressed="false">עברית</button><div class="lang-more"><button id="moreLang" class="more-button" type="button" aria-expanded="false" aria-controls="langMenu" aria-label="More languages">More <span class="chevron" aria-hidden="true"></span></button><div id="langMenu" class="lang-menu" hidden><button type="button" class="lang-choice" data-lang="yi" aria-pressed="false">ייִדיש</button><button type="button" class="lang-choice" data-lang="ru" aria-pressed="false">Русский</button><button type="button" class="lang-choice" data-lang="fr" aria-pressed="false">Français</button><button type="button" class="lang-choice" data-lang="es" aria-pressed="false">Español</button></div></div></nav></header>
 <section class="hero"><h1 id="heading"></h1><p id="intro"></p><div class="meta"><span id="meta1"></span><span id="meta2"></span></div></section>
 <div class="demo" id="demo" hidden></div>
 <form id="survey" novalidate></form>
@@ -96,9 +96,9 @@ function render(){
   b.classList.toggle('active',k===language);
   b.setAttribute('aria-pressed',String(k===language));
  }
- const extraSelect=document.getElementById('extraLang');
-  extraSelect.value=['yi','ru','fr','es'].includes(language)?language:'';
-  extraSelect.classList.toggle('active',!!extraSelect.value);
+ const moreButton=document.getElementById('moreLang');
+ moreButton.classList.toggle('active',['yi','ru','fr','es'].includes(language));
+ document.querySelectorAll('.lang-choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===language)));
   if(isSubmitted){renderThanks();return;}
  root.innerHTML='';
  for(let i=0;i<d.questions.length;i++){
@@ -258,7 +258,23 @@ root.addEventListener('submit',async function(e){
 });
 document.getElementById('en').addEventListener('click',()=>{language='en';render()});
 document.getElementById('he').addEventListener('click',()=>{language='he';render()});
-document.getElementById('extraLang').addEventListener('change',e=>{if(dict[e.target.value]){language=e.target.value;render()}});
+const moreLang=document.getElementById('moreLang'),langMenu=document.getElementById('langMenu');
+function closeLanguageMenu(){langMenu.hidden=true;moreLang.setAttribute('aria-expanded','false')}
+moreLang.addEventListener('click',()=>{
+ const opening=langMenu.hidden;
+ langMenu.hidden=!opening;
+ moreLang.setAttribute('aria-expanded',String(opening));
+ if(opening)langMenu.querySelector('button').focus();
+});
+document.querySelectorAll('.lang-choice').forEach(b=>b.addEventListener('click',()=>{
+ if(dict[b.dataset.lang]){language=b.dataset.lang;closeLanguageMenu();render()}
+}));
+document.getElementById('en').addEventListener('click',closeLanguageMenu);
+document.getElementById('he').addEventListener('click',closeLanguageMenu);
+document.addEventListener('click',e=>{if(!e.target.closest('.lang-more'))closeLanguageMenu()});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!langMenu.hidden){closeLanguageMenu();moreLang.focus()}
+});
 render();
 </script>
 </body></html>
