@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<meta name="robots" content="noindex,nofollow" />
+<title>ZugPad — Shadchan Survey</title>
+<style>
+:root{--ink:#26364d;--sub:#5e6c7e;--blue:#3c68b5;--pale:#ecf3fd;--line:#dde6f1;--paper:#fff;--back:#f7f9fc}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--back);font-size:15px;line-height:1.48}
+.container{width:min(100% - 32px,750px);margin:0 auto;padding-bottom:48px}
+header{padding:22px 0 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;direction:rtl}
+.logo{font-size:18px;font-weight:600;letter-spacing:0;white-space:nowrap;color:var(--sub);display:flex;align-items:baseline;gap:0;direction:ltr}.logo .brand-pad{color:#6A82B4}
+.lang{display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--line);background:white;border-radius:30px;direction:ltr;flex-shrink:0}.lang button{padding:7px 10px;border:0;border-radius:20px;background:transparent;color:var(--sub);cursor:pointer;white-space:nowrap;font:inherit;font-size:13px}.lang button.active{background:var(--pale);color:var(--blue);font-weight:750}.lang :focus-visible{outline:2px solid #799add;outline-offset:2px}.lang-more{position:relative;direction:ltr}.lang .more-button{display:flex;align-items:center;justify-content:center;gap:5px;border-radius:20px;min-width:65px}.lang .more-button .chevron{width:6px;height:6px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:translateY(-2px) rotate(45deg);flex-shrink:0}.lang .more-button[aria-expanded="true"] .chevron{transform:translateY(2px) rotate(225deg)}.lang-menu{position:absolute;z-index:50;top:calc(100% + 9px);left:0;min-width:165px;display:grid;gap:3px;padding:7px;background:white;border:1px solid var(--line);border-radius:16px;box-shadow:0 9px 25px #142d5225}.lang-menu[hidden]{display:none}.lang .lang-choice{width:100%;text-align:left;border-radius:20px;padding:9px 12px;font-size:13px}.lang .lang-choice:hover{background:#f7faff}.lang .lang-choice[aria-pressed="true"]{background:var(--pale);color:var(--blue);font-weight:750}
+.hero{margin-bottom:17px}.hero h1{margin:0 0 9px;font-size:clamp(21px,3vw,25px);font-weight:650;line-height:1.3;letter-spacing:-.3px}.hero p{margin:0 0 11px;color:var(--sub);max-width:630px}.meta{display:flex;gap:14px;flex-wrap:wrap;color:#365e9e;font-size:13px;font-weight:650}
+.demo{background:#e9f1fc;color:#244773;border:1px solid #cbdcf3;border-radius:12px;padding:11px 14px;font-size:13px;margin:15px 0}
+form{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:0 12px 30px #142d5208;padding:25px 27px}
+fieldset{border:0;padding:0;margin:0;min-width:0}fieldset+fieldset{border-top:1px solid #e9eef5;margin-top:22px;padding-top:22px}
+legend{width:100%;font-size:17px;font-weight:690;line-height:1.45;padding:0;margin:0 0 10px}.num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;background:var(--pale);color:var(--blue);border-radius:50%;font-size:13px;margin-inline-end:8px;vertical-align:middle}
+.hint{font-size:13px;color:var(--sub);margin:0 0 12px}.options{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.option{display:flex;gap:9px;align-items:center;min-height:47px;padding:9px 12px;border:1px solid var(--line);border-radius:11px;cursor:pointer;line-height:1.3;user-select:none}
+.option:hover{background:#f8fbff;border-color:#a8bfe6}.option:has(input:checked){background:var(--pale);border-color:#8aa9da;color:#234977;font-weight:600}.option:has(input:focus-visible){outline:3px solid #799add;outline-offset:2px}
+.option input{accent-color:var(--blue);width:17px;height:17px;margin:0;flex-shrink:0}
+textarea{display:block;width:100%;border:1px solid var(--line);border-radius:12px;font:inherit;padding:13px;background:#fbfcff;color:var(--ink);min-height:88px;resize:vertical}textarea:focus{outline:2px solid #91ade0}
+.other-detail{margin-top:11px;padding:12px 14px;background:#f8fbff;border:1px solid var(--line);border-radius:11px}
+.other-detail[hidden]{display:none}
+.other-detail label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}
+.other-detail textarea{min-height:67px}
+footer{padding-top:22px}.safety{color:var(--sub);font-size:13px;margin:0 0 17px}.submit{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:13px 28px;cursor:pointer;min-height:48px}.submit:hover{background:#32589a}
+.submit:disabled{opacity:.6;cursor:wait}.thankyou{padding:48px 12px;text-align:center}.thankyou h2{font-size:23px;font-weight:650;margin:0 0 10px}.thankyou p{color:var(--sub);margin:0}.msg{margin-top:16px;color:#244773;background:#ecf3fd;border-radius:10px;padding:13px 15px;font-size:14px;display:none}.msg.show{display:block}
+.policy{margin:15px 4px 0;color:var(--sub);font-size:12px;line-height:1.55}
+@media(max-width:600px){header{padding-top:18px;gap:7px}.lang{gap:1px;padding:3px}.lang button{font-size:12px;padding:7px 7px}.lang .more-button{font-size:12px;min-width:55px;padding:7px 6px}.lang .lang-choice{font-size:12px}.options{grid-template-columns:1fr}form{padding:19px 17px}.hero h1{font-size:22px}.container{width:calc(100% - 24px)}fieldset+fieldset{margin-top:20px;padding-top:20px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header><div class="logo"><span class="brand-zug">Zug</span><span class="brand-pad">Pad</span></div><nav class="lang" aria-label="Language"><button id="en" class="active" type="button" aria-pressed="true">English</button><button id="he" type="button" aria-pressed="false">עברית</button><div class="lang-more"><button id="moreLang" class="more-button" type="button" aria-expanded="false" aria-controls="langMenu" aria-label="More languages">More <span class="chevron" aria-hidden="true"></span></button><div id="langMenu" class="lang-menu" hidden><button type="button" class="lang-choice" data-lang="yi" aria-pressed="false">ייִדיש</button><button type="button" class="lang-choice" data-lang="ru" aria-pressed="false">Русский</button><button type="button" class="lang-choice" data-lang="fr" aria-pressed="false">Français</button><button type="button" class="lang-choice" data-lang="es" aria-pressed="false">Español</button></div></div></nav></header>
+<section class="hero"><h1 id="heading"></h1><p id="intro"></p><div class="meta"><span id="meta1"></span><span id="meta2"></span></div></section>
+<div class="demo" id="demo" hidden></div>
+<form id="survey" novalidate></form>
+<div class="policy" id="policy"></div>
+</div>
+<script src="translations.js"></script>
+<script>
+'use strict';
+const dict={
+ en:{heading:'A short survey about your shidduch work',intro:'I’m exploring ZugPad, an organizer for shadchanim. I’d like to understand how you keep track of your shidduch work and what makes it difficult.',meta1:'About 2–3 minutes',meta2:'No name or sign-in needed',demo:'Preview of the revised questions. Submitting answers is disabled until the Google Sheets update is ready.',policy:'Responses are stored in a private Google Sheet. No names or emails are requested. Google and GitHub may process technical data to serve the form. Please do not include identifying details about singles or families.',submit:'Submit',done:'Thank you! Your answers were received.',sending:'Sending…',sendError:'Could not save your answers. Please try again.',empty:'Please answer at least one question before submitting.',error:'Please choose no more than two answers where indicated.',other:'Something else',specify:'Please specify (optional)',otherPlaceholder:'You can type your answer here…',placeholder:'One short example is enough (optional). Please don’t include identifying details.',
+ questions:[
+ {"id":"tools","type":"checks","title":"How do you currently keep information about people and shidduch suggestions?","hint":"Select all that apply.","options":[["wa","WhatsApp or other messages"],["email","Email"],["paper","Notebook or paper"],["sheet","Excel or other spreadsheets"],["notes","A notes app (Google Keep, Apple Notes, etc.)"],["app","A shidduch app or website"],["memory","Memory"],["other","Something else"]]},
+ {"id":"incident","type":"text","title":"Can you describe a recent situation where something took too much time or something important was overlooked?","hint":"If you found a way to handle it, please mention it. One or two sentences are enough. Please don't include names or identifying details."},
+ {"id":"friction","type":"checks","title":"In the past four weeks, which tasks, if any, caused you the most difficulty in your shidduch work?","hint":"Choose up to two.","max":2,"options":[["intake","Saving and updating profiles or contact details"],["find","Finding information about people in my records"],["candidates","Finding suitable people to suggest"],["duplicates","Avoiding repeated or duplicate suggestions"],["status","Tracking suggestions, answers, and progress"],["followup","Remembering whom to contact or follow up with"],["sharing","Coordinating with families or other shadchanim"],["none","None of these"],["other","Something else"]]},
+ {"id":"workload","type":"radio","title":"In the past four weeks, for approximately how many singles did you review information, make suggestions, or follow up?","hint":"Choose one. Count each person once, even if you contacted them several times. Don't count profiles kept only on file.","options":[["none","None"],["1_5","1–5"],["6_20","6–20"],["21_50","21–50"],["over_50","More than 50"],["unsure","Not sure"]]},
+ {"id":"device_current","type":"radio","title":"For keeping or sharing shidduch information, which do you currently use?","hint":"Choose one.","options":[["phone","Mainly my phone"],["desktop","Mainly a computer"],["both","Phone and computer about equally"],["neither","Neither — mainly paper or memory"],["unsure","Not sure"]]},
+ {"id":"barrier","type":"checks","title":"What, if anything, might make you decide not to try a new shidduch organizer?","hint":"Choose up to two.","max":2,"options":[["double","Having to enter the same information twice"],["learn","Time needed to learn how to use it"],["move","Having to move my existing records"],["privacy","Privacy or confidentiality concerns"],["filter","It might not work on my device or internet filter"],["enough","I prefer my current methods"],["none","Nothing in particular"],["other","Something else"]]}
+ ]},
+ he:{heading:'שאלון קצר על עבודת השידוכים',intro:'אני בודק אפשרות לפתח את ZugPad, כלי לארגון עבודת השידוכים עבור שדכנים ושדכניות. אשמח להבין איך אתם מנהלים את המידע ומה מקשה עליכם.',meta1:'כשתי דקות עד שלוש',meta2:'ללא צורך בשם או בהרשמה',demo:'זו תצוגה מקדימה של השאלות המעודכנות. שליחת תשובות תופעל לאחר עדכון השמירה בגוגל.',policy:'התשובות נשמרות בגיליון Google פרטי. אין צורך בשם או בדוא״ל. Google ו-GitHub עשויות לעבד מידע טכני כדי להציג את השאלון. נא לא לכלול פרטים מזהים על מועמדים או משפחות.',submit:'שליחת תשובות',done:'תודה! התשובות התקבלו ונשמרו.',sending:'שולח…',sendError:'לא הצלחנו לשמור את התשובות. אנא נסו שוב.',empty:'אנא ענו לפחות על שאלה אחת לפני השליחה.',error:'בשאלות המסומנות אפשר לבחור עד שתי תשובות בלבד.',other:'משהו אחר',specify:'אפשר לפרט כאן (רשות)',otherPlaceholder:'כתבו כאן את תשובתכם…',placeholder:'מספיק משפט קצר (רשות). בבקשה בלי פרטים מזהים.',
+ questions:[
+ {"id":"tools","type":"checks","title":"איך אתם שומרים כיום מידע על מועמדים ועל הצעות שידוך?","hint":"אפשר לבחור כמה תשובות.","options":[["wa","וואטסאפ או הודעות אחרות"],["email","דואר אלקטרוני"],["paper","מחברת או דפים"],["sheet","אקסל או גיליונות נתונים אחרים"],["notes","אפליקציית פתקים (Google Keep, Apple Notes וכדומה)"],["app","אתר או אפליקציה לשידוכים"],["memory","מהזיכרון"],["other","משהו אחר"]]},
+ {"id":"incident","type":"text","title":"תוכלו לתאר מקרה מהזמן האחרון שבו משהו לקח יותר מדי זמן או שדבר חשוב התפספס?","hint":"אם מצאתם דרך להתמודד עם המקרה, נשמח לשמוע. מספיק משפט או שניים. בבקשה בלי שמות או פרטים מזהים."},
+ {"id":"friction","type":"checks","title":"בארבעת השבועות האחרונים, אילו משימות, אם בכלל, היו לכם הקשות ביותר בעבודת השידוכים?","hint":"בחרו עד שתי תשובות.","max":2,"options":[["intake","שמירה ועדכון של פרופילים או פרטי קשר"],["find","מציאת מידע על אנשים שכבר מופיעים ברשומות שלי"],["candidates","מציאת מועמדים מתאימים להצעה"],["duplicates","מניעת הצעות חוזרות או כפולות"],["status","מעקב אחר הצעות, תשובות והתקדמות"],["followup","לזכור למי צריך לפנות או לחזור"],["sharing","תיאום עם משפחות או עם שדכנים אחרים"],["none","אף אחת מהאפשרויות"],["other","משהו אחר"]]},
+ {"id":"workload","type":"radio","title":"בארבעת השבועות האחרונים, לגבי כמה רווקים ורווקות בערך בדקתם מידע, הצעתם שידוכים או ביצעתם מעקב?","hint":"בחרו תשובה אחת. ספרו כל אדם פעם אחת, גם אם פניתם אליו כמה פעמים. אין צורך לספור פרופילים שרק שמורים אצלכם.","options":[["none","אף אחד"],["1_5","1–5"],["6_20","6–20"],["21_50","21–50"],["over_50","יותר מ־50"],["unsure","לא בטוח/ה"]]},
+ {"id":"device_current","type":"radio","title":"במה אתם משתמשים כיום כדי לשמור או לשתף מידע על שידוכים?","hint":"בחרו תשובה אחת.","options":[["phone","בעיקר בטלפון"],["desktop","בעיקר במחשב"],["both","בטלפון ובמחשב במידה דומה"],["neither","באף אחד מהם — בעיקר בנייר או בזיכרון"],["unsure","לא בטוח/ה"]]},
+ {"id":"barrier","type":"checks","title":"מה, אם בכלל, עלול לגרום לכם להחליט לא לנסות כלי חדש לארגון שידוכים?","hint":"בחרו עד שתי תשובות.","max":2,"options":[["double","הצורך להזין את אותו המידע פעמיים"],["learn","הזמן הדרוש כדי ללמוד להשתמש בכלי"],["move","הצורך להעביר את הרשומות הקיימות שלי"],["privacy","חששות לפרטיות ולשמירת סודיות"],["filter","ייתכן שלא יעבוד במכשיר שלי או עם סינון האינטרנט"],["enough","אני מעדיף/ה את השיטות הנוכחיות שלי"],["none","שום דבר מסוים"],["other","משהו אחר"]]}
+ ]}
+};
+// Build four additional languages from the same option IDs and question structure.
+const extras=window.zugpadExtraTranslations||{};
+for (const [code,t] of Object.entries(extras)) {
+ const questions=dict.en.questions;
+ if (t.questions.length!==questions.length || t.questions.some((q,i)=>q[2].length!==(questions[i].options||[]).length)) throw new Error('Translation options mismatch: '+code);
+ dict[code]={...t,questions:questions.map((q,i)=>({...q,title:t.questions[i][0],hint:t.questions[i][1],...(q.options?{options:q.options.map(([id],j)=>[id,t.questions[i][2][j]])}:{})}))};
+}
+dict.en.safety='Research only. Every question may be skipped.';
+dict.en.thanksDetail='Thank you for sharing your experience.';
+dict.he.safety='השאלות הן לצורך מחקר בלבד. כל שאלה ניתנת לדילוג.';
+dict.he.thanksDetail='תודה על הזמן שהקדשתם לשיתוף הניסיון שלכם.';
+let language='en', isSending=false, isSubmitted=false;
+const root=document.getElementById('survey'), answers={};
+const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwj-CnzBCJSxC-vU-z42cEYijvzH9uCLbwGgIEuvz-NKngNGYEDaQHMYalz2RaSxMURuw/exec';
+// Preview only. No v2 submissions while the deployed backend is still v1.
+const isHosted = false;
+const submissionId='s'+Date.now().toString(36)+Math.random().toString(36).slice(2,14);
+function el(s){return document.createElement(s)};
+function collect(){root.querySelectorAll('input,textarea').forEach(e=>{if(e.type==='checkbox'){if(!answers[e.name])answers[e.name]=[];if(e.checked&&!answers[e.name].includes(e.value))answers[e.name].push(e.value)}else if(e.type==='radio'){if(e.checked)answers[e.name]=e.value}else if(e.tagName==='TEXTAREA')answers[e.name]=e.value});}
+function render(){
+ const d=dict[language];
+ document.documentElement.lang=language;
+ document.documentElement.dir=(language==='he'||language==='yi')?'rtl':'ltr';
+ for(const k of ['heading','intro','meta1','meta2','policy'])document.getElementById(k).textContent=d[k];
+ const demo=document.getElementById('demo');
+ demo.hidden=isHosted;
+ demo.textContent=d.demo;
+ for(const k of ['en','he']){
+  const b=document.getElementById(k);
+  b.classList.toggle('active',k===language);
+  b.setAttribute('aria-pressed',String(k===language));
+ }
+ const moreButton=document.getElementById('moreLang');
+ moreButton.classList.toggle('active',['yi','ru','fr','es'].includes(language));
+ document.querySelectorAll('.lang-choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===language)));
+  if(isSubmitted){renderThanks();return;}
+ root.innerHTML='';
+ for(let i=0;i<d.questions.length;i++){
+  const q=d.questions[i],fs=el('fieldset'),legend=el('legend'),num=el('span');
+  num.className='num';num.textContent=i+1;
+  legend.append(num,document.createTextNode(q.title));fs.append(legend);
+  const hint=el('p');hint.className='hint';hint.textContent=q.hint;fs.append(hint);
+  if(q.type==='text'){
+   const input=el('textarea');input.name=q.id;input.id=q.id;
+   input.placeholder=d.placeholder;input.maxLength=500;input.value=answers[q.id]||'';input.dir='auto';
+   input.addEventListener('input',()=>{answers[q.id]=input.value});fs.append(input);
+  }else{
+   const options=el('div');options.className='options';
+   let refreshOther=()=>{};
+   for(const [id,label] of q.options){
+    const wrapper=el('label');wrapper.className='option';
+    const input=el('input');input.type=q.type==='checks'?'checkbox':'radio';
+    input.name=q.id;input.value=id;
+    input.checked=q.type==='checks'?(answers[q.id]||[]).includes(id):answers[q.id]===id;
+    input.addEventListener('change',()=>{
+     if(q.type==='radio'){
+      answers[q.id]=id;
+     }else{
+      let selected=[...(answers[q.id]||[])];
+      if(input.checked){
+       if(id==='none')selected=['none'];
+       else{
+        selected=selected.filter(v=>v!=='none');
+        if(q.max && selected.length>=q.max){
+         input.checked=false;showMessage(d.error);return;
+        }
+        selected.push(id);
+       }
+      }else selected=selected.filter(v=>v!==id);
+      answers[q.id]=selected;
+      options.querySelectorAll('input').forEach(x=>{x.checked=selected.includes(x.value)});
+     }
+     refreshOther();hideMessage();
+    });
+    wrapper.append(input,document.createTextNode(label));options.append(wrapper);
+   }
+   fs.append(options);
+   if(q.options.some(opt=>opt[0]==='other')){
+    const otherKey=q.id+'_other',box=el('div'),label=el('label'),input=el('textarea');
+    box.className='other-detail';
+    input.id=otherKey;input.name=otherKey;input.maxLength=250;input.rows=2;input.dir='auto';
+    input.placeholder=d.otherPlaceholder;input.value=answers[otherKey]||'';
+    label.htmlFor=otherKey;label.textContent=d.specify;
+    input.addEventListener('input',()=>{answers[otherKey]=input.value});
+    box.append(label,input);fs.append(box);
+    refreshOther=()=>{
+     const selected=q.type==='checks'?(answers[q.id]||[]).includes('other'):answers[q.id]==='other';
+     box.hidden=!selected;
+     if(!selected){delete answers[otherKey];input.value=''}
+    };
+    refreshOther();
+   }
+  }
+  root.append(fs);
+ }
+ const footer=el('footer'),safe=el('p');safe.className='safety';
+ safe.textContent=d.safety;
+ const button=el('button');button.className='submit';button.type='submit';button.disabled=isSending;button.textContent=isSending?d.sending:d.submit;
+ footer.append(safe,button);root.append(footer);
+ const msg=el('div');msg.className='msg';msg.id='message';msg.setAttribute('role','status');root.append(msg);
+}
+function showMessage(s){let node=document.getElementById('message');node.textContent=s;node.classList.add('show');node.scrollIntoView({behavior:'smooth',block:'nearest'})}function hideMessage(){let node=document.getElementById('message');if(node){node.classList.remove('show');node.textContent=''}}
+function renderThanks(){
+ const d=dict[language];
+ root.innerHTML='';
+ const card=el('section');card.className='thankyou';
+ const heading=el('h2');heading.textContent=d.done;
+ const detail=el('p');
+ detail.textContent=d.thanksDetail;
+ card.append(heading,detail);root.append(card);
+}
+function hasAnswers(){
+ return Object.entries(answers).some(([key,val])=>
+  key.endsWith('_other') ? !!String(val||'').trim() :
+  Array.isArray(val) ? val.length>0 : !!String(val||'').trim());
+}
+// Apps Script's doPost answers {ok:true} only after the row is written and
+// flushed, so reading that answer is the confirmation (one round trip, no
+// polling). A text/plain POST needs no CORS preflight, and credentials:'omit'
+// keeps Google account cookies (multi-account sign-in) out of every request.
+// If the answer can't be read, confirm the ID via the read-only status lookup.
+// No confirmation = no success screen.
+let attemptNumber = 0;
+async function readBackend(url, options, timeoutMs) {
+ const controller=new AbortController();
+ const timer=setTimeout(()=>controller.abort(),timeoutMs);
+ try{
+  const res=await fetch(url,{...options,credentials:'omit',signal:controller.signal});
+  return res.ok?await res.text():null;
+ }catch(err){return null}
+ finally{clearTimeout(timer)}
+}
+async function postAnswers(payload) {
+ const text=await readBackend(BACKEND_URL,{method:'POST',
+  headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)},15000);
+ try{return !!text&&JSON.parse(text).ok===true}catch(err){return false}
+}
+// Same lookup as JSONP, read without cookies; null = unreadable, so try JSONP.
+async function savedStatusFetch(id, timeoutMs) {
+ const callback='zugpadStatus_'+Date.now()+'_'+(++attemptNumber);
+ const query=new URLSearchParams({zugpad_status:id,zugpad_callback:callback});
+ const text=await readBackend(BACKEND_URL+'?'+query.toString(),{},timeoutMs);
+ const match=/\(\{"saved":(true|false)\}\);?\s*$/.exec(text||'');
+ return match?match[1]==='true':null;
+}
+function savedStatusOnce(id, timeoutMs = 5500) {
+ return new Promise(resolve => {
+  const callback='zugpadStatus_'+Date.now()+'_'+(++attemptNumber);
+  const script=el('script');let done=false;
+  let timer;
+  function finish(result) {
+   if(done)return;
+   done=true;clearTimeout(timer);
+   delete window[callback];script.remove();resolve(result);
+  }
+  window[callback]=result=>finish(!!(result&&result.saved));
+  script.onerror=()=>finish(false);
+  timer=setTimeout(()=>finish(false),timeoutMs);
+  const query=new URLSearchParams({zugpad_status:id,zugpad_callback:callback});
+  script.src=BACKEND_URL+'?'+query.toString();
+  document.head.appendChild(script);
+ });
+}
+async function confirmSaved(id) {
+ const until=Date.now()+8000;
+ while(Date.now()<until) {
+  let saved=await savedStatusFetch(id,Math.min(5500,until-Date.now()));
+  if(saved===null&&Date.now()<until)saved=await savedStatusOnce(id,Math.min(5500,until-Date.now()));
+  if(saved)return true;
+  if(navigator.onLine===false||Date.now()+1300>=until)break;
+  await new Promise(resolve=>setTimeout(resolve,1300));
+ }
+ return false;
+}
+root.addEventListener('submit',async function(e){
+ e.preventDefault();
+ if(isSending || isSubmitted)return;
+ const d=dict[language];
+ if(!hasAnswers()){showMessage(d.empty);return;}
+ if(!isHosted){showMessage(d.demo);return;}
+ isSending=true;hideMessage();
+ const btn=root.querySelector('.submit');
+ if(btn){btn.disabled=true;btn.textContent=d.sending;}
+ const payload={surveyVersion:'v2',submissionId:submissionId,language:language,
+  answers:JSON.parse(JSON.stringify(answers))};
+ // Offline phones fail at once; retries reuse submissionId (server dedupes).
+ const verified=navigator.onLine!==false&&
+  (await postAnswers(payload)||await confirmSaved(submissionId));
+ isSending=false;
+ if(verified){isSubmitted=true;render();}
+ else {render();showMessage(dict[language].sendError);}
+});
+document.getElementById('en').addEventListener('click',()=>{language='en';render()});
+document.getElementById('he').addEventListener('click',()=>{language='he';render()});
+const moreLang=document.getElementById('moreLang'),langMenu=document.getElementById('langMenu');
+function closeLanguageMenu(){langMenu.hidden=true;moreLang.setAttribute('aria-expanded','false')}
+moreLang.addEventListener('click',()=>{
+ const opening=langMenu.hidden;
+ langMenu.hidden=!opening;
+ moreLang.setAttribute('aria-expanded',String(opening));
+ if(opening)langMenu.querySelector('button').focus();
+});
+document.querySelectorAll('.lang-choice').forEach(b=>b.addEventListener('click',()=>{
+ if(dict[b.dataset.lang]){language=b.dataset.lang;closeLanguageMenu();render()}
+}));
+document.getElementById('en').addEventListener('click',closeLanguageMenu);
+document.getElementById('he').addEventListener('click',closeLanguageMenu);
+document.addEventListener('click',e=>{if(!e.target.closest('.lang-more'))closeLanguageMenu()});
+document.addEventListener('keydown',e=>{
+ if(e.key==='Escape'&&!langMenu.hidden){closeLanguageMenu();moreLang.focus()}
+});
+render();
+</script>
+</body></html>
