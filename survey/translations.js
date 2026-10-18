@@ -1,8 +1,8 @@
-// Built-in ZugPad translations, survey v2. Option IDs and order are defined in index.html.
+// Built-in ZugDesk translations, survey v2. Option IDs and order are defined in index.html.
 window.zugpadExtraTranslations = {
   "ru": {
     "heading": "Короткий опрос о вашей работе в сфере шидухов",
-    "intro": "Я изучаю, как шадханы ведут свою работу и что вызывает трудности. Ваш опыт поможет улучшить ZugPad — органайзер для шидухов.",
+    "intro": "Я изучаю, как шадханы ведут свою работу и что вызывает трудности. Ваш опыт поможет улучшить ZugDesk — органайзер для шидухов.",
     "meta1": "Около 2–3 минут",
     "meta2": "Без имени и регистрации",
     "demo": "Предварительный просмотр новой анкеты. Отправка ответов пока отключена.",
@@ -98,11 +98,11 @@ window.zugpadExtraTranslations = {
     "copyLink": "Копировать ссылку",
     "copied": "Ссылка скопирована",
     "copyFailed": "Скопируйте ссылку из адресной строки браузера.",
-    "shareMessage": "Короткий опрос для шадханов. Имя и регистрация не требуются. Доступен на шести языках:"
+    "shareMessage": "ZugDesk: короткий опрос для шадханов. Имя и регистрация не требуются. Доступен на шести языках:"
   },
   "fr": {
     "heading": "Un court questionnaire sur votre activité de chadkhanout",
-    "intro": "Je souhaite comprendre comment les chadkhanim organisent leur travail et ce qui leur pose difficulté. Votre expérience aidera à orienter ZugPad, un outil d'organisation des chiddoukhim.",
+    "intro": "Je souhaite comprendre comment les chadkhanim organisent leur travail et ce qui leur pose difficulté. Votre expérience aidera à orienter ZugDesk, un outil d'organisation des chiddoukhim.",
     "meta1": "Environ 2 à 3 minutes",
     "meta2": "Sans nom ni inscription",
     "demo": "Aperçu du nouveau questionnaire. L'envoi des réponses n'est pas encore activé.",
@@ -198,11 +198,11 @@ window.zugpadExtraTranslations = {
     "copyLink": "Copier le lien",
     "copied": "Lien copié",
     "copyFailed": "Veuillez copier le lien dans la barre d'adresse de votre navigateur.",
-    "shareMessage": "Un court questionnaire pour les chadkhanim. Aucun nom ni inscription nécessaire. Disponible en six langues :"
+    "shareMessage": "ZugDesk : un court questionnaire pour les chadkhanim. Aucun nom ni inscription nécessaire. Disponible en six langues :"
   },
   "es": {
     "heading": "Una breve encuesta sobre tu trabajo de shidujim",
-    "intro": "Quiero entender cómo organizan su trabajo los shadjaním y qué dificultades encuentran. Tu experiencia ayudará a orientar ZugPad, una herramienta para organizar shidujim.",
+    "intro": "Quiero entender cómo organizan su trabajo los shadjaním y qué dificultades encuentran. Tu experiencia ayudará a orientar ZugDesk, una herramienta para organizar shidujim.",
     "meta1": "Unos 2–3 minutos",
     "meta2": "Sin nombre ni registro",
     "demo": "Vista previa del nuevo cuestionario. El envío de respuestas aún está desactivado.",
@@ -298,11 +298,11 @@ window.zugpadExtraTranslations = {
     "copyLink": "Copiar enlace",
     "copied": "Enlace copiado",
     "copyFailed": "Copia el enlace desde la barra de direcciones de tu navegador.",
-    "shareMessage": "Una breve encuesta para shadjaním. No requiere nombre ni registro. Disponible en seis idiomas:"
+    "shareMessage": "ZugDesk: una breve encuesta para shadjaním. No requiere nombre ni registro. Disponible en seis idiomas:"
   },
   "yi": {
     "heading": "אַ קורצע אַנקעטע וועגן אייער שידוכים־אַרבעט",
-    "intro": "איך וויל פֿאַרשטיין ווי שדכנים אָרגאַניזירן זייער אַרבעט און וואָס מאַכט שוועריקייטן. אייער דערפֿאַרונג וועט העלפֿן אויספֿאָרעמען ZugPad, אַ געצייג פֿאַר שידוכים.",
+    "intro": "איך וויל פֿאַרשטיין ווי שדכנים אָרגאַניזירן זייער אַרבעט און וואָס מאַכט שוועריקייטן. אייער דערפֿאַרונג וועט העלפֿן אויספֿאָרעמען ZugDesk, אַ געצייג פֿאַר שידוכים.",
     "meta1": "בערך 2–3 מינוט",
     "meta2": "אָן נאָמען אָדער רעגיסטראַציע",
     "demo": "דאָס איז אַ פֿאָרויסקוק פֿון דער נײַער אַנקעטע. ענטפֿערס ווערן נאָך נישט געשיקט.",
@@ -398,6 +398,6 @@ window.zugpadExtraTranslations = {
     "copyLink": "קאָפּירן לינק",
     "copied": "דער לינק איז קאָפּירט",
     "copyFailed": "ביטע קאָפּירט דעם לינק פֿון דער אַדרעס־שורה.",
-    "shareMessage": "אַ קורצער פֿראַגעבויגן פֿאַר שדכנים. אָן נאָמען אָדער רעגיסטראַציע. אין זעקס שפּראַכן:"
+    "shareMessage": "ZugDesk: אַ קורצער פֿראַגעבויגן פֿאַר שדכנים. אָן נאָמען אָדער רעגיסטראַציע. אין זעקס שפּראַכן:"
   }
 };
