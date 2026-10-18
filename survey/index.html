@@ -5,7 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="color-scheme" content="light" />
 <meta name="robots" content="noindex,nofollow" />
-<title>ZugPad — Shadchan Survey</title>
+<title>ZugPad — A short survey for shadchanim</title>
+<link rel="canonical" href="https://shiduchim.github.io/livesite/survey/" />
+<meta name="description" content="Share how you organize shidduch work. A short survey in six languages. No name or sign-in needed." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="ZugPad" />
+<meta property="og:title" content="ZugPad | Short survey for shadchanim" />
+<meta property="og:description" content="Share how you organize shidduch work. A short survey in six languages. No name or sign-in needed." />
+<meta property="og:url" content="https://shiduchim.github.io/livesite/survey/" />
+<meta property="og:image" content="https://shiduchim.github.io/livesite/survey/social-preview.png" />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="400" />
+<meta property="og:image:height" content="210" />
+<meta property="og:image:alt" content="ZugPad — A short survey for shadchanim, available in six languages" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="Share your experience in a short, six-language survey. No name or sign-in needed." />
+<meta name="twitter:image" content="https://shiduchim.github.io/livesite/survey/social-preview.png" />
 <style>
 :root{--ink:#26364d;--sub:#5e6c7e;--blue:#3c68b5;--pale:#ecf3fd;--line:#dde6f1;--paper:#fff;--back:#f7f9fc}
 *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif;color:var(--ink);background:var(--back);font-size:15px;line-height:1.48}
@@ -28,7 +43,7 @@ textarea{display:block;width:100%;border:1px solid var(--line);border-radius:12p
 .other-detail label{display:block;font-size:13px;font-weight:650;margin-bottom:7px}
 .other-detail textarea{min-height:67px}
 footer{padding-top:22px}.safety{color:var(--sub);font-size:13px;margin:0 0 17px}.submit{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:700;font-size:16px;padding:13px 28px;cursor:pointer;min-height:48px}.submit:hover{background:#32589a}
-.submit:disabled{opacity:.6;cursor:wait}.thankyou{padding:48px 12px;text-align:center}.thankyou h2{font-size:23px;font-weight:650;margin:0 0 10px}.thankyou p{color:var(--sub);margin:0}.msg{margin-top:16px;color:#244773;background:#ecf3fd;border-radius:10px;padding:13px 15px;font-size:14px;display:none}.msg.show{display:block}
+.submit:disabled{opacity:.6;cursor:wait}.thankyou{padding:48px 12px;text-align:center}.thankyou h2{font-size:23px;font-weight:650;margin:0 0 10px}.thankyou p{color:var(--sub);margin:0}.share-prompt{max-width:490px;margin:22px auto 15px!important}.share-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.share-button{font:inherit;font-weight:650;min-height:44px;padding:11px 18px;border-radius:12px;border:1px solid #b6c8e4;background:#fff;color:#345a99;cursor:pointer}.share-button:hover{background:#f1f6ff}.share-button:focus-visible{outline:3px solid #7e9cce;outline-offset:2px}.share-button.whatsapp{background:#eaf2ff;border-color:#aac0e3}.share-status{font-size:13px;margin-top:12px!important;min-height:20px}.msg{margin-top:16px;color:#244773;background:#ecf3fd;border-radius:10px;padding:13px 15px;font-size:14px;display:none}.msg.show{display:block}
 .policy{margin:15px 4px 0;color:var(--sub);font-size:12px;line-height:1.55}
 @media(max-width:600px){header{padding-top:18px;gap:7px}.lang{gap:1px;padding:3px}.lang button{font-size:12px;padding:7px 7px}.lang .more-button{font-size:12px;min-width:55px;padding:7px 6px}.lang .lang-choice{font-size:12px}.options{grid-template-columns:1fr}form{padding:19px 17px}.hero h1{font-size:22px}.container{width:calc(100% - 24px)}fieldset+fieldset{margin-top:20px;padding-top:20px}}
 </style>
@@ -73,10 +88,13 @@ for (const [code,t] of Object.entries(extras)) {
 }
 dict.en.safety='Research only. Every question may be skipped.';
 dict.en.thanksDetail='Thank you for sharing your experience.';
+Object.assign(dict.en,{"moreLanguages":"More","sharePrompt":"If you know another shadchan who might like to contribute, you're welcome to share this survey.","shareWhatsApp":"Share on WhatsApp","copyLink":"Copy link","copied":"Link copied","copyFailed":"Please copy the survey link from your browser.","shareMessage":"A short survey for people who help make shidduchim. No name or sign-in needed. Available in six languages:"});
 dict.he.safety='השאלות הן לצורך מחקר בלבד. כל שאלה ניתנת לדילוג.';
 dict.he.thanksDetail='תודה על הזמן שהקדשתם לשיתוף הניסיון שלכם.';
+Object.assign(dict.he,{"moreLanguages":"עוד","sharePrompt":"אם אתם מכירים שדכן או שדכנית נוספים שירצו להשתתף, אפשר להעביר להם את השאלון.","shareWhatsApp":"שיתוף בוואטסאפ","copyLink":"העתקת קישור","copied":"הקישור הועתק","copyFailed":"אפשר להעתיק את הקישור משורת הכתובת בדפדפן.","shareMessage":"שאלון קצר לשדכנים ולשדכניות. אין צורך בשם או בהרשמה. השאלון זמין בשש שפות:"});
 let language='en', isSending=false, isSubmitted=false;
 const root=document.getElementById('survey'), answers={};
+const SHARE_URL='https://shiduchim.github.io/livesite/survey/';
 const BACKEND_URL = 'https://script.google.com/macros/s/AKfycbwj-CnzBCJSxC-vU-z42cEYijvzH9uCLbwGgIEuvz-NKngNGYEDaQHMYalz2RaSxMURuw/exec';
 // Live v2 survey: backend must be deployed with surveyVersion=v2 support.
 const isHosted = location.protocol === 'https:';
@@ -97,6 +115,8 @@ function render(){
   b.setAttribute('aria-pressed',String(k===language));
  }
  const moreButton=document.getElementById('moreLang');
+ moreButton.firstChild.nodeValue=(d.moreLanguages||'More')+' ';
+ moreButton.setAttribute('aria-label',d.moreLanguages||'More languages');
  moreButton.classList.toggle('active',['yi','ru','fr','es'].includes(language));
  document.querySelectorAll('.lang-choice').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.lang===language)));
   if(isSubmitted){renderThanks();return;}
@@ -173,7 +193,19 @@ function renderThanks(){
  const heading=el('h2');heading.textContent=d.done;
  const detail=el('p');
  detail.textContent=d.thanksDetail;
- card.append(heading,detail);root.append(card);
+ const sharePrompt=el('p');sharePrompt.className='share-prompt';sharePrompt.textContent=d.sharePrompt;
+ const actions=el('div');actions.className='share-actions';
+ const whatsapp=el('button');whatsapp.type='button';whatsapp.className='share-button whatsapp';whatsapp.textContent=d.shareWhatsApp;
+ whatsapp.addEventListener('click',()=>{window.open('https://wa.me/?text='+encodeURIComponent(d.shareMessage+'\n'+SHARE_URL),'_blank','noopener,noreferrer')});
+ const copy=el('button');copy.type='button';copy.className='share-button';copy.textContent=d.copyLink;
+ const status=el('p');status.className='share-status';status.setAttribute('role','status');status.setAttribute('aria-live','polite');
+ copy.addEventListener('click',async()=>{
+  let ok=false;
+  if(navigator.clipboard?.writeText)try{await navigator.clipboard.writeText(SHARE_URL);ok=true}catch(err){}
+  if(!ok){const f=el('textarea');f.value=SHARE_URL;f.setAttribute('readonly','');f.style.position='fixed';f.style.opacity='0';document.body.appendChild(f);f.select();try{ok=document.execCommand('copy')}catch(err){}f.remove();}
+  status.textContent=ok?d.copied:d.copyFailed;
+ });
+ actions.append(whatsapp,copy);card.append(heading,detail,sharePrompt,actions,status);root.append(card);
 }
 function hasAnswers(){
  return Object.entries(answers).some(([key,val])=>

@@ -91,7 +91,14 @@ window.zugpadExtraTranslations = {
           "Другое"
         ]
       ]
-    ]
+    ],
+    "moreLanguages": "Ещё",
+    "sharePrompt": "Если вы знаете другого шадхана, который хотел бы поделиться опытом, можете переслать ему эту анкету.",
+    "shareWhatsApp": "Поделиться в WhatsApp",
+    "copyLink": "Копировать ссылку",
+    "copied": "Ссылка скопирована",
+    "copyFailed": "Скопируйте ссылку из адресной строки браузера.",
+    "shareMessage": "Короткий опрос для шадханов. Имя и регистрация не требуются. Доступен на шести языках:"
   },
   "fr": {
     "heading": "Un court questionnaire sur votre activité de chadkhanout",
@@ -184,7 +191,14 @@ window.zugpadExtraTranslations = {
           "Autre"
         ]
       ]
-    ]
+    ],
+    "moreLanguages": "Autres",
+    "sharePrompt": "Si vous connaissez d'autres chadkhanim qui aimeraient contribuer, vous pouvez leur transmettre ce questionnaire.",
+    "shareWhatsApp": "Partager sur WhatsApp",
+    "copyLink": "Copier le lien",
+    "copied": "Lien copié",
+    "copyFailed": "Veuillez copier le lien dans la barre d'adresse de votre navigateur.",
+    "shareMessage": "Un court questionnaire pour les chadkhanim. Aucun nom ni inscription nécessaire. Disponible en six langues :"
   },
   "es": {
     "heading": "Una breve encuesta sobre tu trabajo de shidujim",
@@ -277,7 +291,14 @@ window.zugpadExtraTranslations = {
           "Otra opción"
         ]
       ]
-    ]
+    ],
+    "moreLanguages": "Más",
+    "sharePrompt": "Si conoces a otros shadjaním que quieran compartir su experiencia, puedes enviarles esta encuesta.",
+    "shareWhatsApp": "Compartir por WhatsApp",
+    "copyLink": "Copiar enlace",
+    "copied": "Enlace copiado",
+    "copyFailed": "Copia el enlace desde la barra de direcciones de tu navegador.",
+    "shareMessage": "Una breve encuesta para shadjaním. No requiere nombre ni registro. Disponible en seis idiomas:"
   },
   "yi": {
     "heading": "אַ קורצע אַנקעטע וועגן אייער שידוכים־אַרבעט",
@@ -370,6 +391,13 @@ window.zugpadExtraTranslations = {
           "עפּעס אַנדערש"
         ]
       ]
-    ]
+    ],
+    "moreLanguages": "נאָך",
+    "sharePrompt": "אויב איר קענט נאָך אַ שדכן אָדער שדכנית וואָס וואָלט געוואָלט מיטטיילן אַן איבערלעבונג, קענט איר ווײַטערשיקן דעם פֿראַגעבויגן.",
+    "shareWhatsApp": "טיילן אויף וואַטסאַפּ",
+    "copyLink": "קאָפּירן לינק",
+    "copied": "דער לינק איז קאָפּירט",
+    "copyFailed": "ביטע קאָפּירט דעם לינק פֿון דער אַדרעס־שורה.",
+    "shareMessage": "אַ קורצער פֿראַגעבויגן פֿאַר שדכנים. אָן נאָמען אָדער רעגיסטראַציע. אין זעקס שפּראַכן:"
   }
 };
