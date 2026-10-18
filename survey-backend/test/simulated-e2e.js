@@ -13,10 +13,13 @@ const ROOT = path.resolve(__dirname, '../..');
 const PAGE = 'https://shiduchim.github.io/livesite/survey/';
 
 // ---- Minimal Apps Script services backed by a 2-D array ----------------------
-const LEGACY_HEADERS = ['Timestamp', 'Submission ID', 'Language', 'tools', 'tools_other', 'friction',
-  'friction_other', 'incident', 'feature', 'feature_other', 'device', 'barrier', 'barrier_other'];
+// Header names from the live Responses tab (as reported by the owner) plus likely ones for the rest.
+// "Survey version" is deliberately absent to check that a missing column is added exactly once.
+const LEGACY_HEADERS = ['Timestamp', 'Submission ID', 'Language', 'Current tools', 'Current tools (other)',
+  'Difficult tasks', 'Difficult tasks (other)', 'Recent example', 'Most useful feature', 'Most useful feature (other)',
+  'Device', 'Barriers', 'Barriers (other)', 'Recent workload (v2)', 'Current device used (v2)'];
 const LEGACY_ROW = ['2026-10-17 21:00', 'sOLDROW123456', 'en', 'wa, paper', '', 'status', '',
-  'old answer', 'search', '', 'phone', 'privacy', ''];
+  'old answer', 'search', '', 'phone', 'privacy', '', '', ''];
 let grid = [LEGACY_HEADERS.slice(), LEGACY_ROW.slice()];
 const width = () => grid.reduce((m, r) => Math.max(m, r.length), 0);
 const cell = (r, c) => (grid[r] && grid[r][c] !== undefined ? grid[r][c] : '');
@@ -41,17 +44,24 @@ const sheet = {
 const MimeType = { JSON: 'application/json', JAVASCRIPT: 'application/javascript' };
 const gas = vm.createContext({
   console,
-  SpreadsheetApp: { getActiveSpreadsheet: () => ({ getSheetByName: n => (n === 'Responses' ? sheet : null) }), flush() {} },
+  SpreadsheetApp: {
+    openByUrl: u => { assert.strictEqual(u, SHEET_URL); return { getSheetByName: n => (n === 'Responses' ? sheet : null) }; },
+    flush() {}
+  },
   LockService: { getScriptLock: () => ({ tryLock: () => true, releaseLock() {} }) },
   ContentService: { MimeType, createTextOutput: s => ({ content: s, mime: 'text/plain', setMimeType(m) { this.mime = m; return this; } }) }
 });
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/TEST_SHEET_ID/edit';
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'survey-backend/Code.gs'), 'utf8'), gas);
+assert.throws(() => gas.openSheet_(), /SPREADSHEET_URL is not set/);   // placeholder must be replaced
+gas.SPREADSHEET_URL = SHEET_URL;
 
+// Rows keyed by field name, using Code.gs's own header mapping.
 function rows() {
-  const h = grid[0];
-  return grid.slice(1).map(r => Object.fromEntries(h.map((k, i) => [k, r[i] === undefined ? '' : r[i]])));
+  const field = JSON.parse(JSON.stringify(gas.readColumns_(sheet).field));
+  return grid.slice(1).map(r => Object.fromEntries(Object.entries(field).map(([k, i]) => [k, r[i] === undefined ? '' : r[i]])));
 }
-const newRows = () => rows().filter(r => r['Submission ID'] !== 'sOLDROW123456');
+const newRows = () => rows().filter(r => r.submissionId !== 'sOLDROW123456');
 
 // ---- Network simulation -------------------------------------------------------
 let mode = 'normal';            // normal | down | lostReply
@@ -167,9 +177,9 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'friction', 'followup');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
+    const r = newRows().find(x => x.submissionId === id);
     assert.ok(r, 'row saved');
-    assert.strictEqual(r.Language, 'en'); assert.strictEqual(r.tools, 'wa, notes');
+    assert.strictEqual(r.language, 'en'); assert.strictEqual(r.tools, 'wa, notes');
     assert.strictEqual(r.incident, 'A follow-up was forgotten for two weeks.'); assert.strictEqual(r.friction, 'followup');
     assert.strictEqual(r.surveyVersion, 'v2');
     await page.close();
@@ -183,8 +193,8 @@ const lastId = async page => page.evaluate(() => submissionId);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
     assert.strictEqual(await page.textContent('.thankyou h2'), 'תודה! התשובות התקבלו ונשמרו.');
-    const r = newRows().find(x => x['Submission ID'] === id);
-    assert.strictEqual(r.Language, 'he'); assert.strictEqual(r.incident, 'שכחתי לחזור למשפחה');
+    const r = newRows().find(x => x.submissionId === id);
+    assert.strictEqual(r.language, 'he'); assert.strictEqual(r.incident, 'שכחתי לחזור למשפחה');
     await page.close();
   });
 
@@ -193,8 +203,8 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'barrier', 'privacy');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
-    assert.strictEqual(r.Language, lang); assert.strictEqual(r.barrier, 'privacy');
+    const r = newRows().find(x => x.submissionId === id);
+    assert.strictEqual(r.language, lang); assert.strictEqual(r.barrier, 'privacy');
     await page.close();
   });
 
@@ -203,7 +213,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'device_current', 'phone');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
+    const r = newRows().find(x => x.submissionId === id);
     assert.strictEqual(r.device_current, 'phone'); assert.strictEqual(r.tools, ''); assert.strictEqual(r.incident, '');
     await page.close();
   });
@@ -226,7 +236,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'barrier', 'other'); await page.fill('#barrier_other', 'Cost');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
+    const r = newRows().find(x => x.submissionId === id);
     assert.strictEqual(r.tools, 'other'); assert.strictEqual(r.tools_other, `'=HYPERLINK("x") my own system`);
     assert.strictEqual(r.friction_other, 'Finding time'); assert.strictEqual(r.barrier_other, 'Cost');
     await page.close();
@@ -240,7 +250,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     assert.match(await page.textContent('#message'), /no more than two/);
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    assert.strictEqual(newRows().find(x => x['Submission ID'] === id).friction, 'candidates, duplicates');
+    assert.strictEqual(newRows().find(x => x.submissionId === id).friction, 'candidates, duplicates');
     await page.close();
   });
 
@@ -251,7 +261,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'friction', 'none'); await pick(page, 'workload', 'none');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
+    const r = newRows().find(x => x.submissionId === id);
     assert.strictEqual(r.barrier, 'none'); assert.strictEqual(r.friction, 'none'); assert.strictEqual(r.workload, 'none');
     await page.close();
   });
@@ -261,7 +271,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     await pick(page, 'workload', '21_50'); await pick(page, 'device_current', 'both');
     const id = await lastId(page);
     await submitAndWaitThanks(page);
-    const r = newRows().find(x => x['Submission ID'] === id);
+    const r = newRows().find(x => x.submissionId === id);
     assert.strictEqual(r.workload, '21_50'); assert.strictEqual(r.device_current, 'both');
     await page.close();
   });
@@ -273,7 +283,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     mode = 'lostReply';
     await submitAndWaitThanks(page);
     mode = 'normal';
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === id).length, 1);
+    assert.strictEqual(newRows().filter(x => x.submissionId === id).length, 1);
     await page.close();
   });
 
@@ -282,7 +292,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     const a = JSON.parse(gas.doPost({ postData: { contents: body } }).content);
     const b = JSON.parse(gas.doPost({ postData: { contents: body } }).content);
     assert.deepStrictEqual(a, { ok: true }); assert.deepStrictEqual(b, { ok: true, duplicate: true });
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === 'sRETRY0000001').length, 1);
+    assert.strictEqual(newRows().filter(x => x.submissionId === 'sRETRY0000001').length, 1);
   });
 
   await test('10a. Phone offline: clear error, answers kept, retry after reconnect saves once', async () => {
@@ -293,10 +303,10 @@ const lastId = async page => page.evaluate(() => submissionId);
     assert.match(await submitAndWaitError(page), /Could not save your answers/);
     assert.ok(await page.isChecked('input[name="workload"][value="1_5"]'));
     assert.strictEqual(await page.inputValue('textarea[name="incident"]'), 'Offline test');
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === id).length, 0);
+    assert.strictEqual(newRows().filter(x => x.submissionId === id).length, 0);
     await context.setOffline(false);
     await submitAndWaitThanks(page);
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === id).length, 1);
+    assert.strictEqual(newRows().filter(x => x.submissionId === id).length, 1);
     await page.close();
   });
 
@@ -309,7 +319,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     assert.strictEqual(await page.$('.thankyou'), null);
     mode = 'normal';
     await submitAndWaitThanks(page);
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === id).length, 1);
+    assert.strictEqual(newRows().filter(x => x.submissionId === id).length, 1);
     await page.close();
   });
 
@@ -318,7 +328,7 @@ const lastId = async page => page.evaluate(() => submissionId);
     await page.evaluate(() => { answers.workload = 'bogus'; });
     const id = await lastId(page);
     assert.match(await submitAndWaitError(page), /Could not save/);
-    assert.strictEqual(newRows().filter(x => x['Submission ID'] === id).length, 0);
+    assert.strictEqual(newRows().filter(x => x.submissionId === id).length, 0);
     await page.close();
   });
 
@@ -350,14 +360,19 @@ const lastId = async page => page.evaluate(() => submissionId);
   await test('Sheet: legacy columns and old row untouched; new columns appended at the right', async () => {
     assert.deepStrictEqual(grid[0].slice(0, LEGACY_HEADERS.length), LEGACY_HEADERS);
     assert.deepStrictEqual(grid[1], LEGACY_ROW);
-    assert.deepStrictEqual(grid[0].slice(LEGACY_HEADERS.length), ['surveyVersion', 'workload', 'device_current']);
-    const ids = newRows().map(r => r['Submission ID']);
+    assert.deepStrictEqual(grid[0].slice(LEGACY_HEADERS.length), ['Survey version'], 'only the missing column is added, once');
+    const check = [...gas.checkColumns()].join('\n');
+    assert.match(check, /tools -> column 4 "Current tools"/); assert.match(check, /friction -> column 6 "Difficult tasks"/);
+    assert.match(check, /incident -> column 8 "Recent example"/); assert.match(check, /workload -> column 14 "Recent workload \(v2\)"/);
+    assert.match(check, /device_current -> column 15 "Current device used \(v2\)"/); assert.ok(!/NEW/.test(check), check);
+    const ids = newRows().map(r => r.submissionId);
     assert.strictEqual(new Set(ids).size, ids.length, 'duplicate rows');
   });
 
   await browser.close();
   console.log('\nSheet after tests (' + grid.length + ' rows incl. header):');
-  console.table(rows().map(r => ({ ...r, Timestamp: String(r.Timestamp).slice(0, 19) })));
+  console.log(grid[0].join(' | '));
+  console.table(rows().map(r => ({ ...r, timestamp: String(r.timestamp).slice(0, 15) })));
   const failed = results.filter(r => r[0] === 'FAIL').length;
   console.log(`\n${results.length - failed}/${results.length} passed`);
   process.exit(failed ? 1 : 0);

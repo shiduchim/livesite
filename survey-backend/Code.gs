@@ -10,13 +10,36 @@
  * The "zugpad_" parameter names are kept from the original ZugPad release so
  * that pages already open in people's browsers keep working.
  *
- * Columns are matched by the header text in row 1 (case, spaces and
- * underscores ignored). A missing column is added at the right end of row 1.
- * Existing columns and older responses are never moved, renamed or overwritten.
+ * Each field is written to the column whose row-1 header matches one of its
+ * names in HEADERS (case, spaces and punctuation ignored). Only a field with no
+ * matching header gets a new column, added at the right end of row 1. Existing
+ * columns and older responses are never moved, renamed or overwritten.
+ * Run checkColumns() before deploying to see the mapping without writing.
  */
 
-var SPREADSHEET_ID = '';      // Leave blank when this script is attached to the Sheet.
+// Paste the same Google Sheets URL that the previous working Code.gs used.
+var SPREADSHEET_URL = 'PASTE_YOUR_GOOGLE_SHEET_URL_HERE';
 var SHEET_NAME = 'Responses';
+
+// Accepted header names per field; the first one is used if a column must be added.
+var HEADERS = {
+  timestamp:      ['Timestamp'],
+  submissionId:   ['Submission ID', 'submissionId'],
+  surveyVersion:  ['Survey version', 'surveyVersion'],
+  language:       ['Language'],
+  tools:          ['Current tools', 'tools'],
+  tools_other:    ['Current tools (other)', 'Current tools other', 'Other tools', 'tools_other'],
+  incident:       ['Recent example', 'incident'],
+  friction:       ['Difficult tasks', 'friction'],
+  friction_other: ['Difficult tasks (other)', 'Difficult tasks other', 'Other difficult tasks', 'friction_other'],
+  workload:       ['Recent workload (v2)', 'workload'],
+  device_current: ['Current device used (v2)', 'device_current'],
+  barrier:        ['Barriers', 'barrier'],
+  barrier_other:  ['Barriers (other)', 'Barriers other', 'Other barriers', 'barrier_other'],
+  feature:        ['Most useful feature', 'feature'],
+  feature_other:  ['Most useful feature (other)', 'feature_other'],
+  device:         ['Device', 'device']
+};
 
 var LANGUAGES = ['en', 'he', 'yi', 'ru', 'fr', 'es'];
 
@@ -101,11 +124,11 @@ function saveSubmission_(payload) {
     if (isSaved_(sheet, id, columns)) return { ok: true, duplicate: true };
     var row = [];
     for (var i = 0; i < columns.width; i++) row.push('');
-    row[columns.index[norm_('timestamp')]] = new Date();
-    row[columns.index[norm_('submissionId')]] = id;
-    row[columns.index[norm_('surveyVersion')]] = version;
-    row[columns.index[norm_('language')]] = language;
-    for (var key in values) row[columns.index[norm_(key)]] = values[key];
+    row[columns.field.timestamp] = new Date();
+    row[columns.field.submissionId] = id;
+    row[columns.field.surveyVersion] = version;
+    row[columns.field.language] = language;
+    for (var key in values) row[columns.field[key]] = values[key];
     sheet.appendRow(row);
     SpreadsheetApp.flush();
   } finally {
@@ -151,7 +174,8 @@ function validId_(id) {
 }
 
 function openSheet_() {
-  var book = SPREADSHEET_ID ? SpreadsheetApp.openById(SPREADSHEET_ID) : SpreadsheetApp.getActiveSpreadsheet();
+  if (!/^https:\/\/docs\.google\.com\/spreadsheets\//.test(SPREADSHEET_URL)) throw new Error('SPREADSHEET_URL is not set');
+  var book = SpreadsheetApp.openByUrl(SPREADSHEET_URL);
   var sheet = book.getSheetByName(SHEET_NAME);
   if (!sheet) throw new Error('Sheet tab "' + SHEET_NAME + '" not found');
   return sheet;
@@ -161,22 +185,29 @@ function norm_(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9]/g, '');
 }
 
+// Finds each field's column by its HEADERS names. Fields without a column are left out of columns.field.
 function readColumns_(sheet) {
-  var width = sheet.getLastColumn(), index = {};
+  var width = sheet.getLastColumn(), byHeader = {}, field = {};
   var headers = width ? sheet.getRange(1, 1, 1, width).getDisplayValues()[0] : [];
   for (var i = 0; i < headers.length; i++) {
     var n = norm_(headers[i]);
-    if (n && !(n in index)) index[n] = i;
+    if (n && !(n in byHeader)) byHeader[n] = i;
   }
-  return { index: index, width: width };
+  for (var key in HEADERS) {
+    for (var j = 0; j < HEADERS[key].length; j++) {
+      if (norm_(HEADERS[key][j]) in byHeader) { field[key] = byHeader[norm_(HEADERS[key][j])]; break; }
+    }
+  }
+  return { field: field, headers: headers, width: width };
 }
 
 function ensureColumns_(sheet, keys) {
   var columns = readColumns_(sheet), missing = [];
-  for (var i = 0; i < keys.length; i++) if (!(norm_(keys[i]) in columns.index)) missing.push(keys[i]);
+  for (var i = 0; i < keys.length; i++) if (!(keys[i] in columns.field)) missing.push(keys[i]);
   if (missing.length) {
-    sheet.getRange(1, columns.width + 1, 1, missing.length).setValues([missing]);
-    for (var j = 0; j < missing.length; j++) columns.index[norm_(missing[j])] = columns.width + j;
+    sheet.getRange(1, columns.width + 1, 1, missing.length)
+      .setValues([missing.map(function (k) { return HEADERS[k][0]; })]);
+    for (var j = 0; j < missing.length; j++) columns.field[missing[j]] = columns.width + j;
     columns.width += missing.length;
   }
   return columns;
@@ -184,7 +215,7 @@ function ensureColumns_(sheet, keys) {
 
 function isSaved_(sheet, id, columns) {
   columns = columns || readColumns_(sheet);
-  var col = columns.index[norm_('submissionId')], last = sheet.getLastRow();
+  var col = columns.field.submissionId, last = sheet.getLastRow();
   if (col === undefined || last < 2) return false;
   return !!sheet.getRange(2, col + 1, last - 1, 1).createTextFinder(id).matchEntireCell(true).findNext();
 }
@@ -194,6 +225,23 @@ function json_(obj) {
 }
 
 function SurveyError_(message) { this.message = message; }
+
+/**
+ * Read-only. Run from the Apps Script editor (select "checkColumns", then Run)
+ * before deploying. Logs which existing column each field will use; a field
+ * marked NEW would get a new column. Nothing is written.
+ */
+function checkColumns() {
+  var columns = readColumns_(openSheet_()), lines = [];
+  var keys = ['timestamp', 'submissionId', 'surveyVersion', 'language'].concat(Object.keys(QUESTIONS.v2));
+  for (var i = 0; i < keys.length; i++) {
+    var col = columns.field[keys[i]];
+    lines.push(keys[i] + ' -> ' + (col === undefined ? 'NEW column "' + HEADERS[keys[i]][0] + '"'
+      : 'column ' + (col + 1) + ' "' + columns.headers[col] + '"'));
+  }
+  console.log(lines.join('\n'));
+  return lines;
+}
 
 /**
  * Run from the Apps Script editor (select "testSave", then Run) to check that

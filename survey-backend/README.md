@@ -9,41 +9,44 @@ in `survey/index.html` stays the same.
 
 ## Deploy (about 5 minutes)
 
-1. Open the Google Sheet → **Extensions → Apps Script** (or open the project
-   at script.google.com that owns the deployment ending in `...MxURuw/exec`).
-2. **Back up the current code:** select all of `Code.gs`, copy it into a text
-   file and keep it (also send it to the developer if the problem persists).
+1. Open the Apps Script project that owns the deployment ending in
+   `...MxURuw/exec`.
+2. **Back up the current code:** copy all of `Code.gs` into a text file and
+   keep it. Note the Google Sheets URL it uses.
 3. Replace the whole contents of `Code.gs` with this repository's
-   `survey-backend/Code.gs`. Click **Save**.
-   - If the script is *not* attached to the Sheet (it was created separately at
-     script.google.com), set `SPREADSHEET_ID` at the top to the ID from the
-     Sheet's URL (`docs.google.com/spreadsheets/d/<ID>/edit`).
-4. Optional check: choose **testSave** in the function list → **Run**. Approve
-   access if asked. The log should show `"first":{"ok":true}` and
-   `"retry":{"ok":true,"duplicate":true}`, and the Sheet gets one row whose
-   Submission ID starts with `selftest-`. Delete that row.
-5. **Deploy → Manage deployments** → select the existing **Web app**
+   `survey-backend/Code.gs`. On the line
+   `var SPREADSHEET_URL = 'PASTE_YOUR_GOOGLE_SHEET_URL_HERE';` paste that
+   same Sheet URL between the quotes. Click **Save**.
+4. Choose **checkColumns** in the function list → **Run** (approve access if
+   asked). It writes nothing and logs one line per field, for example
+   `tools -> column 4 "Current tools"`. Every line should name an existing
+   column. A line marked `NEW` means no matching header was found: add that
+   column's exact header text to the field's list in `HEADERS` (near the top),
+   Save, and run **checkColumns** again until only intended new columns show
+   `NEW`.
+5. Choose **testSave** → **Run**. The log should show `"first":{"ok":true}`
+   and `"retry":{"ok":true,"duplicate":true}`, and the Sheet gets exactly one
+   row whose Submission ID starts with `selftest-`, with values in the right
+   columns. Delete that row.
+6. **Deploy → Manage deployments** → select the existing **Web app**
    deployment → pencil icon (**Edit**) → **Version: New version** →
-   **Deploy**.
-   - Execute as: **Me**. Who has access: **Anyone**.
-   - Do **not** use *New deployment*: that creates a different URL and the
-     survey would keep calling the old code.
-6. Confirm the Web app URL shown is still
+   **Deploy**. Execute as: **Me**. Who has access: **Anyone**.
+   Do **not** use *New deployment*: that creates a different URL.
+7. Confirm the Web app URL is still
    `https://script.google.com/macros/s/AKfycbwj-CnzBCJSxC-vU-z42cEYijvzH9uCLbwGgIEuvz-NKngNGYEDaQHMYalz2RaSxMURuw/exec`.
 
 Saving the code alone does **not** change what the live survey runs; only
-step 5 does.
+step 6 does.
 
 ## Columns
 
-Columns are found by the header text in row 1 (case, spaces and underscores
-are ignored, so `Submission ID` and `submissionId` match). Existing columns
-and responses are never moved or overwritten. Any column the code needs that
-is missing is added at the right end of row 1. With the second survey version
-these are typically `surveyVersion`, `workload` and `device_current`.
+Each field is written to the column whose row-1 header matches one of its
+names in `HEADERS` (case, spaces and punctuation are ignored). Existing
+columns and responses are never moved or overwritten. Only a field with no
+matching header gets a new column at the right end of row 1, and only once.
 
 Answers are stored as option codes (for example `wa, notes`, `6_20`), the
-same codes in every language; the `language` column shows which language was
+same codes in every language; the language column shows which language was
 used.
 
 ## If saving fails after deploying
