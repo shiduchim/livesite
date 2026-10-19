@@ -1,13 +1,20 @@
 EK SCRIPT LAUNCHER
 ==================
 
-BUILD: AutoWidth v4 with Quick Launch
+BUILD: v5 - cleaned-up UI, with Quick Launch
 
 WHAT IT DOES
 
 - Adds a separate "EK" tab to Revit.
 - Adds a "Select & Launch" button and a separate "Quick Launch" button.
 - Opens a searchable list of Python scripts.
+- Each script gets its own row with a coloured initials badge, the script
+  name, and underneath it the file name plus the first line of the script's
+  docstring, so scripts are easy to tell apart.
+- Search filters as you type and highlights the matching letters.
+  Up/Down arrows move the selection, Enter launches, Esc closes.
+- The LAUNCH SCRIPT button shows which script it is about to run.
+- Hovering a script shows its full file path.
 - Includes Settings inside the popup to configure both folders.
 - Quick Launch immediately runs the only .py file in its assigned folder.
 - Quick Launch stops with a warning if its folder has zero or multiple .py files.
@@ -18,8 +25,18 @@ WHAT IT DOES
 - Double-clicking a script launches it.
 - Closes automatically after running one script.
 - Allows only one launcher window per Revit instance; reopening brings the existing window forward.
-- Keeps Search, Settings, Refresh, and Cancel aligned as the window changes size.
+- Keeps Settings, Refresh, and Cancel aligned as the window changes size.
+- Scales cleanly on high-DPI (125% / 150% / 200%) displays.
 - Uses a muted Launch button and hides the window title-bar logo.
+
+TIP: SCRIPT DESCRIPTIONS
+
+To give a script a description line in the launcher, start the .py file with
+a docstring, for example:
+
+    """Renumber sheets in the order they appear in a schedule."""
+
+Scripts without one simply show their file name.
 
 INSTALL
 
