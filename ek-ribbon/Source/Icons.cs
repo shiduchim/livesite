@@ -12,9 +12,7 @@ namespace EKRibbon
     // image files; command icons are loaded from the PNGs the scanner captured.
     internal static class Icons
     {
-        static readonly Color Blue=Color.FromRgb(0x1F,0x6F,0xB2), BlueLight=Color.FromRgb(0x3A,0x8F,0xDB),
-            BlueDark=Color.FromRgb(0x1A,0x53,0x8F), Amber=Color.FromRgb(0xFF,0xB9,0x38),
-            Needle=Color.FromRgb(0x6B,0x77,0x85), Grey=Color.FromRgb(0x8B,0x96,0xA2);
+        static readonly Color Grey=Color.FromRgb(0x7D,0x88,0x94);
 
         static ImageSource Render(int size,double design,Action<DrawingContext> draw)
         {
@@ -95,46 +93,26 @@ namespace EKRibbon
             });
         }
 
-        // Upright blue pin when the tab is pinned; tilted grey outline when it is not.
+        // Push pin: upright and blue when the tab is pinned, tilted grey outline when not.
+        const string PinShape="M8,2.5 H16 A1.25,1.25 0 0 1 16,5 H15 V9.2 C15,11 16.4,12.4 18.2,12.6 V14.6 H13 V20.6 L12,22.4 L11,20.6 V14.6 H5.8 V12.6 C7.6,12.4 9,11 9,9.2 V5 H8 A1.25,1.25 0 0 1 8,2.5 Z";
         internal static ImageSource Pin(bool pinned,int size)
         {
-            if(size<24)return Render(size,16,dc=>{
+            return Render(size,22,dc=>{
+                dc.PushTransform(new TranslateTransform(-1,-1.5));
+                var shape=Geometry.Parse(PinShape);
                 if(pinned)
                 {
-                    dc.DrawLine(Stroke(Needle,1.4),new Point(8,9.2),new Point(8,15));
-                    var edge=Stroke(Colors.White,.6,.8);
-                    dc.DrawGeometry(Solid(BlueLight),edge,Geometry.Parse("M6,3.2 H10 L9.5,7.6 H6.5 Z"));
-                    Box(dc,Solid(BlueDark),edge,5,.8,6,2.8,1.1);
-                    Box(dc,Solid(BlueDark),edge,3.3,7.2,9.4,2.3,1.1);
-                    return;
-                }
-                dc.PushTransform(new RotateTransform(45,8,8));
-                var line=Stroke(Grey,1.1);
-                dc.DrawLine(Stroke(Grey,1.3),new Point(8,9.6),new Point(8,15));
-                dc.DrawGeometry(null,line,Geometry.Parse("M6.1,3.4 H9.9 L9.4,7.4 H6.6 Z"));
-                Box(dc,null,line,5.2,1.1,5.6,2.4,1);
-                Box(dc,Brushes.White,line,3.6,7.4,8.8,2,1);
-                dc.Pop();
-            });
-            return Render(size,32,dc=>{
-                if(pinned)
-                {
-                    dc.DrawLine(Stroke(Needle,2.4),new Point(16,18.5),new Point(16,29.5));
-                    var edge=Stroke(Colors.White,1,.85);
-                    var body=new LinearGradientBrush(BlueLight,BlueDark,0);
+                    var body=new LinearGradientBrush(Color.FromRgb(0x3A,0x93,0xE6),Color.FromRgb(0x1A,0x5F,0xA8),0);
                     body.Freeze();
-                    dc.DrawGeometry(body,edge,Geometry.Parse("M12.2,6.5 H19.8 L18.8,15 H13.2 Z"));
-                    Box(dc,Solid(BlueDark),edge,10.5,2.5,11,4.6,2);
-                    Box(dc,Solid(BlueDark),edge,7.5,14.6,17,4,2);
-                    Box(dc,Solid(Colors.White,.4),null,12,3.4,3,2.4,1);
-                    return;
+                    dc.DrawGeometry(body,Stroke(Color.FromRgb(0x0F,0x4C,0x8C),size<24?.7:.9),shape);
+                    if(size>=24)Box(dc,Solid(Colors.White,.45),null,10,5.4,1.4,5,.7);
                 }
-                dc.PushTransform(new RotateTransform(45,16,16));
-                var line=Stroke(Grey,1.8);
-                dc.DrawLine(Stroke(Grey,2.2),new Point(16,18.5),new Point(16,29.5));
-                dc.DrawGeometry(null,line,Geometry.Parse("M12.2,6.5 H19.8 L18.8,15 H13.2 Z"));
-                Box(dc,null,line,10.5,2.5,11,4.6,2);
-                Box(dc,Brushes.White,line,7.5,14.6,17,4,2);
+                else
+                {
+                    dc.PushTransform(new RotateTransform(40,12,12));
+                    dc.DrawGeometry(Solid(Colors.White,.9),Stroke(Grey,size<24?1.3:1.5),shape);
+                    dc.Pop();
+                }
                 dc.Pop();
             });
         }

@@ -1,7 +1,7 @@
 <Window x:Class="EKRibbon.UI.Designer"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="EK Ribbon Builder" Width="1240" Height="840" MinWidth="980" MinHeight="660"
+        Title="EK Ribbon Builder" Width="1100" Height="740" MinWidth="880" MinHeight="560"
         WindowStartupLocation="CenterScreen" Background="{DynamicResource WindowBg}"
         FontFamily="Segoe UI" FontSize="12" Foreground="{DynamicResource Ink}"
         UseLayoutRounding="True" SnapsToDevicePixels="True" TextOptions.TextFormattingMode="Display">
@@ -30,11 +30,11 @@
       <Setter Property="Background" Value="{StaticResource CardBg}"/>
       <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CornerRadius" Value="10"/>
-      <Setter Property="Padding" Value="16,14"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="14,10"/>
     </Style>
     <Style x:Key="Title" TargetType="TextBlock">
-      <Setter Property="FontSize" Value="14"/>
+      <Setter Property="FontSize" Value="13"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
     </Style>
     <Style x:Key="Caption" TargetType="TextBlock">
@@ -44,7 +44,7 @@
     </Style>
     <Style x:Key="FieldLabel" TargetType="TextBlock">
       <Setter Property="FontWeight" Value="SemiBold"/>
-      <Setter Property="Margin" Value="0,14,0,6"/>
+      <Setter Property="Margin" Value="0,10,0,4"/>
     </Style>
 
     <Style TargetType="Button">
@@ -52,7 +52,7 @@
       <Setter Property="BorderBrush" Value="{StaticResource LineStrong}"/>
       <Setter Property="Foreground" Value="{StaticResource Ink}"/>
       <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="Padding" Value="12,6"/>
+      <Setter Property="Padding" Value="10,4"/>
       <Setter Property="Cursor" Value="Hand"/>
       <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
       <Setter Property="Template">
@@ -85,13 +85,13 @@
       <Setter Property="Foreground" Value="{StaticResource AccentDark}"/>
       <Setter Property="BorderBrush" Value="#FFFFFF"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
-      <Setter Property="Padding" Value="18,7"/>
+      <Setter Property="Padding" Value="16,5"/>
     </Style>
     <Style x:Key="OnHeader" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
       <Setter Property="Background" Value="#22FFFFFF"/>
       <Setter Property="BorderBrush" Value="#44FFFFFF"/>
       <Setter Property="Foreground" Value="#FFFFFF"/>
-      <Setter Property="Padding" Value="10,6"/>
+      <Setter Property="Padding" Value="9,4"/>
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
@@ -116,8 +116,8 @@
       <Setter Property="BorderBrush" Value="#E9B9B5"/>
     </Style>
     <Style x:Key="Arrow" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-      <Setter Property="Width" Value="34"/>
-      <Setter Property="Height" Value="30"/>
+      <Setter Property="Width" Value="30"/>
+      <Setter Property="Height" Value="26"/>
       <Setter Property="Padding" Value="0"/>
       <Setter Property="FontSize" Value="14"/>
       <Setter Property="Margin" Value="2"/>
@@ -130,7 +130,7 @@
         <Setter.Value>
           <ControlTemplate TargetType="RadioButton">
             <Border x:Name="Box" Background="{StaticResource CardBg}" BorderBrush="{StaticResource LineStrong}"
-                    BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,0,6,0">
+                    BorderThickness="1" CornerRadius="6" Padding="10,4" Margin="0,0,6,0">
               <ContentPresenter x:Name="Text" HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
@@ -177,7 +177,7 @@
     </Style>
 
     <Style x:Key="Search" TargetType="TextBox">
-      <Setter Property="Padding" Value="30,7,8,7"/>
+      <Setter Property="Padding" Value="30,5,8,5"/>
       <Setter Property="VerticalContentAlignment" Value="Center"/>
       <Setter Property="Template">
         <Setter.Value>
@@ -205,7 +205,8 @@
 
     <Style TargetType="ComboBox">
       <Setter Property="Padding" Value="8,5"/>
-      <Setter Property="MinHeight" Value="30"/>
+      <Setter Property="MinHeight" Value="26"/>
+      <Setter Property="Padding" Value="8,3"/>
       <Setter Property="VerticalContentAlignment" Value="Center"/>
     </Style>
     <Style TargetType="ToolTip">
@@ -238,12 +239,12 @@
     </Grid.RowDefinitions>
 
     <!-- Header -->
-    <Border Background="{StaticResource HeaderBg}" Padding="20,12">
+    <Border Background="{StaticResource HeaderBg}" Padding="16,8">
       <DockPanel LastChildFill="False">
         <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-          <Image x:Name="AppIcon" Width="36" Height="36" VerticalAlignment="Center"/>
-          <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-            <TextBlock Text="EK Ribbon Builder" FontSize="19" FontWeight="SemiBold" Foreground="White"/>
+          <Image x:Name="AppIcon" Width="32" Height="32" VerticalAlignment="Center"/>
+          <StackPanel Margin="10,0,0,0" VerticalAlignment="Center">
+            <TextBlock Text="EK Ribbon Builder" FontSize="16" FontWeight="SemiBold" Foreground="White"/>
             <TextBlock x:Name="Subtitle" Foreground="#CFE2F5" Margin="0,1,0,0"/>
           </StackPanel>
         </StackPanel>
@@ -264,7 +265,7 @@
     </Border>
 
     <!-- Ribbon preview -->
-    <Border Grid.Row="1" Style="{StaticResource Card}" Margin="16,14,16,0">
+    <Border Grid.Row="1" Style="{StaticResource Card}" Margin="12,10,12,0">
       <StackPanel>
         <DockPanel LastChildFill="False">
           <StackPanel DockPanel.Dock="Left">
@@ -276,7 +277,7 @@
             <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Glyph}" Text="&#xE710;"/><TextBlock Text="Divider"/></StackPanel>
           </Button>
         </DockPanel>
-        <Border Background="{StaticResource RibbonBg}" CornerRadius="6" Margin="0,12,0,10" Padding="10,8">
+        <Border Background="{StaticResource RibbonBg}" CornerRadius="6" Margin="0,8,0,6" Padding="6,5">
           <ScrollViewer x:Name="PreviewScroll" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled"
                         Focusable="True" FocusVisualStyle="{x:Null}" Background="Transparent">
             <StackPanel x:Name="PreviewHost" Orientation="Horizontal" Background="Transparent"/>
@@ -287,11 +288,11 @@
     </Border>
 
     <!-- Library and inspector -->
-    <Grid Grid.Row="2" Margin="16,12,16,12">
+    <Grid Grid.Row="2" Margin="12,10,12,10">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="14"/>
-        <ColumnDefinition Width="350"/>
+        <ColumnDefinition Width="10"/>
+        <ColumnDefinition Width="310"/>
       </Grid.ColumnDefinitions>
 
       <Border x:Name="LibraryCard" Style="{StaticResource Card}" AllowDrop="True">
@@ -306,11 +307,11 @@
               <StackPanel Orientation="Horizontal"><TextBlock Style="{StaticResource Glyph}" Text="&#xE72C;"/><TextBlock Text="Rescan Revit"/></StackPanel>
             </Button>
           </DockPanel>
-          <Grid DockPanel.Dock="Top" Margin="0,12,0,8">
+          <Grid DockPanel.Dock="Top" Margin="0,8,0,4">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="*"/>
               <ColumnDefinition Width="8"/>
-              <ColumnDefinition Width="200"/>
+              <ColumnDefinition Width="170"/>
               <ColumnDefinition Width="12"/>
               <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
@@ -339,13 +340,13 @@
               </StackPanel>
 
               <StackPanel x:Name="ButtonPanel" Visibility="Collapsed">
-                <DockPanel Margin="0,12,0,0">
-                  <Border DockPanel.Dock="Left" Width="56" Height="56" CornerRadius="8" Background="{StaticResource PanelBg}"
+                <DockPanel Margin="0,8,0,0">
+                  <Border DockPanel.Dock="Left" Width="46" Height="46" CornerRadius="6" Background="{StaticResource PanelBg}"
                           BorderBrush="{StaticResource Line}" BorderThickness="1">
                     <Image x:Name="SelectedIcon" Width="32" Height="32" RenderOptions.BitmapScalingMode="HighQuality"/>
                   </Border>
                   <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock x:Name="SelectedName" FontSize="13.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="SelectedName" FontSize="12.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
                     <TextBlock x:Name="SelectedOrigin" Style="{StaticResource Caption}" Margin="0,2,0,0"/>
                     <TextBlock x:Name="SelectedWarning" Style="{StaticResource Caption}" Foreground="{StaticResource Warning}"
                                Margin="0,3,0,0" Visibility="Collapsed"/>
@@ -358,7 +359,7 @@
                   <RadioButton x:Name="SizeLarge" Style="{StaticResource Segment}" GroupName="Size" Content="Large" ToolTip="Own full-height column (L)"/>
                 </StackPanel>
 
-                <DockPanel Margin="0,14,0,6">
+                <DockPanel Margin="0,10,0,4">
                   <TextBlock Text="Icon zoom" FontWeight="SemiBold" DockPanel.Dock="Left"/>
                   <Button x:Name="ZoomReset" DockPanel.Dock="Right" Content="100%" Padding="8,2" FontSize="11" ToolTip="Reset (0)"/>
                   <TextBlock x:Name="ZoomValue" DockPanel.Dock="Right" Foreground="{StaticResource Muted}" Margin="0,0,8,0" VerticalAlignment="Center"/>
@@ -387,7 +388,7 @@
                              Text="or use the arrow keys. Moving past the edge crosses a divider."/>
                 </StackPanel>
 
-                <StackPanel Orientation="Horizontal" Margin="0,16,0,0">
+                <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
                   <Button x:Name="DividerAfter" Content="Divider after" Margin="0,0,8,0" ToolTip="D"/>
                   <Button x:Name="RemoveButton" Style="{StaticResource Danger}" Content="Remove" ToolTip="Delete"/>
                 </StackPanel>
@@ -410,14 +411,14 @@
             </StackPanel>
           </Border>
 
-          <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+          <Border Style="{StaticResource Card}" Margin="0,10,0,0">
             <StackPanel>
               <TextBlock Text="Tab behaviour" Style="{StaticResource Title}"/>
-              <CheckBox x:Name="PinSwitch" Style="{StaticResource Switch}" Margin="0,12,0,0">
+              <CheckBox x:Name="PinSwitch" Style="{StaticResource Switch}" Margin="0,8,0,0">
                 <StackPanel>
                   <TextBlock Text="Keep EK Custom open" FontWeight="SemiBold"/>
                   <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0"
-                             Text="Revit comes back to this tab instead of jumping to others. Modify tabs still open while you select or edit, and a tab you click yourself stays open. Same as the pin on the tab."/>
+                             Text="Revit comes back here instead of jumping to other tabs. &quot;Modify | ...&quot; tabs still open while you select or edit, and a tab you click yourself stays open. Same as the pin on the tab."/>
                 </StackPanel>
               </CheckBox>
               <TextBlock Text="Tab position" Style="{StaticResource FieldLabel}"/>
@@ -430,7 +431,7 @@
             </StackPanel>
           </Border>
 
-          <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+          <Border Style="{StaticResource Card}" Margin="0,10,0,0">
             <StackPanel>
               <TextBlock Text="Button style" Style="{StaticResource Title}"/>
               <TextBlock Text="Labels" Style="{StaticResource FieldLabel}"/>
@@ -439,7 +440,7 @@
                 <ComboBoxItem Content="Short labels (15 characters)" Tag="short"/>
                 <ComboBoxItem Content="Full labels" Tag="full"/>
               </ComboBox>
-              <CheckBox x:Name="BigTwoRow" Style="{StaticResource Switch}" Margin="0,14,0,0">
+              <CheckBox x:Name="BigTwoRow" Style="{StaticResource Switch}" Margin="0,10,0,0">
                 <StackPanel>
                   <TextBlock Text="Bigger icons in 2-row groups" FontWeight="SemiBold"/>
                   <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0" Text="Uses 32 px icons in groups set to 2 rows. Wider."/>
@@ -453,7 +454,7 @@
     </Grid>
 
     <!-- Status bar -->
-    <Border Grid.Row="3" Background="{StaticResource CardBg}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="20,8">
+    <Border Grid.Row="3" Background="{StaticResource CardBg}" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0" Padding="14,5">
       <DockPanel>
         <TextBlock x:Name="Footer" DockPanel.Dock="Right" Foreground="{StaticResource Muted}"/>
         <TextBlock x:Name="StatusText" TextTrimming="CharacterEllipsis"/>

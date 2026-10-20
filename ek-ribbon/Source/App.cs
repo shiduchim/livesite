@@ -40,7 +40,7 @@ namespace EKRibbon
                 catch(Exception ex){Log.Error("Pin / Ribbon Builder buttons",ex);report.Add("Tools panel failed: "+ex.Message);}
                 host=app;
                 app.Idling+=OnIdle;
-                TabPin.Start(app,layout);
+                TabPin.Start(layout);
                 report.Add("Tab pinned: "+layout.PinTab+"; tab position: "+layout.TabPosition+"; labels: "+layout.Labels);
             }
             catch(Exception ex){Log.Error("Startup",ex);report.Add("Startup failed: "+ex.Message);}

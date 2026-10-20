@@ -174,7 +174,7 @@ namespace EKRibbon
                 {Image=Icons.Transparent(16),LargeImage=Icons.Transparent(32)};
         }
 
-        // Small panel with the pin toggle and the Ribbon Builder, so EK Custom is the only tab you need.
+        // Panel with the pin toggle and the Ribbon Builder, so EK Custom is the only tab you need.
         internal static void AddToolsPanel(UIControlledApplication app,Layout layout,int year)
         {
             var panel=app.CreateRibbonPanel(TabName,ToolsPanelName);
@@ -187,9 +187,10 @@ namespace EKRibbon
                 LongDescription="Choose, arrange and size the buttons on this tab. One layout is shared by Revit 2024-2027.",
                 Image=Icons.App(16),LargeImage=Icons.App(32),
             };
-            var created=panel.AddStackedItems(pin,settings);
-            pinButton=created.OfType<PushButton>().FirstOrDefault(b=>b.Name=="EKRB_PIN");
+            // Full-size buttons: 16 px versions of these icons were too small to read.
+            pinButton=panel.AddItem(pin) as PushButton;
             UpdatePinButton(layout.PinTab);
+            panel.AddItem(settings);
         }
 
         internal static void UpdatePinButton(bool pinned)
@@ -201,7 +202,7 @@ namespace EKRibbon
                 pinButton.LargeImage=Icons.Pin(pinned,32);
                 pinButton.ToolTip=pinned?"EK Custom is pinned":"Pin EK Custom";
                 pinButton.LongDescription=pinned
-                    ?"Revit keeps returning to this tab. Modify tabs still open while you select or edit, and any tab you click yourself stays open. Click to unpin."
+                    ?"Revit keeps returning to this tab. \"Modify | ...\" tabs still open while you select or edit, and any tab you click yourself stays open. Click to unpin."
                     :"Click to keep this tab open: Revit will come back here instead of jumping to other tabs.";
             }
             catch(Exception ex){Log.Error("Update pin button",ex);}

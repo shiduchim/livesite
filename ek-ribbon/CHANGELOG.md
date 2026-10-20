@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.1
+
+- Fixed: the pin did not keep EK Custom open. It now watches the ribbon on its
+  own timer instead of Revit's Idling event, which fires too rarely. Revit
+  switching to the plain Modify tab also returns to EK Custom now; the
+  "Modify | ..." tabs still stay while you work. Writes `pin_YEAR.txt`.
+- Pin and Ribbon Builder are full-size buttons on the tab, so their icons are clear.
+- New, bolder pin icon.
+- Ribbon Builder window is more compact: the preview uses Revit's real icon sizes,
+  library tiles and spacing are smaller, and the window opens smaller.
+
 ## 2.0.0
 
 - New: pin button keeps the EK Custom tab open; Modify tabs still open while you work.

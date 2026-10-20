@@ -1,4 +1,4 @@
-# EK Ribbon Builder 2.0
+# EK Ribbon Builder 2.0.1
 
 Your own **EK Custom** tab in Revit 2024, 2025, 2026 and 2027, with the buttons you
 use, in the order you want. One layout is shared by every Revit version.
@@ -20,18 +20,18 @@ Desktop.
 
 ## The EK Custom tab
 
-At the right end of the tab there are two small buttons:
+At the right end of the tab there are two buttons:
 
 | Button | What it does |
 | --- | --- |
-| Pin | **Keeps EK Custom open.** Revit comes back to this tab instead of jumping to Architecture, View, etc. The Modify tabs still open while you select or edit, and any tab you click yourself stays open until Revit switches tabs again. Click to unpin. |
+| Pin | **Keeps EK Custom open.** Revit comes back to this tab instead of jumping to Architecture, View, Modify, etc. The "Modify &#124; ..." tabs still open while you select or edit, and any tab you click yourself stays open until Revit switches tabs again. Click to unpin. |
 | Ribbon Builder | Opens the settings window. |
 
 The tab is placed **right after Modify** by default, so the two tabs you use sit
 together. You can change this to *First tab* in the Ribbon Builder.
 
-Tip: in Revit's *Options > User Interface > Tab switching behavior*, choose
-**Return to the previous tab**. Then deselecting returns straight to EK Custom.
+If the pin ever misbehaves, run DIAGNOSTICS.cmd and send the ZIP: `pin_YEAR.txt`
+lists every tab switch it made and why.
 
 ## Ribbon Builder
 
@@ -74,7 +74,7 @@ Everything lives in `%APPDATA%\EKRibbonCSharp`:
 
 - `layout_shared.json`: your layout, shared by all Revit versions
 - `catalog_YEAR.json`, `Icons\`: commands and icons found by each Revit version
-- `startup_YEAR.txt`, `scan_YEAR.txt`, `last-error.log`: logs
+- `startup_YEAR.txt`, `pin_YEAR.txt`, `scan_YEAR.txt`, `last-error.log`: logs
 - `Backups\`: copies made before installs and Smart Rescan updates
 
 ## Building

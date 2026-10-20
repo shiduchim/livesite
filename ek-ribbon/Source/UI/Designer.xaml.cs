@@ -16,7 +16,7 @@ namespace EKRibbon.UI
     public partial class Designer:Window
     {
         const string MoveFormat="EKRibbon.Token", AddFormat="EKRibbon.NewCommand";
-        const int LibraryLimit=240, PanelHeight=105;
+        const int LibraryLimit=240, PanelHeight=78;
 
         readonly UIApplication ui;
         readonly int year;
@@ -425,8 +425,9 @@ namespace EKRibbon.UI
 
         // ---------- ribbon preview ----------
 
-        int Cell(int rows) {return rows==2&&!layout.CompactRibbon?47:35;}
-        int IconPixels(int rows) {return rows==2&&!layout.CompactRibbon?32:24;}
+        int Cell(int rows) {return rows==2&&!layout.CompactRibbon?38:26;}
+        // Real ribbon sizes: 16 px stacked icons, 32 px large ones.
+        int IconPixels(int rows) {return rows==2&&!layout.CompactRibbon?32:16;}
 
         string Caption(string name)
         {
@@ -441,7 +442,7 @@ namespace EKRibbon.UI
             visuals.Clear();
             highlighted=null;
             var groups=layout.Arrange(Visible);
-            var content=new StackPanel{Orientation=Orientation.Horizontal,Height=PanelHeight,Margin=new Thickness(6,6,6,4)};
+            var content=new StackPanel{Orientation=Orientation.Horizontal,Height=PanelHeight,Margin=new Thickness(4,4,4,3)};
             bool any=false;
             for(int g=0;g<groups.Count;g++)
             {
@@ -474,8 +475,8 @@ namespace EKRibbon.UI
         Border PanelFrame(string title,UIElement content)
         {
             var dock=new DockPanel();
-            var caption=new Border{Background=(Brush)FindResource("PanelTitle"),CornerRadius=new CornerRadius(0,0,4,4),Padding=new Thickness(0,2,0,3),
-                Child=new TextBlock{Text=title,FontSize=11,Foreground=(Brush)FindResource("Muted"),HorizontalAlignment=HorizontalAlignment.Center}};
+            var caption=new Border{Background=(Brush)FindResource("PanelTitle"),CornerRadius=new CornerRadius(0,0,4,4),Padding=new Thickness(0,1,0,2),
+                Child=new TextBlock{Text=title,FontSize=10.5,Foreground=(Brush)FindResource("Muted"),HorizontalAlignment=HorizontalAlignment.Center}};
             DockPanel.SetDock(caption,Dock.Bottom);
             dock.Children.Add(caption);
             dock.Children.Add(content);
@@ -486,15 +487,13 @@ namespace EKRibbon.UI
         // The pin and Ribbon Builder buttons are always added at the end of the tab.
         Border ToolsPreview()
         {
-            var stack=new StackPanel{VerticalAlignment=VerticalAlignment.Center,Margin=new Thickness(6,6,6,4),Height=PanelHeight};
-            stack.Children.Add(new FrameworkElement{Height=(PanelHeight-2*Cell(3))/2.0});
+            var row=new StackPanel{Orientation=Orientation.Horizontal,Height=PanelHeight,Margin=new Thickness(4,4,4,3)};
             foreach(var icon in new[]{Icons.Pin(layout.PinTab,32),Icons.App(32)})
             {
-                var image=new Image{Source=icon,Width=24,Height=24,Margin=new Thickness(5)};
-                RenderOptions.SetBitmapScalingMode(image,BitmapScalingMode.HighQuality);
-                stack.Children.Add(image);
+                var image=new Image{Source=icon,Width=32,Height=32,Margin=new Thickness(6,0,6,0),VerticalAlignment=VerticalAlignment.Center};
+                row.Children.Add(image);
             }
-            var frame=PanelFrame(RibbonBuilder.ToolsPanelName,stack);
+            var frame=PanelFrame(RibbonBuilder.ToolsPanelName,row);
             frame.Opacity=.85;
             frame.ToolTip="Always at the end of EK Custom: the pin, and this Ribbon Builder.";
             return frame;
@@ -525,8 +524,8 @@ namespace EKRibbon.UI
             {
                 var row=new StackPanel{Orientation=Orientation.Horizontal};
                 row.Children.Add(content);
-                row.Children.Add(new TextBlock{Text=Caption(ci.Name),FontSize=11.5,Margin=new Thickness(5,0,4,0),
-                    VerticalAlignment=VerticalAlignment.Center,MaxWidth=150,TextTrimming=TextTrimming.CharacterEllipsis});
+                row.Children.Add(new TextBlock{Text=Caption(ci.Name),FontSize=11,Margin=new Thickness(4,0,3,0),
+                    VerticalAlignment=VerticalAlignment.Center,MaxWidth=120,TextTrimming=TextTrimming.CharacterEllipsis});
                 content=row;
             }
             var shell=Shell(token,content);
@@ -539,14 +538,14 @@ namespace EKRibbon.UI
         {
             var ci=byKey[token];
             var stack=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
-            var image=IconImage(ci,40);
+            var image=IconImage(ci,32);
             image.HorizontalAlignment=HorizontalAlignment.Center;
             stack.Children.Add(image);
             if(layout.Labels!="icon")
-                stack.Children.Add(new TextBlock{Text=Caption(ci.Name),FontSize=11.5,TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,
-                    MaxWidth=74,MaxHeight=32,Margin=new Thickness(2,4,2,0),TextTrimming=TextTrimming.CharacterEllipsis});
+                stack.Children.Add(new TextBlock{Text=Caption(ci.Name),FontSize=11,TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,
+                    MaxWidth=64,MaxHeight=30,Margin=new Thickness(2,2,2,0),TextTrimming=TextTrimming.CharacterEllipsis});
             var shell=Shell(token,stack);
-            shell.Width=layout.Labels=="icon"?60:80;
+            shell.Width=layout.Labels=="icon"?44:68;
             shell.Height=PanelHeight-4;
             shell.VerticalAlignment=VerticalAlignment.Center;
             return shell;
@@ -588,9 +587,9 @@ namespace EKRibbon.UI
 
         Border DividerVisual(string token)
         {
-            var line=new Border{Width=2,Margin=new Thickness(0,8,0,8),CornerRadius=new CornerRadius(1)};
-            var shell=new Border{Width=18,Tag=token,Child=line,Cursor=Cursors.SizeWE,CornerRadius=new CornerRadius(4),
-                Margin=new Thickness(3,0,3,0),BorderThickness=new Thickness(1.5),
+            var line=new Border{Width=2,Margin=new Thickness(0,6,0,6),CornerRadius=new CornerRadius(1)};
+            var shell=new Border{Width=14,Tag=token,Child=line,Cursor=Cursors.SizeWE,CornerRadius=new CornerRadius(4),
+                Margin=new Thickness(2,0,2,0),BorderThickness=new Thickness(1.5),
                 ToolTip="Divider: drag it, or select it and use ← →. Buttons after it form a new group."};
             visuals[token]=shell;
             Paint(shell);
@@ -618,11 +617,11 @@ namespace EKRibbon.UI
 
         Border DropZone(int group,string tip)
         {
-            var zone=new Border{Width=40,Margin=new Thickness(4,4,0,4),CornerRadius=new CornerRadius(5),BorderThickness=new Thickness(1.5),
+            var zone=new Border{Width=28,Margin=new Thickness(4,4,0,4),CornerRadius=new CornerRadius(5),BorderThickness=new Thickness(1.5),
                 BorderBrush=Brushes.Transparent,Background=Brushes.Transparent,ToolTip=tip,
                 Child=new Grid{Children={
                     new Rectangle{Stroke=(Brush)FindResource("LineStrong"),StrokeDashArray=new DoubleCollection{3,3},RadiusX=4,RadiusY=4},
-                    new TextBlock{Text="+",FontSize=18,Foreground=(Brush)FindResource("Muted"),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center}}}};
+                    new TextBlock{Text="+",FontSize=15,Foreground=(Brush)FindResource("Muted"),HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center}}}};
             AttachDrop(zone,zone,t=>layout.AppendToGroup(t,group,Visible));
             return zone;
         }
@@ -789,7 +788,7 @@ namespace EKRibbon.UI
             foreach(var group in results.Take(LibraryLimit).GroupBy(x=>(x.Tab??"")+"\u0001"+(x.Panel??"")))
             {
                 var first=group.First();
-                var heading=new TextBlock{Margin=new Thickness(2,10,0,6),FontSize=11.5};
+                var heading=new TextBlock{Margin=new Thickness(2,8,0,4),FontSize=11};
                 heading.Inlines.Add(new System.Windows.Documents.Run(first.Tab){FontWeight=FontWeights.SemiBold});
                 heading.Inlines.Add(new System.Windows.Documents.Run("  ›  "+first.Panel){Foreground=(Brush)FindResource("Muted")});
                 LibraryHost.Children.Add(heading);
@@ -807,17 +806,17 @@ namespace EKRibbon.UI
         Border Tile(CommandInfo ci)
         {
             string key=ci.Key;
-            var badge=new Border{Width=18,Height=18,CornerRadius=new CornerRadius(9),Background=(Brush)FindResource("Accent"),
-                HorizontalAlignment=HorizontalAlignment.Right,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(0,5,5,0),
-                Child=new TextBlock{Text="",FontFamily=new FontFamily("Segoe MDL2 Assets"),FontSize=10,Foreground=Brushes.White,
+            var badge=new Border{Width=15,Height=15,CornerRadius=new CornerRadius(7.5),Background=(Brush)FindResource("Accent"),
+                HorizontalAlignment=HorizontalAlignment.Right,VerticalAlignment=VerticalAlignment.Top,Margin=new Thickness(0,4,4,0),
+                Child=new TextBlock{Text="\uE73E",FontFamily=new FontFamily("Segoe MDL2 Assets"),FontSize=8,Foreground=Brushes.White,
                     HorizontalAlignment=HorizontalAlignment.Center,VerticalAlignment=VerticalAlignment.Center}};
-            var image=new Image{Source=Icons.Command(ci,32),Width=32,Height=32};
+            var image=new Image{Source=Icons.Command(ci,24),Width=24,Height=24};
             RenderOptions.SetBitmapScalingMode(image,BitmapScalingMode.HighQuality);
             var body=new StackPanel{VerticalAlignment=VerticalAlignment.Center};
             body.Children.Add(image);
-            body.Children.Add(new TextBlock{Text=(ci.Name??"").Replace("\n"," "),FontSize=11,TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,
-                MaxHeight=30,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(6,6,6,0)});
-            var tile=new Border{Width=106,Height=92,CornerRadius=new CornerRadius(8),Margin=new Thickness(0,0,8,8),BorderThickness=new Thickness(1),
+            body.Children.Add(new TextBlock{Text=(ci.Name??"").Replace("\n"," "),FontSize=10.5,TextWrapping=TextWrapping.Wrap,TextAlignment=TextAlignment.Center,
+                MaxHeight=28,TextTrimming=TextTrimming.CharacterEllipsis,Margin=new Thickness(4,4,4,0)});
+            var tile=new Border{Width=84,Height=66,CornerRadius=new CornerRadius(6),Margin=new Thickness(0,0,6,6),BorderThickness=new Thickness(1),
                 Tag=badge,Cursor=Cursors.Hand,Child=new Grid{Children={body,badge}},
                 ToolTip=ci.Name+"\n"+ci.Tab+" › "+ci.Panel+(ci.Registered?"":"\nCan't be run as a command, so it can't go on the tab.")};
             tiles[key]=tile;

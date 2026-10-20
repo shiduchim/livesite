@@ -1,6 +1,6 @@
 # Shared by Install, Uninstall and Diagnostics.
 $EkId = 'C6074EC5-BC4D-4C4D-846E-F84F3C597B12'
-$EkVersion = '2.0.0'
+$EkVersion = '2.0.1'
 $EkRoot = Join-Path $env:APPDATA 'EKRibbonCSharp'
 $EkYears = 2024..2027
 

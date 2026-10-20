@@ -24,7 +24,7 @@ foreach ($year in $EkYears) {
 $out = Join-Path ([Environment]::GetFolderPath('Desktop')) ('EKRibbon_Diagnostics_' + (Get-Date -Format 'yyyyMMdd_HHmmss'))
 New-Item -ItemType Directory -Path $out | Out-Null
 $lines | Set-Content -LiteralPath (Join-Path $out 'report.txt') -Encoding UTF8
-foreach ($pattern in 'startup_*.txt', 'scan_*.txt', 'last-error.log*', 'layout_shared.json', 'catalog_*.json') {
+foreach ($pattern in 'startup_*.txt', 'pin_*.txt', 'scan_*.txt', 'last-error.log*', 'layout_shared.json', 'catalog_*.json') {
   Get-ChildItem -LiteralPath $EkRoot -Filter $pattern -File -ErrorAction SilentlyContinue | Copy-Item -Destination $out
 }
 Compress-Archive -Path (Join-Path $out '*') -DestinationPath "$out.zip"
