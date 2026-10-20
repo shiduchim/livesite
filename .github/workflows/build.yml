@@ -5,6 +5,10 @@ on:
     paths-ignore:
       - 'release/**'
       - '**.md'
+      - 'script-launcher/**'
+      - 'EK_Script_Launcher/**'
+      - 'EK_Script_Launcher.zip'
+      - '.github/workflows/script-launcher.yml'
   pull_request:
   workflow_dispatch:
 

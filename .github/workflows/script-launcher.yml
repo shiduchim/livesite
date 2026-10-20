@@ -1,0 +1,57 @@
+name: EK Script Launcher (Windows build)
+
+on:
+  push:
+    paths:
+      - 'script-launcher/**'
+      - '!script-launcher/release/**'
+      - '.github/workflows/script-launcher.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: script-launcher-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+
+      - name: Build Revit 2024-2027 and package
+        shell: pwsh
+        run: ./script-launcher/build/Build-Package.ps1
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EK_Script_Launcher_2024_2027
+          path: script-launcher/out/EK_Script_Launcher_2024_2027.zip
+          if-no-files-found: error
+
+      - name: Commit package to this branch
+        if: github.event_name != 'pull_request'
+        shell: pwsh
+        run: |
+          $dest = "script-launcher/release"
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item script-launcher/out/EK_Script_Launcher_2024_2027.zip $dest -Force
+          Copy-Item script-launcher/out/EK_Script_Launcher_2024_2027/SHA256SUMS.txt $dest -Force
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add $dest
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "EK Script Launcher package from ${env:GITHUB_SHA} [skip ci]"
+            git pull --rebase origin "${env:GITHUB_REF_NAME}"
+            git push origin "HEAD:${env:GITHUB_REF_NAME}"
+          }
