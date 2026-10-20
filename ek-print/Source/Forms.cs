@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Autodesk.Revit.DB;
 using Form = System.Windows.Forms.Form;
@@ -16,6 +18,7 @@ using Panel = System.Windows.Forms.Panel;
 using Label = System.Windows.Forms.Label;
 using View = Autodesk.Revit.DB.View;
 using Control = System.Windows.Forms.Control;
+using Timer = System.Windows.Forms.Timer;
 
 namespace EKPrint
 {
@@ -83,6 +86,7 @@ namespace EKPrint
         private bool _countPending;
         private int _nameMode = NameProjectItem;
         private string _customText = "";
+        private SettingsData _settings;
 
         private readonly System.ComponentModel.Container _components = new System.ComponentModel.Container();
         private readonly ToolTip _tips;
@@ -103,6 +107,7 @@ namespace EKPrint
         private readonly Label _hint;
         private readonly FooterBar _footer;
         private readonly Label _folderLabel;
+        private readonly LinkLabel _settingsLink;
         private readonly UiButton _cancel;
         private readonly UiButton _primary;
 
@@ -118,9 +123,11 @@ namespace EKPrint
         protected virtual bool CombineActive { get { return false; } }
         protected virtual string CombinedNameText { get { return _projectName; } }
         protected virtual void OnCombinedNameEdited(string text) { }
+        /// <summary>Hint line under the file name; refreshed after Settings are changed.</summary>
+        protected virtual string HintFor(SettingsData settings) { return ""; }
 
-        protected ViewPickerForm(List<View> allViews, View activeView, string projectName, string outputFolder,
-            string title, string subtitle, string iconName, string primaryText, string hint)
+        protected ViewPickerForm(List<View> allViews, View activeView, string projectName, SettingsData settings,
+            string title, string subtitle, string iconName, string primaryText)
         {
             _all = allViews ?? new List<View>();
             _active = activeView;
@@ -179,19 +186,21 @@ namespace EKPrint
             _card.Controls.Add(_nameLabel);
             _card.Controls.Add(_nameBox);
             _preview = FormKit.Text(Ui.Body, Ui.Text, "");
-            _hint = FormKit.Text(Ui.Small, Ui.Muted, hint);
+            _hint = FormKit.Text(Ui.Small, Ui.Muted, "");
             _card.Controls.Add(_preview);
             _card.Controls.Add(_hint);
 
             _footer = new FooterBar();
-            string folder = (outputFolder ?? "").Trim();
-            _folderLabel = FormKit.Text(Ui.Body, Ui.Muted, folder.Length > 0 ? "Saves to   " + folder : "");
-            if (folder.Length > 0) _tips.SetToolTip(_folderLabel, folder);
+            _folderLabel = FormKit.Text(Ui.Body, Ui.Muted, "");
+            _settingsLink = FormKit.Link("Settings");
+            _settingsLink.LinkClicked += delegate { OpenSettings(); };
+            _tips.SetToolTip(_settingsLink, "Save folder, multiple-sheet behavior and DWG export options");
             _cancel = new UiButton("Cancel", false);
             _cancel.Click += delegate { DialogResult = DialogResult.Cancel; Close(); };
             _primary = new UiButton(primaryText, true);
             _primary.Click += PrimaryClick;
             _footer.Controls.Add(_folderLabel);
+            _footer.Controls.Add(_settingsLink);
             _footer.Controls.Add(_cancel);
             _footer.Controls.Add(_primary);
 
@@ -207,6 +216,42 @@ namespace EKPrint
 
             AcceptButton = _primary;
             CancelButton = _cancel;
+            _settings = settings != null ? settings.Clone() : new SettingsData();
+        }
+
+        protected void RefreshHint()
+        {
+            if (_hint != null) _hint.Text = HintFor(_settings);
+        }
+
+        private void ApplySettings()
+        {
+            string folder = (_settings.OutputFolder ?? "").Trim();
+            _folderLabel.Text = folder.Length > 0 ? "Saves to   " + folder : "No save folder chosen";
+            _tips.SetToolTip(_folderLabel, folder);
+            _hint.Text = HintFor(_settings);
+        }
+
+        private void OpenSettings()
+        {
+            using (SettingsForm form = new SettingsForm(SettingsStore.Load()))
+            {
+                form.StartPosition = FormStartPosition.CenterParent;
+                if (form.ShowDialog(this) != DialogResult.OK) return;
+                try
+                {
+                    SettingsStore.Save(form.Settings);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(this, "Could not save the settings.\n\n" + ex.Message, MessageTitle,
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+                _settings = form.Settings.Clone();
+                ApplySettings();
+                LayoutAll();
+            }
         }
 
         protected void AddOptionRow(string label, Control control)
@@ -233,6 +278,7 @@ namespace EKPrint
             _allLink.TabIndex = tab++;
             _noneLink.TabIndex = tab++;
             _card.TabIndex = tab++;
+            _settingsLink.TabIndex = 2;
             _footer.TabIndex = tab++;
             int rowTab = 0;
             foreach (Control[] row in _rows) row[1].TabIndex = rowTab++;
@@ -245,6 +291,7 @@ namespace EKPrint
             ClientSize = new Size(cw, ch);
             MinimumSize = SizeFromClientSize(new Size(Math.Min(Ui.S(720), cw), Math.Min(Ui.S(600), ch)));
 
+            ApplySettings();
             ApplyCategory();
             _ready = true;
             ApplyModeState();
@@ -303,7 +350,14 @@ namespace EKPrint
             int by = (footerH - buttonH) / 2;
             _primary.SetBounds(w - m - pw, by, pw, buttonH);
             _cancel.SetBounds(_primary.Left - Ui.S(10) - cw, by, cw, buttonH);
-            _folderLabel.SetBounds(m, 0, Math.Max(0, _cancel.Left - Ui.S(16) - m), footerH);
+            // "Saves to <folder>" then a small Settings link right after it (the folder text shrinks first).
+            Size linkSize = _settingsLink.PreferredSize;
+            int linkGap = Ui.S(14);
+            int room = Math.Max(0, _cancel.Left - Ui.S(16) - m - linkGap - linkSize.Width);
+            int folderW = Math.Min(room, Ui.TextWidth(_folderLabel.Text, _folderLabel.Font) + Ui.S(8));
+            _folderLabel.SetBounds(m, 0, folderW, footerH);
+            _settingsLink.SetBounds(m + folderW + (folderW > 0 ? linkGap : 0), (footerH - linkSize.Height) / 2,
+                linkSize.Width, linkSize.Height);
 
             int pad = Ui.S(16);
             int gap = Ui.S(10);
@@ -321,8 +375,16 @@ namespace EKPrint
             {
                 row[0].SetBounds(pad, y, labelW - Ui.S(8), rowH);
                 Segmented seg = row[1] as Segmented;
-                int width = seg != null ? Math.Min(avail, Math.Max(Ui.S(280), seg.PreferredWidth)) : avail;
-                row[1].SetBounds(x0, y, width, rowH);
+                if (row[1] is ComboBox)
+                {
+                    // A combo box has a fixed height; center it in the row.
+                    row[1].SetBounds(x0, y + Math.Max(0, (rowH - row[1].Height) / 2), Math.Min(avail, Ui.S(320)), row[1].Height);
+                }
+                else
+                {
+                    int width = seg != null ? Math.Min(avail, Math.Max(Ui.S(280), seg.PreferredWidth)) : avail;
+                    row[1].SetBounds(x0, y, width, rowH);
+                }
                 y += rowH + gap;
             }
             y += Ui.S(12) - gap;
@@ -623,18 +685,13 @@ namespace EKPrint
         private bool _combine = true;
         private string _combineName;
         private readonly Segmented _output;
+        private readonly ComboBox _paper;
 
-        public PdfPickerForm(List<View> allViews, View activeView, string projectName)
-            : this(allViews, activeView, projectName, null)
-        {
-        }
-
-        public PdfPickerForm(List<View> allViews, View activeView, string projectName, string outputFolder)
-            : base(allViews, activeView, projectName, outputFolder,
+        public PdfPickerForm(List<View> allViews, View activeView, string projectName, SettingsData settings)
+            : base(allViews, activeView, projectName, settings,
                 "Print to PDF",
                 "Choose sheets or views, then choose how the PDF files are created.",
-                "SelectPDF", "Print",
-                "Vector PDF  \u00B7  Paper size follows each sheet  \u00B7  Crop regions, scope boxes and reference planes hidden")
+                "SelectPDF", "Print")
         {
             _combineName = ProjectNameSafe;
             _output = new Segmented("Combine into one PDF", "Separate PDFs");
@@ -647,6 +704,17 @@ namespace EKPrint
                 ApplyModeState();
             };
             InsertOptionRow(0, "Output", _output);
+
+            // Paper size: "Use sheet size" unless the user picks a fixed size for this print.
+            _paper = new ComboBox();
+            _paper.DropDownStyle = ComboBoxStyle.DropDownList;
+            _paper.FlatStyle = FlatStyle.System;
+            _paper.Font = Ui.Body;
+            _paper.MaxDropDownItems = 16;
+            _paper.Items.AddRange(PaperChoice.All);
+            _paper.SelectedItem = PaperChoice.SheetSize;
+            _paper.SelectedIndexChanged += delegate { RefreshHint(); };
+            InsertOptionRow(1, "Paper size", _paper);
             Initialize();
         }
 
@@ -665,9 +733,27 @@ namespace EKPrint
 
         public string PdfName { get { return FinalName; } }
 
+        public ExportPaperFormat Paper
+        {
+            get
+            {
+                PaperChoice choice = _paper.SelectedItem as PaperChoice;
+                return choice != null ? choice.Format : ExportPaperFormat.Default;
+            }
+        }
+
         protected override bool CombineActive { get { return _combine; } }
         protected override string CombinedNameText { get { return _combineName ?? ProjectNameSafe; } }
         protected override void OnCombinedNameEdited(string text) { _combineName = text; }
+        protected override string HintFor(SettingsData settings)
+        {
+            PaperChoice choice = _paper == null ? null : _paper.SelectedItem as PaperChoice;
+            string paper = choice == null || choice.UsesSheetSize
+                ? "Paper size follows each sheet"
+                : "Fit to page on " + choice.Label.Split(new string[] { "  (" }, StringSplitOptions.None)[0];
+            return "Revit PDF export  \u00B7  Vector, color  \u00B7  " + paper +
+                "  \u00B7  Crop regions, scope boxes and reference planes hidden";
+        }
         protected override string Extension { get { return ".pdf"; } }
         protected override string NameNoun { get { return "PDF"; } }
         protected override string MessageTitle { get { return "EK Print"; } }
@@ -682,17 +768,11 @@ namespace EKPrint
 
     public sealed class DwgPickerForm : ViewPickerForm
     {
-        public DwgPickerForm(List<View> allViews, View activeView, string projectName)
-            : this(allViews, activeView, projectName, null)
-        {
-        }
-
-        public DwgPickerForm(List<View> allViews, View activeView, string projectName, string outputFolder)
-            : base(allViews, activeView, projectName, outputFolder,
+        public DwgPickerForm(List<View> allViews, View activeView, string projectName, SettingsData settings)
+            : base(allViews, activeView, projectName, settings,
                 "Export to DWG",
                 "Choose sheets or views to export with the EK DWG settings.",
-                "SelectDWG", "Export DWG",
-                "AutoCAD 2013  \u00B7  Centimeters  \u00B7  Shared coordinates  \u00B7  Views on sheets merged  \u00B7  DWG files only")
+                "SelectDWG", "Export DWG")
         {
             Initialize();
         }
@@ -709,6 +789,10 @@ namespace EKPrint
 
         public string DwgName { get { return FinalName; } }
 
+        protected override string HintFor(SettingsData settings)
+        {
+            return DwgExportService.Describe(settings) + "  \u00B7  DWG files only";
+        }
         protected override string Extension { get { return ".dwg"; } }
         protected override string NameNoun { get { return "DWG"; } }
         protected override string MessageTitle { get { return "EK Select DWG"; } }
@@ -727,21 +811,23 @@ namespace EKPrint
         private readonly Label _folderState;
         private readonly Segmented _mode;
         private readonly Label _modeHelp;
+        private readonly Segmented _dwgColors;
+        private readonly Segmented _dwgUnit;
+        private readonly Segmented _dwgCoords;
+        private readonly Label _dwgHelp;
 
         public SettingsData Settings { get; private set; }
 
         public SettingsForm(SettingsData current)
         {
-            Settings = new SettingsData();
-            Settings.OutputFolder = current == null ? "" : current.OutputFolder;
-            Settings.QuickMultipleMode = current == null ? QuickMultipleMode.Combine : current.QuickMultipleMode;
+            Settings = current != null ? current.Clone() : new SettingsData();
 
             FormKit.Prepare(this, Ui.Product + " \u2013 Settings");
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
             MinimizeBox = false;
 
-            int w = Ui.S(600);
+            int w = Ui.S(640);
             int m = Ui.S(20);
             int pad = Ui.S(18);
             int rowH = Ui.S(32);
@@ -752,7 +838,7 @@ namespace EKPrint
 
             HeaderBar header = new HeaderBar();
             header.Title = "EK Print Settings";
-            header.Subtitle = "Defaults used by Quick PDF, Sheet Print and DWG export.";
+            header.Subtitle = "Defaults for PDF and DWG export. Saved until you change them.";
             header.IconImage = Ui.LoadIcon("Settings", 32);
             header.SetBounds(0, 0, w, Ui.S(68));
             Controls.Add(header);
@@ -825,10 +911,45 @@ namespace EKPrint
             modeCard.SetBounds(m, folderCard.Bottom + Ui.S(14), cardW, y);
             Controls.Add(modeCard);
 
+            // DWG export options (Quick DWG and Select DWG)
+            Card dwgCard = new Card();
+            y = pad;
+            Label dwgTitle = FormKit.Text(Ui.Section, Ui.Text, "DWG export");
+            dwgTitle.SetBounds(pad, y, inner, sectionH);
+            y += sectionH;
+            Label dwgIntro = FormKit.Text(Ui.Body, Ui.Muted, "Used by Quick DWG and Select DWG. Kept until you change them here.");
+            dwgIntro.SetBounds(pad, y, inner, lineH);
+            y += lineH + Ui.S(8);
+            dwgCard.Controls.Add(dwgTitle);
+            dwgCard.Controls.Add(dwgIntro);
+
+            int labelW = Ui.S(96);
+            int fieldW = inner - labelW;
+            _dwgColors = new Segmented("Index color", "Object styles", "View");
+            _dwgColors.SelectedIndex = (int)Settings.DwgColors;
+            _dwgColors.SelectedIndexChanged += delegate { UpdateDwgHelp(); };
+            y = AddRow(dwgCard, "Colors", _dwgColors, pad, y, labelW, fieldW, rowH);
+            _dwgHelp = FormKit.Text(Ui.Small, Ui.Muted, "");
+            _dwgHelp.SetBounds(pad + labelW, y - Ui.S(4), fieldW, Ui.LineHeight(Ui.Small) + Ui.S(4));
+            dwgCard.Controls.Add(_dwgHelp);
+            y += Ui.LineHeight(Ui.Small) + Ui.S(8);
+
+            _dwgUnit = new Segmented("Foot", "Inch", "Meter", "Centimeter", "Millimeter");
+            _dwgUnit.SelectedIndex = (int)Settings.DwgUnit;
+            y = AddRow(dwgCard, "One unit is", _dwgUnit, pad, y, labelW, fieldW, rowH);
+
+            _dwgCoords = new Segmented("Shared coordinates", "Internal origin");
+            _dwgCoords.SelectedIndex = (int)Settings.DwgCoordinates;
+            y = AddRow(dwgCard, "Coordinates", _dwgCoords, pad, y, labelW, fieldW, rowH);
+            y += pad - Ui.S(10);
+
+            dwgCard.SetBounds(m, modeCard.Bottom + Ui.S(14), cardW, y);
+            Controls.Add(dwgCard);
+
             // Footer
             int footerH = Ui.S(64);
             int buttonH = Ui.S(34);
-            int h = modeCard.Bottom + Ui.S(20) + footerH;
+            int h = dwgCard.Bottom + Ui.S(20) + footerH;
             FooterBar footer = new FooterBar();
             footer.SetBounds(0, h - footerH, w, footerH);
             UiButton save = new UiButton("Save", true);
@@ -846,17 +967,51 @@ namespace EKPrint
             footer.Controls.Add(save);
             Controls.Add(footer);
 
-            ClientSize = new Size(w, h);
+            // On a small screen at high display scale the window scrolls instead of running off the screen.
+            Rectangle work = Screen.FromPoint(System.Windows.Forms.Cursor.Position).WorkingArea;
+            int maxH = (int)(work.Height * 0.92) - (SizeFromClientSize(Size.Empty).Height);
+            if (h > maxH)
+            {
+                AutoScroll = true;
+                ClientSize = new Size(w + SystemInformation.VerticalScrollBarWidth, maxH);
+            }
+            else
+            {
+                ClientSize = new Size(w, h);
+            }
             AcceptButton = save;
             CancelButton = cancel;
             save.TabIndex = 0;
             cancel.TabIndex = 1;
             folderCard.TabIndex = 0;
             modeCard.TabIndex = 1;
-            footer.TabIndex = 2;
+            dwgCard.TabIndex = 2;
+            footer.TabIndex = 3;
 
             UpdateFolderState();
             UpdateModeHelp();
+            UpdateDwgHelp();
+        }
+
+        private static int AddRow(Control card, string label, Segmented field, int x, int y, int labelW, int fieldW, int rowH)
+        {
+            Label l = FormKit.Text(Ui.BodySemibold, Ui.Text, label);
+            l.SetBounds(x, y, labelW - Ui.S(8), rowH);
+            field.SetBounds(x + labelW, y, Math.Min(fieldW, Math.Max(Ui.S(240), field.PreferredWidth)), rowH);
+            field.TabIndex = card.Controls.Count;
+            card.Controls.Add(l);
+            card.Controls.Add(field);
+            return y + rowH + Ui.S(10);
+        }
+
+        private void UpdateDwgHelp()
+        {
+            switch (_dwgColors.SelectedIndex)
+            {
+                case 0: _dwgHelp.Text = "255 AutoCAD colors, from the color IDs on the layers."; break;
+                case 1: _dwgHelp.Text = "True color (RGB) from Object Styles."; break;
+                default: _dwgHelp.Text = "True color (RGB) as shown in the Revit view."; break;
+            }
         }
 
         private void UpdateFolderState()
@@ -899,28 +1054,143 @@ namespace EKPrint
             }
             Settings.OutputFolder = folder;
             Settings.QuickMultipleMode = _mode.SelectedIndex == 1 ? QuickMultipleMode.Separate : QuickMultipleMode.Combine;
+            Settings.DwgColors = (DwgColorMode)Math.Max(0, _dwgColors.SelectedIndex);
+            Settings.DwgUnit = (DwgUnit)Math.Max(0, _dwgUnit.SelectedIndex);
+            Settings.DwgCoordinates = (DwgCoordinates)Math.Max(0, _dwgCoords.SelectedIndex);
             DialogResult = DialogResult.OK;
             Close();
         }
     }
 
+    /// <summary>
+    /// Progress window state shared between Revit's thread and the window's own UI thread.
+    /// The window runs its own message loop, so it keeps painting and Cancel Print stays clickable
+    /// while Revit is busy inside Document.Export. Revit's thread only writes plain fields here;
+    /// the window polls them, so no call ever crosses threads.
+    /// </summary>
+    internal sealed class ExportProgress
+    {
+        private readonly object _lock = new object();
+        private readonly ManualResetEvent _closed = new ManualResetEvent(false);
+        private Thread _thread;
+        private volatile bool _cancel;
+        private IntPtr _dpiContext = IntPtr.Zero;
+
+        private int _done;
+        private int _total = 1;
+        private double _item;
+        private string _counter = "";
+        private string _label = "";
+
+        public string Title { get; private set; }
+        public string Note { get; private set; }
+        public bool CancelRequested { get { return _cancel; } }
+        internal bool IsClosed { get { return _closed.WaitOne(0); } }
+
+        /// <summary>Starts the window thread. With a delay, the window only appears if the job is still running then.</summary>
+        public static ExportProgress Start(string title, string note, int delayMs)
+        {
+            ExportProgress p = new ExportProgress();
+            p.Title = title ?? "";
+            p.Note = note ?? "";
+            try { p._dpiContext = GetThreadDpiAwarenessContext(); } catch { }
+            try
+            {
+                Thread t = new Thread(delegate() { p.Run(delayMs); });
+                t.SetApartmentState(ApartmentState.STA);
+                t.IsBackground = true;
+                t.Name = "EK Print progress";
+                p._thread = t;
+                t.Start();
+                return p;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void Run(int delayMs)
+        {
+            try
+            {
+                if (_closed.WaitOne(Math.Max(0, delayMs))) return;   // job finished before the window was needed
+                // Match Revit's DPI mode so Ui.S() metrics mean the same on this thread.
+                try { if (_dpiContext != IntPtr.Zero) SetThreadDpiAwarenessContext(_dpiContext); } catch { }
+                using (PdfProgressForm form = new PdfProgressForm(this))
+                    System.Windows.Forms.Application.Run(form);
+            }
+            catch { }
+        }
+
+        internal void RequestCancel() { _cancel = true; }
+
+        public void SetStep(int done, int total, string counter, string label)
+        {
+            lock (_lock)
+            {
+                _total = Math.Max(1, total);
+                _done = Math.Max(0, Math.Min(done, _total));
+                _item = 0;
+                _counter = counter ?? "";
+                _label = label ?? "";
+            }
+        }
+
+        /// <summary>Progress inside the current step, from Revit's own progress bar (0..1). Never moves backwards.</summary>
+        public void SetItemFraction(double fraction)
+        {
+            lock (_lock)
+            {
+                if (fraction > _item) _item = Math.Min(1.0, fraction);
+            }
+        }
+
+        internal void Read(out string counter, out string label, out double fraction)
+        {
+            lock (_lock)
+            {
+                counter = _counter;
+                label = _label;
+                fraction = Math.Min(1.0, (_done + (_done < _total ? _item : 0)) / _total);
+            }
+        }
+
+        public void Close()
+        {
+            _closed.Set();
+            if (_thread != null)
+            {
+                try { _thread.Join(3000); } catch { }
+            }
+        }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetThreadDpiAwarenessContext();
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr SetThreadDpiAwarenessContext(IntPtr context);
+    }
+
     public sealed class PdfProgressForm : Form
     {
+        private const int BarSteps = 1000;
+        private readonly ExportProgress _host;
         private readonly Label _title;
         private readonly Label _counter;
         private readonly Label _status;
         private readonly ProgressLine _bar;
         private readonly UiButton _cancelButton;
+        private readonly Timer _timer;
 
-        public bool CancelRequested { get; private set; }
-
-        public PdfProgressForm(int total)
+        internal PdfProgressForm(ExportProgress host)
         {
-            CancelRequested = false;
+            _host = host;
             FormKit.Prepare(this, "EK Print - Exporting");
             BackColor = Ui.Surface;
             ShowInTaskbar = false;
             ControlBox = false;
+            TopMost = true;   // no owner window: Revit's thread is busy, so it cannot own this one
             FormBorderStyle = FormBorderStyle.FixedDialog;
 
             int w = Ui.S(480);
@@ -929,17 +1199,17 @@ namespace EKPrint
             int lineH = Ui.LineHeight(Ui.Body) + Ui.S(4);
             int counterW = Ui.S(120);
 
-            _title = FormKit.Text(Ui.Section, Ui.Text, "Exporting PDF");
+            _title = FormKit.Text(Ui.Section, Ui.Text, host.Title);
             _title.SetBounds(m, Ui.S(22), w - m * 2 - counterW, sectionH);
-            _counter = FormKit.Text(Ui.Body, Ui.Muted, "0 of " + Math.Max(total, 1).ToString());
+            _counter = FormKit.Text(Ui.Body, Ui.Muted, "");
             _counter.TextAlign = ContentAlignment.MiddleRight;
             _counter.SetBounds(w - m - counterW, Ui.S(22), counterW, sectionH);
 
-            _status = FormKit.Text(Ui.Body, Ui.Muted, "Preparing PDF export...");
+            _status = FormKit.Text(Ui.Body, Ui.Muted, "Preparing PDF export…");
             _status.SetBounds(m, _title.Bottom + Ui.S(6), w - m * 2, lineH);
 
             _bar = new ProgressLine();
-            _bar.Maximum = Math.Max(total, 1);
+            _bar.Maximum = BarSteps;
             _bar.SetBounds(m, _status.Bottom + Ui.S(12), w - m * 2, Math.Max(4, Ui.S(6)));
 
             int footerH = Ui.S(60);
@@ -950,14 +1220,8 @@ namespace EKPrint
             int bw = _cancelButton.PreferredButtonWidth;
             int bh = Ui.S(34);
             _cancelButton.SetBounds(w - m - bw, (footerH - bh) / 2, bw, bh);
-            _cancelButton.Click += delegate
-            {
-                CancelRequested = true;
-                _cancelButton.Enabled = false;
-                _cancelButton.Text = "Stopping\u2026";
-                _status.Text = "Stopping after the current sheet finishes...";
-            };
-            Label note = FormKit.Text(Ui.Small, Ui.Muted, "Cancel stops before the next sheet starts.");
+            _cancelButton.Click += delegate { RequestCancel(); };
+            Label note = FormKit.Text(Ui.Small, Ui.Muted, host.Note);
             note.SetBounds(m, 0, Math.Max(0, _cancelButton.Left - m - Ui.S(12)), footerH);
             footer.Controls.Add(note);
             footer.Controls.Add(_cancelButton);
@@ -969,28 +1233,60 @@ namespace EKPrint
             Controls.Add(footer);
             ClientSize = new Size(w, h);
             CancelButton = _cancelButton;
+
+            _timer = new Timer();
+            _timer.Interval = 100;
+            _timer.Tick += delegate { Poll(); };
         }
 
-        public void ShowStep(int done, int total, string label)
+        protected override void OnShown(EventArgs e)
         {
-            if (IsDisposed) return;
-            _counter.Text = done.ToString() + " of " + total.ToString();
-            if (!CancelRequested)
-                _status.Text = Sentence(label);
-            _bar.Value = done;
-            System.Windows.Forms.Application.DoEvents();
+            base.OnShown(e);
+            Poll();
+            _timer.Start();
         }
 
-        public void SetStatus(string text)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (IsDisposed) return;
-            _status.Text = text ?? "";
+            // Alt+F4 means Cancel Print; the window only really closes when the job is over.
+            if (!_host.IsClosed)
+            {
+                e.Cancel = true;
+                RequestCancel();
+            }
+            base.OnFormClosing(e);
         }
 
-        private static string Sentence(string text)
+        protected override void Dispose(bool disposing)
         {
-            if (string.IsNullOrEmpty(text)) return "";
-            return char.ToUpperInvariant(text[0]).ToString() + text.Substring(1);
+            if (disposing) _timer.Dispose();
+            base.Dispose(disposing);
+        }
+
+        private void RequestCancel()
+        {
+            if (_host.CancelRequested) return;
+            _host.RequestCancel();
+            _cancelButton.Enabled = false;
+            _cancelButton.Text = "Stopping…";
+            _status.Text = "Stopping – waiting for Revit to stop the export…";
+        }
+
+        private void Poll()
+        {
+            if (_host.IsClosed)
+            {
+                _timer.Stop();
+                Close();
+                return;
+            }
+            string counter, label;
+            double fraction;
+            _host.Read(out counter, out label, out fraction);
+            if (_counter.Text != counter) _counter.Text = counter;
+            if (!_host.CancelRequested && label.Length > 0 && _status.Text != label) _status.Text = label;
+            int value = (int)Math.Round(fraction * BarSteps);
+            if (_bar.Value != value) _bar.Value = value;
         }
     }
 }

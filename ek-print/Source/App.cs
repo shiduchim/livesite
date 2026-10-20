@@ -44,11 +44,11 @@ namespace EKPrint
 
                 AddButton(panel, "EKPrint_QuickDWG", "Quick\nDWG", typeof(QuickDwgCommand).FullName,
                     assemblyPath, Path.Combine(baseDir, "QuickDWG.png"),
-                    "Quick DWG. Exports selected printable sheets/views, or the active view/sheet, using EK DWG settings.");
+                    "Quick DWG. Exports selected printable sheets/views, or the active view/sheet, using the DWG options from Settings.");
 
                 AddButton(panel, "EKPrint_SelectDWG", "Select\nDWG", typeof(SelectDwgCommand).FullName,
                     assemblyPath, Path.Combine(baseDir, "SelectDWG.png"),
-                    "Choose sheets or views and export DWGs using EK DWG settings.");
+                    "Choose sheets or views and export DWGs using the DWG options from Settings.");
 
                 AddButton(panel, "EKPrint_SheetPrint", "Sheet\nPrint", typeof(SheetPrintCommand).FullName,
                     assemblyPath, Path.Combine(baseDir, "SheetPrint.png"),
@@ -59,14 +59,14 @@ namespace EKPrint
                     panel.AddSlideOut();
                     AddButton(panel, "EKPrint_Settings", "Settings", typeof(SettingsCommand).FullName,
                         assemblyPath, Path.Combine(baseDir, "Settings.png"),
-                        "EK Print settings: save folder and Quick PDF multiple-selection behavior.");
+                        "EK Print settings: save folder, multiple-sheet PDF behavior and DWG colors, units and coordinates.");
                 }
                 catch
                 {
                     // If a slide-out is unavailable for any reason, keep Settings accessible.
                     AddButton(panel, "EKPrint_SettingsFallback", "Settings", typeof(SettingsCommand).FullName,
                         assemblyPath, Path.Combine(baseDir, "Settings.png"),
-                        "EK Print settings: save folder and Quick PDF multiple-selection behavior.");
+                        "EK Print settings: save folder, multiple-sheet PDF behavior and DWG colors, units and coordinates.");
                 }
 
                 return Result.Succeeded;

@@ -1,4 +1,4 @@
-EK Print C# v6.2 — Revit 2024–2027
+EK Print C# v6.3 — Revit 2024–2027
 =====================================
 
 INSTALL
@@ -16,29 +16,42 @@ VISIBLE BUTTONS
 HIDDEN SLIDE-OUT
 - Settings
 
-PDF SETTINGS
-- Use Sheet Size
-- View links in blue: OFF
-- Hide reference/work planes: ON
-- Hide unreferenced view tags: ON
-- Region edges mask coincident lines: OFF
-- Hide scope boxes: ON
-- Hide crop boundaries: ON
-- Replace halftone with thin lines: OFF
-- Export in background: OFF where supported
+WHAT'S NEW IN v6.3
+- Sheet/view list: clicking a row now always checks/unchecks it. (Before, a click was lost if the mouse
+  moved a few pixels while pressed, because Windows started a drag instead.) Shift+click sets a range.
+- Select PDF / Select DWG: small "Settings" link in the footer, next to the save folder. Changes apply
+  immediately to the open dialog.
+- Select PDF: "Paper size" drop-down. Default is "Use sheet size". Any fixed size (A4-A0, B4-B1,
+  ANSI A-E, ARCH A-E3) prints with Zoom = Fit to page, centered, orientation automatic.
+  The choice is for that print only; the next print starts again at "Use sheet size".
+- Cancel Print now works for combined PDFs too, and also in the middle of a sheet (see below).
+- Settings: DWG Colors (Index color / Object styles / View), DWG unit (Foot, Inch, Meter, Centimeter,
+  Millimeter) and Coordinates (Shared / Internal origin). They are saved and stay until you change them.
+- Old files removed (see INSTALL CLEANUP).
 
-PDF EXPORT / CANCELLATION
-- One PDF item keeps the fast direct Revit export path and shows no progress window.
-- Separate mode with two or more sheets/views shows compact progress plus Cancel Print.
-- Cancel is cooperative: it stops BEFORE the next Revit export. It never tries to interrupt a Document.Export already in progress.
-- Applies to Quick PDF, Select PDF, and Sheet Print.
-- Separate mode keeps PDFs already completed and skips the remaining items after Cancel.
-- Combine mode: Revit builds the combined PDF itself in one export (PDFExportOptions.Combine). No third-party code.
-- The combined PDF is exported to a temporary folder first; the old combined PDF is replaced only after Revit finishes.
-  If the old PDF is open in a viewer, the new one is saved next to it as "Name (2).pdf".
-- Combine mode cannot be stopped halfway, because Revit does the whole combined export in one step.
-- Separate mode exports one item at a time with the progress window, so Cancel Print stops between sheets/views.
-- If the combined export fails, the previous combined PDF is left untouched.
+PDF ENGINE AND QUALITY
+- Uses Revit's own PDF export (Document.Export + PDFExportOptions) - the same engine as
+  File > Export > PDF. No printer driver, no third-party code.
+- Vector output (Always use raster: off), Color, Raster quality: High.
+- Paper: Use sheet size (default) or a fixed size with Fit to page.
+- View links in blue: OFF; Hide reference/work planes, unreferenced view tags, scope boxes and crop
+  boundaries: ON; Region edges mask coincident lines: OFF; Replace halftone with thin lines: OFF.
+- Export in background: OFF (Revit 2025+), so the PDF is finished when the export returns.
+
+PDF EXPORT / CANCEL
+- Every PDF is first written to a local work folder (%TEMP%\EKPrint) and copied to the save folder only
+  when it is complete. A cancelled or failed export never leaves a half-written PDF and never touches an
+  existing one. Network / OneDrive folders only ever receive finished files.
+- Combine: Revit builds the combined PDF itself in ONE export. This is the fastest way and gives one clean
+  vector PDF. (The alternative - printing every sheet to a temp folder and merging them afterwards - needs a
+  third-party PDF merge library, is slower, and was removed in v6.2.)
+- Cancel Print: the progress window runs on its own thread, so it stays responsive while Revit exports.
+  Cancel is passed to Revit through its progress events, so it stops the running export, not just the next
+  sheet. If Revit cannot stop at that moment, the export is discarded when it ends.
+    Combined: nothing is saved; the existing PDF is not changed.
+    Separate: PDFs already finished are kept; the rest are skipped.
+- Single sheet/view: no progress window unless the export takes longer than 1.5 seconds.
+- If the PDF is open in a viewer, the new one is saved next to it as "Name (2).pdf".
 
 SHEET PRINT (v30 behavior ported to C#)
 - Select views/sheets in the Project Browser and click Sheet Print.
@@ -50,44 +63,45 @@ SHEET PRINT (v30 behavior ported to C#)
 - Combine: Project - Selected Sheets.pdf
 - Separate: Project - Sheet Number - Sheet Name.pdf
 
-DWG SETTINGS
-- AutoCAD 2013
-- Centimeters
-- Shared coordinates
-- Colors specified in view
-- Views on sheets merged instead of external references
-- Only .dwg files are kept; sidecar files are discarded
+DWG SETTINGS (Settings > DWG export; saved between sessions)
+- Colors: Index color (255) / Object styles (True Color) / View (True Color). Default: View.
+- One DWG unit is: Foot / Inch / Meter / Centimeter / Millimeter. Default: Centimeter.
+- Coordinates: Shared coordinates / Internal origin. Default: Shared.
+- Always: AutoCAD 2013, views on sheets merged instead of external references,
+  only .dwg files kept (sidecar files are discarded).
 
 BUILD / PERFORMANCE
 - The add-in is C# and compiled against each installed Revit API (2024–2027).
 - Revit itself still performs PDF rendering; C# removes pyRevit/IronPython command overhead but cannot make Revit's renderer faster.
-- Cancellable multi-page jobs deliberately export one page at a time so Cancel can be honored between pages.
+- Separate mode exports one file per Revit export; Combine uses one Revit export for the whole set.
 
-RIBBON ICONS (v6.1)
-- Same icon artwork as v30, rebuilt cleanly from the original high-resolution design.
-- Quick DWG / Select DWG now fill their canvas like the other icons (in v30 they were drawn at about half size with faint text).
-- Every icon ships at each Windows display scale, and the add-in loads the exact match for the monitor:
+RIBBON ICONS
+- Every icon ships at each Windows display scale; the add-in loads the exact match for the monitor:
     Large button (32): Name.png, Name_40.png, Name_48.png, Name_64.png      (100% / 125% / 150% / 200%)
     Small button (16): Name_16.png, Name_16_20.png, Name_16_24.png, Name_16_32.png
-- Icons are pinned to exactly 32 / 16 logical pixels. v30 PNGs were read as 96.012 DPI, which made WPF resample them slightly soft.
-- Settings keeps its original 32/16 icon (no high-resolution source).
-- IconSource\ holds the high-res artwork, the rebuild script (build_icons.py) and the untouched v30 icons.
+- IconSource\ holds the high-resolution artwork and the rebuild script (build_icons.py).
+
+INSTALL CLEANUP (v6.3)
+The installer removes files left by older EK Print versions:
+- The old pyRevit EK Print extension, including the "EKPrint.extension.DISABLED_BY_CSHARP" copies v6.2 left.
+- The old pyRevit settings folder %APPDATA%\EKTools\QuickPrint (its save folder / mode is migrated first).
+- Builds and .addin manifests for Revit versions that are no longer installed.
+- Old temporary export folders (%TEMP%\EKDWG_*, ".EKPrint_work_*" folders in the save folder).
+- The v30/v6.1 PDF merge helper and its PDFsharp downloads (as in v6.2).
+Your settings.ini and your PDFs/DWGs are kept.
 
 NO THIRD-PARTY CODE (v6.2)
 - PDFsharp and the EKPdfMerge helper from v30/v6.1 were removed. Nothing is downloaded during install.
 - The installer (and uninstaller) delete the old helper from %APPDATA%\EKPrintCSharp\Tools and the PDFsharp
   package files NuGet downloaded (%USERPROFILE%\.nuget\packages\pdfsharp*, NuGet download cache).
 
-DIALOGS (v6.1)
-- Select PDF, Select DWG, Settings and the export progress window were redesigned. Behavior is unchanged.
-- Sheet/view list with Number / Name (or View name / Type) columns, larger check boxes, click a row to toggle it.
+DIALOGS
+- Sheet/view list with Number / Name (or View name / Type) columns. Click anywhere on a row to toggle it,
+  Shift+click for a range, Space toggles the focused row.
 - Search box with clear button; Ctrl+F jumps to it. "Select all" / "Clear" apply to the items currently shown.
-- Live preview of the file name that will be created, plus the current save folder in the footer.
+- Live preview of the file name that will be created, plus the save folder and a Settings link in the footer.
 - Print / Export is disabled until at least one item is checked.
-- Everything is laid out through the display scale, so text and buttons are never clipped at 125–200%.
-- Window opens sized to the screen it is on.
-- Small fix: switching Separate -> Combine now restores the combined PDF name instead of keeping a sheet name;
-  switching Combine -> Separate shows the real per-file name instead of the stale combined name.
+- Everything is laid out through the display scale, so text and buttons are never clipped at 125-200%.
 
 IMPORTANT
 Actual PDF/DWG export behavior must be tested inside Revit because Document.Export cannot be executed in this build environment.

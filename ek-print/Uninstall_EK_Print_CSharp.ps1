@@ -12,6 +12,7 @@ $bin = Join-Path $env:APPDATA 'EKPrintCSharp\Bin'
 $tools = Join-Path $env:APPDATA 'EKPrintCSharp\Tools'
 Remove-Item -LiteralPath $bin -Recurse -Force -ErrorAction SilentlyContinue
 Remove-Item -LiteralPath $tools -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -LiteralPath (Join-Path $env:TEMP 'EKPrint') -Recurse -Force -ErrorAction SilentlyContinue
 $packageRoots = @()
 if ($env:NUGET_PACKAGES) { $packageRoots += $env:NUGET_PACKAGES }
 $packageRoots += (Join-Path $env:USERPROFILE '.nuget\packages')

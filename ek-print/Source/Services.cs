@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 
 namespace EKPrint
@@ -14,11 +15,22 @@ namespace EKPrint
     public enum QuickMultipleMode { Combine, Separate }
     public enum PdfNameMode { Item, ProjectItem, CustomNumbered }
     public enum DwgNameMode { Item, ProjectItem, CustomNumbered }
+    public enum DwgColorMode { Index, ObjectStyles, View }
+    public enum DwgUnit { Foot, Inch, Meter, Centimeter, Millimeter }
+    public enum DwgCoordinates { Shared, InternalOrigin }
 
     public sealed class SettingsData
     {
         public string OutputFolder = "";
         public QuickMultipleMode QuickMultipleMode = QuickMultipleMode.Combine;
+        public DwgColorMode DwgColors = DwgColorMode.View;
+        public DwgUnit DwgUnit = DwgUnit.Centimeter;
+        public DwgCoordinates DwgCoordinates = DwgCoordinates.Shared;
+
+        public SettingsData Clone()
+        {
+            return (SettingsData)MemberwiseClone();
+        }
     }
 
     public static class SettingsStore
@@ -53,22 +65,13 @@ namespace EKPrint
                         else if (key.Equals("QuickMultipleMode", StringComparison.OrdinalIgnoreCase))
                             data.QuickMultipleMode = value.Equals("Separate", StringComparison.OrdinalIgnoreCase)
                                 ? QuickMultipleMode.Separate : QuickMultipleMode.Combine;
+                        else if (key.Equals("DwgColors", StringComparison.OrdinalIgnoreCase))
+                            data.DwgColors = ParseEnum(value, data.DwgColors);
+                        else if (key.Equals("DwgUnit", StringComparison.OrdinalIgnoreCase))
+                            data.DwgUnit = ParseEnum(value, data.DwgUnit);
+                        else if (key.Equals("DwgCoordinates", StringComparison.OrdinalIgnoreCase))
+                            data.DwgCoordinates = ParseEnum(value, data.DwgCoordinates);
                     }
-                }
-                else
-                {
-                    // Migrate the user's existing pyRevit EK Print settings on first use.
-                    string oldDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EKTools", "QuickPrint");
-                    string oldFolder = Path.Combine(oldDir, "settings.txt");
-                    string oldMode = Path.Combine(oldDir, "quick_pdf_mode.txt");
-                    if (File.Exists(oldFolder)) data.OutputFolder = File.ReadAllText(oldFolder).Trim();
-                    if (File.Exists(oldMode))
-                    {
-                        string mode = File.ReadAllText(oldMode).Trim();
-                        if (mode.Equals("separate", StringComparison.OrdinalIgnoreCase))
-                            data.QuickMultipleMode = QuickMultipleMode.Separate;
-                    }
-                    Save(data);
                 }
             }
             catch { }
@@ -81,7 +84,17 @@ namespace EKPrint
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("OutputFolder=" + (data.OutputFolder ?? ""));
             sb.AppendLine("QuickMultipleMode=" + data.QuickMultipleMode.ToString());
+            sb.AppendLine("DwgColors=" + data.DwgColors.ToString());
+            sb.AppendLine("DwgUnit=" + data.DwgUnit.ToString());
+            sb.AppendLine("DwgCoordinates=" + data.DwgCoordinates.ToString());
             File.WriteAllText(SettingsPath, sb.ToString(), Encoding.UTF8);
+        }
+
+        private static T ParseEnum<T>(string value, T fallback) where T : struct
+        {
+            T parsed;
+            if (Enum.TryParse(value, true, out parsed) && Enum.IsDefined(typeof(T), parsed)) return parsed;
+            return fallback;
         }
 
         public static bool EnsureOutputFolder(SettingsData data, System.Windows.Forms.IWin32Window owner)
@@ -360,13 +373,6 @@ namespace EKPrint
 
             return result;
         }
-
-        // Retained for compatibility with earlier EK Print C# builds.
-        public static List<ViewSheet> FindSheetsFromCurrentSelection(UIDocument uidoc)
-        {
-            if (uidoc == null) return new List<ViewSheet>();
-            return FindHostSheets(uidoc.Document, GetSelectedBrowserViews(uidoc)).Sheets;
-        }
     }
 
     public sealed class PdfBatchResult
@@ -378,14 +384,122 @@ namespace EKPrint
         public List<string> Notes = new List<string>();
     }
 
+    /// <summary>
+    /// Local working folder (%TEMP%\EKPrint). Revit always writes here first, so a cancelled or failed
+    /// export never touches the save folder, and network / OneDrive folders only receive finished files.
+    /// </summary>
+    public static class Staging
+    {
+        public static string Root { get { return Path.Combine(Path.GetTempPath(), "EKPrint"); } }
+
+        public static string NewFolder(string prefix)
+        {
+            Sweep();
+            string dir = Path.Combine(Root, prefix + "_" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            return dir;
+        }
+
+        public static void Delete(string dir)
+        {
+            try { if (!string.IsNullOrEmpty(dir) && Directory.Exists(dir)) Directory.Delete(dir, true); }
+            catch { }
+        }
+
+        // Removes folders left behind if Revit closed in the middle of an export.
+        private static void Sweep()
+        {
+            try
+            {
+                if (!Directory.Exists(Root)) return;
+                DateTime cutoff = DateTime.UtcNow.AddHours(-12);
+                foreach (string dir in Directory.GetDirectories(Root))
+                {
+                    try { if (Directory.GetLastWriteTimeUtc(dir) < cutoff) Directory.Delete(dir, true); }
+                    catch { }
+                }
+            }
+            catch { }
+        }
+    }
+
+    /// <summary>Paper sizes offered by Select PDF. "Use sheet size" is Revit's ExportPaperFormat.Default.</summary>
+    public sealed class PaperChoice
+    {
+        public readonly string Label;
+        public readonly ExportPaperFormat Format;
+
+        private PaperChoice(string label, ExportPaperFormat format)
+        {
+            Label = label;
+            Format = format;
+        }
+
+        public bool UsesSheetSize { get { return Format == ExportPaperFormat.Default; } }
+        public override string ToString() { return Label; }
+
+        public static readonly PaperChoice SheetSize = new PaperChoice("Use sheet size", ExportPaperFormat.Default);
+
+        public static readonly PaperChoice[] All = new PaperChoice[]
+        {
+            SheetSize,
+            new PaperChoice("A4  (210 \u00D7 297 mm)", ExportPaperFormat.ISO_A4),
+            new PaperChoice("A3  (297 \u00D7 420 mm)", ExportPaperFormat.ISO_A3),
+            new PaperChoice("A2  (420 \u00D7 594 mm)", ExportPaperFormat.ISO_A2),
+            new PaperChoice("A1  (594 \u00D7 841 mm)", ExportPaperFormat.ISO_A1),
+            new PaperChoice("A0  (841 \u00D7 1189 mm)", ExportPaperFormat.ISO_A0),
+            new PaperChoice("B4  (250 \u00D7 353 mm)", ExportPaperFormat.ISO_B4),
+            new PaperChoice("B3  (353 \u00D7 500 mm)", ExportPaperFormat.ISO_B3),
+            new PaperChoice("B2  (500 \u00D7 707 mm)", ExportPaperFormat.ISO_B2),
+            new PaperChoice("B1  (707 \u00D7 1000 mm)", ExportPaperFormat.ISO_B1),
+            new PaperChoice("ANSI A / Letter  (8.5 \u00D7 11 in)", ExportPaperFormat.ANSI_A),
+            new PaperChoice("ANSI B / Tabloid  (11 \u00D7 17 in)", ExportPaperFormat.ANSI_B),
+            new PaperChoice("ANSI C  (17 \u00D7 22 in)", ExportPaperFormat.ANSI_C),
+            new PaperChoice("ANSI D  (22 \u00D7 34 in)", ExportPaperFormat.ANSI_D),
+            new PaperChoice("ANSI E  (34 \u00D7 44 in)", ExportPaperFormat.ANSI_E),
+            new PaperChoice("ARCH A  (9 \u00D7 12 in)", ExportPaperFormat.ARCH_A),
+            new PaperChoice("ARCH B  (12 \u00D7 18 in)", ExportPaperFormat.ARCH_B),
+            new PaperChoice("ARCH C  (18 \u00D7 24 in)", ExportPaperFormat.ARCH_C),
+            new PaperChoice("ARCH D  (24 \u00D7 36 in)", ExportPaperFormat.ARCH_D),
+            new PaperChoice("ARCH E  (36 \u00D7 48 in)", ExportPaperFormat.ARCH_E),
+            new PaperChoice("ARCH E1  (30 \u00D7 42 in)", ExportPaperFormat.ARCH_E1),
+            new PaperChoice("ARCH E2  (26 \u00D7 38 in)", ExportPaperFormat.ARCH_E2),
+            new PaperChoice("ARCH E3  (27 \u00D7 39 in)", ExportPaperFormat.ARCH_E3)
+        };
+    }
+
+    /// <summary>
+    /// PDF export through Revit's own PDF engine (Document.Export + PDFExportOptions, Revit 2022+).
+    /// No printer driver and no third-party code. Every job:
+    ///  * exports into a local staging folder and only then copies the finished PDF to the save folder,
+    ///  * shows a progress window (multi-item jobs at once, single items only if they take a while),
+    ///  * honors Cancel Print while Revit is exporting, through Revit's ProgressChanged event.
+    /// Combine: Revit builds the combined PDF itself in a single export (fastest, one file, vector).
+    /// Separate: one export per item, each PDF is saved as soon as it is finished.
+    /// </summary>
     public static class PdfExportService
     {
-        public static PDFExportOptions CreateOptions(bool combine, string fileName)
+        private const int SingleItemWindowDelayMs = 1500;
+
+        internal static PDFExportOptions CreateOptions(string stagedName, ExportPaperFormat paper)
         {
             PDFExportOptions options = new PDFExportOptions();
-            options.Combine = combine;
-            if (combine) options.FileName = FileNames.Safe(fileName);
-            options.PaperFormat = ExportPaperFormat.Default;
+            // Each Export call writes exactly one file; it gets its real name when it is published.
+            options.Combine = true;
+            options.FileName = stagedName;
+            options.PaperFormat = paper;
+            if (paper != ExportPaperFormat.Default)
+            {
+                // A fixed paper size: the sheet is scaled to fit the page, centered, rotated as needed.
+                // (With the default "use sheet size" Revit ignores the zoom settings.)
+                options.ZoomType = ZoomType.FitToPage;
+                options.PaperPlacement = PaperPlacementType.Center;
+                options.PaperOrientation = PageOrientationType.Auto;
+            }
+            // Same output as Revit's Export > PDF: vector graphics, full color, high raster quality.
+            options.AlwaysUseRaster = false;
+            options.ColorDepth = ColorDepthType.Color;
+            options.RasterQuality = RasterQualityType.High;
             options.ViewLinksInBlue = false;
             options.HideReferencePlane = true;
             options.HideUnreferencedViewTags = true;
@@ -395,6 +509,8 @@ namespace EKPrint
             options.ReplaceHalftoneWithThinLines = false;
             options.StopOnError = true;
 
+            // Revit 2025+: keep the export in the foreground, so the PDF exists when Export returns
+            // and Cancel Print can reach it.
             try
             {
                 MethodInfo method = options.GetType().GetMethod("SetExportInBackground", new Type[] { typeof(bool) });
@@ -411,203 +527,103 @@ namespace EKPrint
             return FileNames.Safe((customBase ?? FileNames.ProjectFileName(doc)) + " " + index.ToString());
         }
 
-        public static bool ExportSingle(Document doc, View view, string folder, bool includeProject)
+        /// <summary>One PDF holding every view, in the given order. Also used for single-item exports.</summary>
+        public static PdfBatchResult ExportCombined(Document doc, IList<View> views, string folder, string fileName)
         {
-            string name = includeProject ? FileNames.ProjectItemName(doc, view) : FileNames.ItemName(view);
-            return ExportCombined(doc, new List<View> { view }, folder, name);
+            return ExportCombined(doc, views, folder, fileName, ExportPaperFormat.Default);
         }
 
-        public static bool ExportSingleNamed(Document doc, View view, string folder, string name)
-        {
-            return ExportCombined(doc, new List<View> { view }, folder, name);
-        }
-
-        // Fast native path. Used for single-item exports. Multi-item jobs use ExportCancellable.
-        public static bool ExportCombined(Document doc, IList<View> views, string folder, string fileName)
-        {
-            if (views == null || views.Count == 0) return false;
-            Directory.CreateDirectory(folder);
-            string safe = FileNames.Safe(fileName);
-            string target = Path.Combine(folder, safe + ".pdf");
-            try
-            {
-                if (File.Exists(target)) File.Delete(target);
-            }
-            catch
-            {
-                Dialogs.Error("EK Print", "Could not replace the existing PDF.\n\nClose it if it is open, then try again:\n\n" + target);
-                return false;
-            }
-
-            List<ElementId> ids = views.Select(v => v.Id).ToList();
-            using (PDFExportOptions options = CreateOptions(true, safe))
-            {
-                return doc.Export(folder, ids, options);
-            }
-        }
-
-        /// <summary>
-        /// Multi-item PDF export.
-        /// Combine: Revit itself builds the combined PDF in one export (no third-party code).
-        ///          The file is exported to a temporary folder first, so the previous combined PDF
-        ///          is only replaced after Revit has finished successfully.
-        /// Separate: one item at a time with the progress window, so Cancel Print is honored
-        ///          between sheets/views and completed PDFs are kept.
-        /// </summary>
-        public static PdfBatchResult ExportCancellable(Document doc, IList<View> views, string folder,
-            PdfNameMode mode, string customBase, string combineName)
-        {
-            if (!string.IsNullOrWhiteSpace(combineName))
-                return ExportCombinedBatch(doc, views, folder, combineName);
-
-            PdfBatchResult result = new PdfBatchResult();
-            if (views == null || views.Count == 0) return result;
-            Directory.CreateDirectory(folder);
-
-            List<string> names = BuildNames(doc, views, mode, customBase);
-            if (views.Count != names.Count) throw new InvalidOperationException("PDF naming failed.");
-
-            string work = Path.Combine(folder, ".EKPrint_work_" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(work);
-            List<KeyValuePair<string, string>> exported = new List<KeyValuePair<string, string>>();
-            PdfProgressForm progress = null;
-
-            try
-            {
-                if (views.Count > 1)
-                {
-                    progress = new PdfProgressForm(views.Count);
-                    progress.Show();
-                    progress.ShowStep(0, views.Count, "starting");
-                }
-
-                for (int i = 0; i < views.Count; i++)
-                {
-                    if (progress != null)
-                    {
-                        progress.ShowStep(i, views.Count, "printing " + names[i]);
-                        if (progress.CancelRequested)
-                        {
-                            result.Cancelled = true;
-                            break;
-                        }
-                    }
-
-                    string stageBase = "EK_" + (i + 1).ToString("0000");
-                    try
-                    {
-                        string stage = ExportOneRaw(doc, views[i], work, stageBase);
-                        exported.Add(new KeyValuePair<string, string>(stage, names[i]));
-                        result.Printed++;
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Failures.Add(names[i] + ": " + ex.Message);
-                    }
-
-                    if (progress != null)
-                    {
-                        progress.ShowStep(i + 1, views.Count, names[i]);
-                        if (progress.CancelRequested)
-                        {
-                            result.Cancelled = true;
-                            break;
-                        }
-                    }
-                }
-
-                foreach (KeyValuePair<string, string> item in exported)
-                {
-                    try
-                    {
-                        Publish(item.Key, Path.Combine(folder, FileNames.Safe(item.Value) + ".pdf"));
-                    }
-                    catch (Exception ex)
-                    {
-                        result.Failures.Add("Could not save " + item.Value + ": " + ex.Message);
-                        if (!result.Notes.Any(n => n.IndexOf("Recovery PDFs remain", StringComparison.OrdinalIgnoreCase) >= 0))
-                            result.Notes.Add("Recovery PDFs remain in: " + work);
-                    }
-                }
-            }
-            finally
-            {
-                if (progress != null)
-                {
-                    try { progress.Close(); progress.Dispose(); } catch { }
-                }
-
-                try
-                {
-                    if (Directory.Exists(work))
-                    {
-                        string[] leftovers = Directory.GetFiles(work, "*.pdf", SearchOption.TopDirectoryOnly);
-                        if (leftovers.Length == 0)
-                            Directory.Delete(work, true);
-                        else if (!result.Notes.Any(n => n.IndexOf("Recovery PDFs remain", StringComparison.OrdinalIgnoreCase) >= 0))
-                            result.Notes.Add("Recovery PDFs remain in: " + work);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    result.Notes.Add("Could not remove temporary PDF files: " + ex.Message);
-                }
-            }
-
-            return result;
-        }
-
-        // Combine mode: Revit's own combined export (PDFExportOptions.Combine = true) in a single call.
-        private static PdfBatchResult ExportCombinedBatch(Document doc, IList<View> views, string folder, string combineName)
+        public static PdfBatchResult ExportCombined(Document doc, IList<View> views, string folder, string fileName,
+            ExportPaperFormat paper)
         {
             PdfBatchResult result = new PdfBatchResult();
             if (views == null || views.Count == 0) return result;
-            Directory.CreateDirectory(folder);
+            string name = FileNames.Safe(fileName);
+            int total = views.Count;
+            bool existed = File.Exists(Path.Combine(folder, name + ".pdf"));
 
-            string target = Path.Combine(folder, FileNames.Safe(combineName) + ".pdf");
-            string work = Path.Combine(folder, ".EKPrint_work_" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(work);
-            try
+            string title = total > 1 ? "Exporting combined PDF" : "Exporting PDF";
+            string note = existed ? "Cancel stops the export. The existing PDF is not changed."
+                                  : "Cancel stops the export. No PDF is saved.";
+            using (PdfJob job = new PdfJob(doc, paper, title, note, total > 1 ? 0 : SingleItemWindowDelayMs))
             {
-                const string stageBase = "EK_combined";
-                List<ElementId> ids = views.Select(v => v.Id).ToList();
-                bool ok;
-                using (PDFExportOptions options = CreateOptions(true, stageBase))
-                {
-                    ok = doc.Export(work, ids, options);
-                }
+                job.SetStep(0, 1, total > 1 ? total.ToString() + " pages" : "", name + ".pdf");
 
-                string staged = Path.Combine(work, stageBase + ".pdf");
-                if (!ok || !File.Exists(staged) || new FileInfo(staged).Length <= 0)
+                string staged = null;
+                string error = null;
+                try { staged = job.Export(views, "EK_combined"); }
+                catch (Exception ex) { error = ex.Message; }
+
+                if (job.CancelRequested)
                 {
-                    result.Failures.Add("Revit did not create the combined PDF. The previous PDF was not changed.");
+                    result.Cancelled = true;
+                    result.Notes.Add("Print cancelled. No PDF was saved" +
+                        (existed ? "; the existing " + name + ".pdf was not changed." : "."));
+                    return result;
+                }
+                if (staged == null)
+                {
+                    result.Failures.Add(name + ".pdf: " + (error ?? "Revit did not create the PDF.") +
+                        (existed ? "\nThe existing PDF was not changed." : ""));
                     return result;
                 }
 
-                try
+                job.SetStep(1, 1, total > 1 ? total.ToString() + " pages" : "", "Saving " + name + ".pdf");
+                if (Publish(staged, folder, name, result) != null)
                 {
-                    Publish(staged, target);
-                    result.Printed = views.Count;
-                    result.Combined = true;
-                }
-                catch
-                {
-                    // The old PDF is probably open in a viewer. Keep the new one next to it.
-                    string alternate = UniquePdfPath(folder, FileNames.Safe(combineName));
-                    File.Move(staged, alternate);
-                    result.Printed = views.Count;
-                    result.Combined = true;
-                    result.Notes.Add("The existing PDF is open or locked, so the new PDF was saved as:\n" + Path.GetFileName(alternate));
+                    result.Printed = total;
+                    result.Combined = total > 1;
                 }
             }
-            catch (Exception ex)
+            return result;
+        }
+
+        /// <summary>One PDF per view. Cancel keeps the PDFs that are already finished.</summary>
+        public static PdfBatchResult ExportSeparate(Document doc, IList<View> views, string folder,
+            PdfNameMode mode, string customBase)
+        {
+            return ExportSeparate(doc, views, folder, mode, customBase, ExportPaperFormat.Default);
+        }
+
+        public static PdfBatchResult ExportSeparate(Document doc, IList<View> views, string folder,
+            PdfNameMode mode, string customBase, ExportPaperFormat paper)
+        {
+            PdfBatchResult result = new PdfBatchResult();
+            if (views == null || views.Count == 0) return result;
+            List<string> names = BuildNames(doc, views, mode, customBase);
+            int total = views.Count;
+
+            using (PdfJob job = new PdfJob(doc, paper, total > 1 ? "Exporting PDFs" : "Exporting PDF",
+                "Cancel stops the export. PDFs already finished are kept.", total > 1 ? 0 : SingleItemWindowDelayMs))
             {
-                result.Failures.Add("Combined PDF export failed: " + ex.Message);
-            }
-            finally
-            {
-                try { if (Directory.Exists(work)) Directory.Delete(work, true); }
-                catch { }
+                for (int i = 0; i < total; i++)
+                {
+                    if (job.CancelRequested) break;
+                    job.SetStep(i, total, (i + 1).ToString() + " of " + total.ToString(), names[i] + ".pdf");
+
+                    string staged = null;
+                    string error = null;
+                    try { staged = job.Export(new List<View> { views[i] }, "EK_" + (i + 1).ToString("0000")); }
+                    catch (Exception ex) { error = ex.Message; }
+
+                    if (staged == null)
+                    {
+                        if (job.CancelRequested) break;   // stopped in the middle of this item
+                        result.Failures.Add(names[i] + ".pdf: " + (error ?? "Revit did not create a PDF for this item."));
+                        continue;
+                    }
+
+                    // A finished item is kept even if Cancel was clicked while it was exporting.
+                    if (Publish(staged, folder, names[i], result) != null) result.Printed++;
+                    try { File.Delete(staged); } catch { }
+                }
+
+                if (job.CancelRequested)
+                {
+                    result.Cancelled = true;
+                    result.Notes.Insert(0, "Print cancelled. " + result.Printed.ToString() + " of " + total.ToString() +
+                        " PDFs were saved; the rest were skipped.");
+                }
             }
             return result;
         }
@@ -615,79 +631,206 @@ namespace EKPrint
         private static List<string> BuildNames(Document doc, IList<View> views, PdfNameMode mode, string customBase)
         {
             List<string> names = new List<string>();
-            Dictionary<string, int> used = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            HashSet<string> used = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (int i = 0; i < views.Count; i++)
             {
-                string raw = NameFor(doc, views[i], mode, customBase, i + 1);
-                string baseName = FileNames.Safe(raw);
+                string baseName = FileNames.Safe(NameFor(doc, views[i], mode, customBase, i + 1));
                 string name = baseName;
                 int suffix = 2;
-                while (used.ContainsKey(name))
+                while (used.Contains(name))
                 {
                     name = FileNames.Safe(baseName + " (" + suffix.ToString() + ")");
                     suffix++;
                 }
-                used[name] = 1;
+                used.Add(name);
                 names.Add(name);
             }
             return names;
         }
 
-        private static string ExportOneRaw(Document doc, View view, string folder, string basename)
+        /// <summary>
+        /// Copies a finished PDF from the staging folder into the save folder as name.pdf.
+        /// If name.pdf is open in a viewer, the old file is kept and the new one is saved as "name (2).pdf".
+        /// Returns the saved path, or null after recording a failure.
+        /// </summary>
+        private static string Publish(string staged, string folder, string name, PdfBatchResult result)
         {
-            List<ElementId> ids = new List<ElementId> { view.Id };
-            using (PDFExportOptions options = CreateOptions(true, basename))
+            string target = Path.Combine(folder, name + ".pdf");
+            string part = Path.Combine(folder, "~EKPrint_" + Guid.NewGuid().ToString("N").Substring(0, 8) + ".tmp");
+            try
             {
-                bool ok = doc.Export(folder, ids, options);
-                string output = Path.Combine(folder, basename + ".pdf");
-                if (!ok || !File.Exists(output) || new FileInfo(output).Length <= 0)
-                    throw new IOException("Revit did not create a PDF for this item.");
-                return output;
-            }
-        }
+                Directory.CreateDirectory(folder);
+                File.Copy(staged, part, true);
 
-        private static void Publish(string staged, string destination)
-        {
-            if (!File.Exists(staged)) throw new FileNotFoundException("Staged PDF is missing.", staged);
-            if (File.Exists(destination))
-            {
-                File.Replace(staged, destination, null);
+                if (File.Exists(target))
+                {
+                    try { File.Delete(target); }
+                    catch
+                    {
+                        string alternate = UniquePdfPath(folder, name);
+                        File.Move(part, alternate);
+                        result.Notes.Add(name + ".pdf is open in another program, so the new PDF was saved as:\n" +
+                            Path.GetFileName(alternate));
+                        return alternate;
+                    }
+                }
+                File.Move(part, target);
+                return target;
             }
-            else
+            catch (Exception ex)
             {
-                File.Move(staged, destination);
+                try { if (File.Exists(part)) File.Delete(part); } catch { }
+                result.Failures.Add("Could not save " + name + ".pdf: " + ex.Message);
+                return null;
             }
         }
 
         private static string UniquePdfPath(string folder, string name)
         {
-            string safe = FileNames.Safe(name);
-            string path = Path.Combine(folder, safe + ".pdf");
+            string path = Path.Combine(folder, name + ".pdf");
             int suffix = 2;
             while (File.Exists(path))
             {
-                path = Path.Combine(folder, safe + " (" + suffix.ToString() + ").pdf");
+                path = Path.Combine(folder, name + " (" + suffix.ToString() + ").pdf");
                 suffix++;
             }
             return path;
         }
     }
 
+    /// <summary>
+    /// One PDF job: its staging folder, its progress window, and the ProgressChanged hook that passes
+    /// Cancel Print on to Revit while Document.Export is running.
+    /// </summary>
+    internal sealed class PdfJob : IDisposable
+    {
+        private readonly Document _doc;
+        private readonly Autodesk.Revit.ApplicationServices.Application _app;
+        private readonly ExportProgress _progress;
+        private readonly string _stage;
+        private readonly ExportPaperFormat _paper;
+
+        public PdfJob(Document doc, ExportPaperFormat paper, string title, string note, int windowDelayMs)
+        {
+            _doc = doc;
+            _paper = paper;
+            _stage = Staging.NewFolder("pdf");
+            _progress = ExportProgress.Start(title, note, windowDelayMs);
+            try
+            {
+                _app = doc.Application;
+                _app.ProgressChanged += OnRevitProgress;
+            }
+            catch { _app = null; }
+        }
+
+        public bool CancelRequested { get { return _progress != null && _progress.CancelRequested; } }
+
+        public void SetStep(int done, int total, string counter, string label)
+        {
+            if (_progress != null) _progress.SetStep(done, total, counter, label);
+        }
+
+        /// <summary>Exports the views into one staged PDF. Returns its path, or null if Revit made no file.</summary>
+        public string Export(IList<View> views, string baseName)
+        {
+            string output = Path.Combine(_stage, baseName + ".pdf");
+            List<ElementId> ids = views.Select(v => v.Id).ToList();
+            bool ok;
+            using (PDFExportOptions options = PdfExportService.CreateOptions(baseName, _paper))
+                ok = _doc.Export(_stage, ids, options);
+            if (!ok || !File.Exists(output) || new FileInfo(output).Length <= 0) return null;
+            return output;
+        }
+
+        private void OnRevitProgress(object sender, ProgressChangedEventArgs e)
+        {
+            if (_progress == null) return;
+            try
+            {
+                if (_progress.CancelRequested)
+                {
+                    // Revit accepts Cancel only in these stages; otherwise ask again on the next event.
+                    if (e.Stage == ProgressStage.Unchanged || (e.Stage == ProgressStage.PositionChanged && e.Cancellable))
+                        e.Cancel();
+                    return;
+                }
+                if (e.Stage == ProgressStage.PositionChanged && e.UpperRange > 0)
+                    _progress.SetItemFraction((double)e.Position / e.UpperRange);
+            }
+            catch { }
+        }
+
+        public void Dispose()
+        {
+            if (_app != null)
+            {
+                try { _app.ProgressChanged -= OnRevitProgress; } catch { }
+            }
+            if (_progress != null) _progress.Close();
+            Staging.Delete(_stage);
+        }
+    }
+
     public static class DwgExportService
     {
-        public static DWGExportOptions CreateOptions()
+        public static DWGExportOptions CreateOptions(SettingsData settings)
         {
             DWGExportOptions options = new DWGExportOptions();
             options.FileVersion = ACADVersion.R2013;
-            options.TargetUnit = ExportUnit.Centimeter;
-            options.SharedCoords = true;
-            options.Colors = ExportColorMode.TrueColorPerView;
+            options.TargetUnit = ToRevit(settings.DwgUnit);
+            options.SharedCoords = settings.DwgCoordinates == DwgCoordinates.Shared;
+            options.Colors = ToRevit(settings.DwgColors);
             options.MergedViews = true;
             options.HideReferencePlane = true;
             options.HideScopeBox = true;
             options.HideUnreferenceViewTags = true;
             options.PreserveCoincidentLines = false;
             return options;
+        }
+
+        private static ExportUnit ToRevit(DwgUnit unit)
+        {
+            switch (unit)
+            {
+                case DwgUnit.Foot: return ExportUnit.Foot;
+                case DwgUnit.Inch: return ExportUnit.Inch;
+                case DwgUnit.Meter: return ExportUnit.Meter;
+                case DwgUnit.Millimeter: return ExportUnit.Millimeter;
+                default: return ExportUnit.Centimeter;
+            }
+        }
+
+        private static ExportColorMode ToRevit(DwgColorMode colors)
+        {
+            switch (colors)
+            {
+                case DwgColorMode.Index: return ExportColorMode.IndexColors;
+                case DwgColorMode.ObjectStyles: return ExportColorMode.TrueColor;
+                default: return ExportColorMode.TrueColorPerView;
+            }
+        }
+
+        public static string UnitName(DwgUnit unit)
+        {
+            switch (unit)
+            {
+                case DwgUnit.Foot: return "Feet";
+                case DwgUnit.Inch: return "Inches";
+                case DwgUnit.Meter: return "Meters";
+                case DwgUnit.Millimeter: return "Millimeters";
+                default: return "Centimeters";
+            }
+        }
+
+        /// <summary>Short description of the DWG settings, e.g. for the Select DWG dialog.</summary>
+        public static string Describe(SettingsData settings)
+        {
+            string colors = settings.DwgColors == DwgColorMode.Index ? "Index colors"
+                : (settings.DwgColors == DwgColorMode.ObjectStyles ? "Object style colors" : "View colors");
+            string coords = settings.DwgCoordinates == DwgCoordinates.Shared ? "Shared coordinates" : "Internal origin";
+            return "AutoCAD 2013  \u00B7  " + UnitName(settings.DwgUnit) + "  \u00B7  " + coords + "  \u00B7  " + colors +
+                "  \u00B7  Views on sheets merged";
         }
 
         public static string NameFor(Document doc, View view, DwgNameMode mode, string customBase, int index)
@@ -697,7 +840,8 @@ namespace EKPrint
             return FileNames.Safe((customBase ?? FileNames.ProjectFileName(doc)) + " " + index.ToString());
         }
 
-        public static bool Export(Document doc, IList<View> views, string folder, DwgNameMode mode, string customBase)
+        public static bool Export(Document doc, IList<View> views, string folder, DwgNameMode mode, string customBase,
+            SettingsData settings)
         {
             if (views == null || views.Count == 0) return false;
             Directory.CreateDirectory(folder);
@@ -709,7 +853,7 @@ namespace EKPrint
                 string name = NameFor(doc, view, mode, customBase, index);
                 if (mode == DwgNameMode.CustomNumbered) index++;
 
-                if (!ExportOne(doc, view, folder, name)) failures.Add(name);
+                if (!ExportOne(doc, view, folder, name, settings)) failures.Add(name);
                 System.Windows.Forms.Application.DoEvents();
             }
 
@@ -721,14 +865,13 @@ namespace EKPrint
             return true;
         }
 
-        private static bool ExportOne(Document doc, View view, string folder, string desiredName)
+        private static bool ExportOne(Document doc, View view, string folder, string desiredName, SettingsData settings)
         {
-            string temp = Path.Combine(Path.GetTempPath(), "EKDWG_" + Guid.NewGuid().ToString("N"));
-            Directory.CreateDirectory(temp);
+            string temp = Staging.NewFolder("dwg");
             try
             {
                 ICollection<ElementId> ids = new List<ElementId> { view.Id };
-                using (DWGExportOptions options = CreateOptions())
+                using (DWGExportOptions options = CreateOptions(settings))
                 {
                     bool ok = doc.Export(temp, desiredName, ids, options);
                     if (!ok) return false;

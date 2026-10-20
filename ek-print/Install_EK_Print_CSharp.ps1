@@ -244,31 +244,104 @@ function Write-Manifest([int]$Year, [string]$DllPath) {
     return $manifest
 }
 
-function Disable-OldPyRevitExtension {
-    $roots = @()
-    foreach ($d in Get-ChildItem -LiteralPath $env:APPDATA -Directory -ErrorAction SilentlyContinue) {
-        if ($d.Name -like '*pyRevit*') { $roots += $d.FullName }
-    }
-    foreach ($root in $roots) {
-        $candidates = Get-ChildItem -LiteralPath $root -Directory -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq 'EKPrint.extension' }
-        foreach ($candidate in $candidates) {
-            $backup = $candidate.FullName + '.DISABLED_BY_CSHARP'
-            if (Test-Path -LiteralPath $backup) {
-                $backup = $candidate.FullName + '.DISABLED_BY_CSHARP_' + (Get-Date -Format 'yyyyMMdd_HHmmss')
-            }
+function Remove-OldPyRevitExtension {
+    # The pyRevit EK Print extension was replaced by this add-in. v6.2 only renamed it
+    # (EKPrint.extension.DISABLED_BY_CSHARP*); both the original and those copies are deleted now.
+    foreach ($root in Get-ChildItem -LiteralPath $env:APPDATA -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -like '*pyRevit*' }) {
+        $old = Get-ChildItem -LiteralPath $root.FullName -Directory -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $_.Name -eq 'EKPrint.extension' -or $_.Name -like 'EKPrint.extension.DISABLED_BY_CSHARP*' }
+        foreach ($dir in $old) {
             try {
-                Rename-Item -LiteralPath $candidate.FullName -NewName (Split-Path -Leaf $backup) -ErrorAction Stop
-                Log "Disabled old pyRevit EK Print extension: $($candidate.FullName)"
+                Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
+                Log "Removed old pyRevit EK Print extension: $($dir.FullName)"
             } catch {
-                Log "Warning: could not disable old pyRevit extension $($candidate.FullName): $($_.Exception.Message)"
+                Log "Warning: could not remove $($dir.FullName) : $($_.Exception.Message)"
             }
+        }
+    }
+}
+
+function Move-OldSettings {
+    # Settings from the pyRevit version (%APPDATA%\EKTools\QuickPrint) are carried over once, then deleted.
+    $oldDir = Join-Path $env:APPDATA 'EKTools\QuickPrint'
+    if (-not (Test-Path -LiteralPath $oldDir)) { return }
+    $settings = Join-Path $InstallRoot 'settings.ini'
+    if (-not (Test-Path -LiteralPath $settings)) {
+        $folder = ''
+        $mode = 'Combine'
+        $oldFolder = Join-Path $oldDir 'settings.txt'
+        $oldMode = Join-Path $oldDir 'quick_pdf_mode.txt'
+        if (Test-Path -LiteralPath $oldFolder) { $folder = (Get-Content -LiteralPath $oldFolder -Raw).Trim() }
+        if ((Test-Path -LiteralPath $oldMode) -and ((Get-Content -LiteralPath $oldMode -Raw).Trim() -eq 'separate')) { $mode = 'Separate' }
+        New-Item -ItemType Directory -Force -Path $InstallRoot | Out-Null
+        [IO.File]::WriteAllLines($settings, @("OutputFolder=$folder", "QuickMultipleMode=$mode"), (New-Object Text.UTF8Encoding($false)))
+        Log "Migrated old EK Print settings to $settings"
+    }
+    try {
+        Remove-Item -LiteralPath $oldDir -Recurse -Force -ErrorAction Stop
+        Log "Removed old settings folder: $oldDir"
+        $ekTools = Split-Path -Parent $oldDir
+        if (-not (Get-ChildItem -LiteralPath $ekTools -Force -ErrorAction SilentlyContinue)) {
+            Remove-Item -LiteralPath $ekTools -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Log "Warning: could not remove $oldDir : $($_.Exception.Message)"
+    }
+}
+
+function Remove-OldWorkFiles {
+    # Temporary export folders from earlier versions (or from a Revit crash during an export).
+    foreach ($item in @(Get-Item -Path (Join-Path $env:TEMP 'EKPrint') -ErrorAction SilentlyContinue) +
+                      @(Get-ChildItem -LiteralPath $env:TEMP -Directory -Filter 'EKDWG_*' -ErrorAction SilentlyContinue) +
+                      @(Get-ChildItem -LiteralPath $env:TEMP -File -Filter 'EKPrint_*.rsp' -ErrorAction SilentlyContinue)) {
+        if ($item) { Remove-Item -LiteralPath $item.FullName -Recurse -Force -ErrorAction SilentlyContinue }
+    }
+    # v6.2 and earlier staged PDFs in hidden ".EKPrint_work_*" folders inside the save folder.
+    $settings = Join-Path $InstallRoot 'settings.ini'
+    if (Test-Path -LiteralPath $settings) {
+        $line = Get-Content -LiteralPath $settings | Where-Object { $_ -like 'OutputFolder=*' } | Select-Object -First 1
+        if ($line) {
+            $out = $line.Substring('OutputFolder='.Length).Trim()
+            if ($out -and (Test-Path -LiteralPath $out)) {
+                foreach ($dir in Get-ChildItem -LiteralPath $out -Directory -Force -Filter '.EKPrint_work_*' -ErrorAction SilentlyContinue) {
+                    try {
+                        Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction Stop
+                        Log "Removed old work folder: $($dir.FullName)"
+                    } catch {}
+                }
+                foreach ($file in Get-ChildItem -LiteralPath $out -File -Force -Filter '~EKPrint_*.tmp' -ErrorAction SilentlyContinue) {
+                    Remove-Item -LiteralPath $file.FullName -Force -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    }
+}
+
+function Remove-StaleBuilds([int[]]$Keep) {
+    # Builds and manifests for Revit versions that are no longer installed.
+    if (Test-Path -LiteralPath $BinRoot) {
+        foreach ($dir in Get-ChildItem -LiteralPath $BinRoot -Directory -ErrorAction SilentlyContinue) {
+            $year = 0
+            [void][int]::TryParse($dir.Name, [ref]$year)
+            if ($Keep -notcontains $year) {
+                Remove-Item -LiteralPath $dir.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                Log "Removed old build: $($dir.FullName)"
+            }
+        }
+    }
+    foreach ($year in 2019..2030) {
+        if ($Keep -contains $year) { continue }
+        $manifest = Join-Path $env:APPDATA "Autodesk\Revit\Addins\$year\EKPrint.addin"
+        if (Test-Path -LiteralPath $manifest) {
+            Remove-Item -LiteralPath $manifest -Force -ErrorAction SilentlyContinue
+            Log "Removed old manifest: $manifest"
         }
     }
 }
 
 # --- Start ---
 Remove-Item -LiteralPath $LogPath -Force -ErrorAction SilentlyContinue
-Log 'EK Print C# installer v6.2 started.'
+Log 'EK Print C# installer v6.3 started.'
 
 if (Get-Process Revit -ErrorAction SilentlyContinue) {
     Fail 'Revit is running. Close ALL Revit windows, then run the installer again.'
@@ -315,12 +388,15 @@ foreach ($r in $installed) {
     }
 }
 
-Disable-OldPyRevitExtension
+Remove-StaleBuilds $built
+Move-OldSettings
+Remove-OldPyRevitExtension
+Remove-OldWorkFiles
 Remove-PdfSharpLeftovers
 
 Write-Host ''
 Write-Host '============================================' -ForegroundColor Cyan
-Write-Host '  EK Print C# v6.2 installed successfully' -ForegroundColor Green
+Write-Host '  EK Print C# v6.3 installed successfully' -ForegroundColor Green
 Write-Host '============================================' -ForegroundColor Cyan
 Write-Host ''
 Write-Host ('Installed for Revit: ' + ($built -join ', '))
@@ -330,9 +406,9 @@ Write-Host 'Visible buttons:'
 Write-Host '  Quick PDF   Select PDF   Quick DWG   Select DWG   Sheet Print'
 Write-Host 'Hidden slide-out: Settings'
 Write-Host ''
-Write-Host 'Combine mode: Revit builds the combined PDF itself (no third-party code, no downloads).'
-Write-Host 'Separate mode: multi-page jobs show Cancel Print and stop between sheets/views.'
+Write-Host 'PDF: Revit''s own PDF export. Combined and separate PDFs can both be cancelled while exporting.'
+Write-Host 'Settings: save folder, multiple-sheet behavior, DWG colors / units / coordinates.'
 Write-Host ''
-Write-Host 'Your previous EK Print save-folder setting is migrated automatically on first use.'
+Write-Host 'Old EK Print files (pyRevit extension, old builds, temporary folders) were removed.'
 Write-Host ''
 Read-Host 'Press Enter to close'

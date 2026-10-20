@@ -17,7 +17,7 @@ namespace EKPrint
     internal static class Ui
     {
         public const string Product = "EK Print";
-        public const string Version = "6.2";
+        public const string Version = "6.3";
 
         public static readonly Color Window = Color.FromArgb(244, 246, 249);
         public static readonly Color Surface = Color.White;
@@ -739,13 +739,15 @@ namespace EKPrint
 
     /// <summary>
     /// Details ListView with crisp DPI-scaled check boxes, roomy rows, Explorer styling,
-    /// a stretching column and an empty-state message. Click a row to toggle it.
+    /// a stretching column and an empty-state message. Click anywhere on a row to toggle it,
+    /// Shift+click to set a range.
     /// </summary>
     internal sealed class CheckList : ListView
     {
         private int _fillColumn;
         private bool _fitting;
         private string _emptyText = "";
+        private ListViewItem _anchor;
 
         public CheckList()
         {
@@ -863,13 +865,35 @@ namespace EKPrint
             FitColumns();
         }
 
-        protected override void OnMouseClick(MouseEventArgs e)
+        /// <summary>
+        /// Toggles the row under the mouse. Shift+click sets every row from the last clicked row
+        /// to this one to the last clicked row's state.
+        /// </summary>
+        private void ClickRow(ListViewItem item, bool shift)
         {
-            base.OnMouseClick(e);
-            if (e.Button != MouseButtons.Left || Control.ModifierKeys != Keys.None) return;
-            ListViewHitTestInfo hit = HitTest(e.Location);
-            if (hit == null || hit.Item == null || hit.Location == ListViewHitTestLocations.StateImage) return;
-            hit.Item.Checked = !hit.Item.Checked;
+            bool range = shift && _anchor != null && _anchor.ListView == this && _anchor != item;
+            if (range)
+            {
+                bool value = _anchor.Checked;
+                int from = Math.Min(_anchor.Index, item.Index);
+                int to = Math.Max(_anchor.Index, item.Index);
+                BeginUpdate();
+                try
+                {
+                    for (int i = from; i <= to; i++)
+                        if (Items[i].Checked != value) Items[i].Checked = value;
+                }
+                finally { EndUpdate(); }
+            }
+            else
+            {
+                item.Checked = !item.Checked;
+                _anchor = item;
+            }
+
+            SelectedItems.Clear();
+            item.Selected = true;
+            item.Focused = true;
         }
 
         protected override void WndProc(ref Message m)
@@ -878,8 +902,23 @@ namespace EKPrint
             const int WM_LBUTTONDOWN = 0x0201;
             const int WM_LBUTTONDBLCLK = 0x0203;
 
-            // A native double-click would toggle the check box a second time; treat it as a normal click.
-            if (m.Msg == WM_LBUTTONDBLCLK) m.Msg = WM_LBUTTONDOWN;
+            // Rows are toggled here instead of through the native ListView click handling.
+            // The native control starts a drag/marquee as soon as the mouse moves a few pixels while
+            // the button is down, and then never reports the click - which is why a click on a row
+            // was sometimes ignored. Fast second clicks arrive as double-clicks and are handled the same way.
+            if ((m.Msg == WM_LBUTTONDOWN || m.Msg == WM_LBUTTONDBLCLK) && Enabled)
+            {
+                long lp = m.LParam.ToInt64();
+                Point p = new Point((short)(lp & 0xFFFF), (short)((lp >> 16) & 0xFFFF));
+                ListViewHitTestInfo hit = HitTest(p);
+                if (hit != null && hit.Item != null)
+                {
+                    if (!Focused) Focus();
+                    ClickRow(hit.Item, (Control.ModifierKeys & Keys.Shift) == Keys.Shift);
+                    m.Result = IntPtr.Zero;
+                    return;
+                }
+            }
 
             base.WndProc(ref m);
 

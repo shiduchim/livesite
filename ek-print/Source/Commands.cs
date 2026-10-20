@@ -9,11 +9,11 @@ namespace EKPrint
 {
     public static class CommandHelpers
     {
-        public static Result FinishBatch(string title, PdfBatchResult status, int total, string folder, IList<string> extraMessages)
+        public static Result FinishBatch(string title, PdfBatchResult status, string folder, IList<string> extraMessages)
         {
+            // Notes come first: they hold the "Print cancelled" line and renamed-file notices.
             List<string> messages = new List<string>();
-            if (status.Cancelled)
-                messages.Add("Print cancelled. " + status.Printed.ToString() + " of " + total.ToString() + " completed; remaining items skipped.");
+            messages.AddRange(status.Notes.Where(m => !string.IsNullOrWhiteSpace(m)));
             if (status.Failures.Count > 0)
             {
                 string body = "Some PDFs failed:\n" + string.Join("\n", status.Failures.Take(12).ToArray());
@@ -23,7 +23,6 @@ namespace EKPrint
             }
             if (extraMessages != null)
                 messages.AddRange(extraMessages.Where(m => !string.IsNullOrWhiteSpace(m)));
-            messages.AddRange(status.Notes.Where(m => !string.IsNullOrWhiteSpace(m)));
 
             if (messages.Count > 0)
                 TaskDialog.Show(title, string.Join("\n\n", messages.ToArray()));
@@ -74,18 +73,14 @@ namespace EKPrint
                 }
 
                 views = RevitSelection.SortViews(views);
+                PdfBatchResult status;
                 if (views.Count == 1)
-                {
-                    if (!PdfExportService.ExportSingle(doc, views[0], settings.OutputFolder, true)) return Result.Cancelled;
-                    Shell.OpenFolder(settings.OutputFolder);
-                    return Result.Succeeded;
-                }
-
-                string combineName = settings.QuickMultipleMode == QuickMultipleMode.Combine
-                    ? FileNames.ProjectFileName(doc) : null;
-                PdfBatchResult status = PdfExportService.ExportCancellable(doc, views, settings.OutputFolder,
-                    PdfNameMode.ProjectItem, null, combineName);
-                return CommandHelpers.FinishBatch("EK Quick PDF", status, views.Count, settings.OutputFolder, null);
+                    status = PdfExportService.ExportCombined(doc, views, settings.OutputFolder, FileNames.ProjectItemName(doc, views[0]));
+                else if (settings.QuickMultipleMode == QuickMultipleMode.Combine)
+                    status = PdfExportService.ExportCombined(doc, views, settings.OutputFolder, FileNames.ProjectFileName(doc));
+                else
+                    status = PdfExportService.ExportSeparate(doc, views, settings.OutputFolder, PdfNameMode.ProjectItem, null);
+                return CommandHelpers.FinishBatch("EK Quick PDF", status, settings.OutputFolder, null);
             }
             catch (Exception ex)
             {
@@ -116,27 +111,26 @@ namespace EKPrint
                     return Result.Cancelled;
                 }
 
-                using (PdfPickerForm form = new PdfPickerForm(all, doc.ActiveView, FileNames.ProjectFileName(doc), settings.OutputFolder))
+                using (PdfPickerForm form = new PdfPickerForm(all, doc.ActiveView, FileNames.ProjectFileName(doc), settings))
                 {
                     if (form.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                         return Result.Cancelled;
 
-                    if (form.SelectedViews.Count == 1)
-                    {
-                        string name = form.Combine
-                            ? form.PdfName
-                            : PdfExportService.NameFor(doc, form.SelectedViews[0], form.NameMode, form.PdfName, 1);
-                        if (!PdfExportService.ExportSingleNamed(doc, form.SelectedViews[0], settings.OutputFolder, name))
-                            return Result.Cancelled;
-                        Shell.OpenFolder(settings.OutputFolder);
-                        return Result.Succeeded;
-                    }
+                    // The save folder may have been changed through the dialog's Settings link.
+                    settings = SettingsStore.Load();
+                    if (!SettingsStore.EnsureOutputFolder(settings, null)) return Result.Cancelled;
 
-                    string combineName = form.Combine ? form.PdfName : null;
-                    PdfBatchResult status = PdfExportService.ExportCancellable(doc, form.SelectedViews,
-                        settings.OutputFolder, form.NameMode, form.PdfName, combineName);
-                    return CommandHelpers.FinishBatch("EK Select PDF", status, form.SelectedViews.Count,
-                        settings.OutputFolder, null);
+                    PdfBatchResult status;
+                    if (form.Combine)
+                        status = PdfExportService.ExportCombined(doc, form.SelectedViews, settings.OutputFolder,
+                            form.PdfName, form.Paper);
+                    else if (form.SelectedViews.Count == 1)
+                        status = PdfExportService.ExportCombined(doc, form.SelectedViews, settings.OutputFolder,
+                            PdfExportService.NameFor(doc, form.SelectedViews[0], form.NameMode, form.PdfName, 1), form.Paper);
+                    else
+                        status = PdfExportService.ExportSeparate(doc, form.SelectedViews, settings.OutputFolder,
+                            form.NameMode, form.PdfName, form.Paper);
+                    return CommandHelpers.FinishBatch("EK Select PDF", status, settings.OutputFolder, null);
                 }
             }
             catch (Exception ex)
@@ -195,22 +189,16 @@ namespace EKPrint
                 string unplacedMessage = CommandHelpers.UnplacedMessage(located.UnplacedNames);
                 if (!string.IsNullOrWhiteSpace(unplacedMessage)) extras.Add(unplacedMessage);
 
-                if (located.Sheets.Count == 1)
-                {
-                    bool ok = PdfExportService.ExportSingle(doc, located.Sheets[0], settings.OutputFolder, true);
-                    if (!ok) return Result.Cancelled;
-                    if (extras.Count > 0) TaskDialog.Show("EK Sheet Print", string.Join("\n\n", extras.ToArray()));
-                    Shell.OpenFolder(settings.OutputFolder);
-                    return Result.Succeeded;
-                }
-
                 List<View> asViews = located.Sheets.Cast<View>().ToList();
-                string combineName = settings.QuickMultipleMode == QuickMultipleMode.Combine
-                    ? FileNames.Safe(FileNames.ProjectFileName(doc) + " - Selected Sheets") : null;
-                PdfBatchResult status = PdfExportService.ExportCancellable(doc, asViews, settings.OutputFolder,
-                    PdfNameMode.ProjectItem, null, combineName);
-                return CommandHelpers.FinishBatch("EK Sheet Print", status, asViews.Count,
-                    settings.OutputFolder, extras);
+                PdfBatchResult status;
+                if (asViews.Count == 1)
+                    status = PdfExportService.ExportCombined(doc, asViews, settings.OutputFolder, FileNames.ProjectItemName(doc, asViews[0]));
+                else if (settings.QuickMultipleMode == QuickMultipleMode.Combine)
+                    status = PdfExportService.ExportCombined(doc, asViews, settings.OutputFolder,
+                        FileNames.Safe(FileNames.ProjectFileName(doc) + " - Selected Sheets"));
+                else
+                    status = PdfExportService.ExportSeparate(doc, asViews, settings.OutputFolder, PdfNameMode.ProjectItem, null);
+                return CommandHelpers.FinishBatch("EK Sheet Print", status, settings.OutputFolder, extras);
             }
             catch (Exception ex)
             {
@@ -247,7 +235,7 @@ namespace EKPrint
                 }
 
                 views = RevitSelection.SortViews(views);
-                bool ok = DwgExportService.Export(doc, views, settings.OutputFolder, DwgNameMode.ProjectItem, null);
+                bool ok = DwgExportService.Export(doc, views, settings.OutputFolder, DwgNameMode.ProjectItem, null, settings);
                 if (ok)
                 {
                     Shell.OpenFolder(settings.OutputFolder);
@@ -284,12 +272,17 @@ namespace EKPrint
                     return Result.Cancelled;
                 }
 
-                using (DwgPickerForm form = new DwgPickerForm(all, doc.ActiveView, FileNames.ProjectFileName(doc), settings.OutputFolder))
+                using (DwgPickerForm form = new DwgPickerForm(all, doc.ActiveView, FileNames.ProjectFileName(doc), settings))
                 {
                     if (form.ShowDialog() != System.Windows.Forms.DialogResult.OK)
                         return Result.Cancelled;
 
-                    bool ok = DwgExportService.Export(doc, form.SelectedViews, settings.OutputFolder, form.NameMode, form.DwgName);
+                    // Folder and DWG options may have been changed through the dialog's Settings link.
+                    settings = SettingsStore.Load();
+                    if (!SettingsStore.EnsureOutputFolder(settings, null)) return Result.Cancelled;
+
+                    bool ok = DwgExportService.Export(doc, form.SelectedViews, settings.OutputFolder, form.NameMode,
+                        form.DwgName, settings);
                     if (ok)
                     {
                         Shell.OpenFolder(settings.OutputFolder);
