@@ -418,7 +418,14 @@
                 <StackPanel>
                   <TextBlock Text="Keep EK Custom open" FontWeight="SemiBold"/>
                   <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0"
-                             Text="Revit comes back here instead of jumping to other tabs. &quot;Modify | ...&quot; tabs still open while you select or edit, and a tab you click yourself stays open. Same as the pin on the tab."/>
+                             Text="Revit comes back here instead of jumping to other tabs. &quot;Modify | ...&quot; tabs still open while you select or edit. Same as the pin on the tab."/>
+                </StackPanel>
+              </CheckBox>
+              <CheckBox x:Name="ReturnSwitch" Style="{StaticResource Switch}" Margin="0,10,0,0">
+                <StackPanel>
+                  <TextBlock Text="Come back when I click into the view" FontWeight="SemiBold"/>
+                  <TextBlock Style="{StaticResource Caption}" Margin="0,2,0,0"
+                             Text="After you use another tab, clicking back into a view, sheet, Properties or the Project Browser returns to EK Custom."/>
                 </StackPanel>
               </CheckBox>
               <TextBlock Text="Tab position" Style="{StaticResource FieldLabel}"/>

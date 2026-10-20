@@ -82,6 +82,8 @@ namespace EKRibbon
         public bool CompactRibbon=true;
         public string Labels="icon";
         public bool PinTab=true;
+        // With the pin on: clicking back into a view after using another tab returns to EK Custom.
+        public bool ReturnOnClick=true;
         // "modify" (next to Modify), "first" or "default" (where Revit puts it).
         public string TabPosition="modify";
 
@@ -105,7 +107,7 @@ namespace EKRibbon
                 {"dividers",Dividers.OrderBy(s=>s).ToArray()},{"group_rows",new SortedDictionary<string,int>(GroupRows,StringComparer.Ordinal)},
                 {"individual_zoom",new SortedDictionary<string,int>(Zoom,StringComparer.Ordinal)},{"large",Large.OrderBy(s=>s).ToArray()},
                 {"stack",DefaultRows==2?"two":"three"},{"labels",Labels},
-                {"compact_ribbon",CompactRibbon},{"pin_tab",PinTab},{"tab_position",TabPosition},
+                {"compact_ribbon",CompactRibbon},{"pin_tab",PinTab},{"return_on_click",ReturnOnClick},{"tab_position",TabPosition},
                 {"commands",Definitions.Select(x=>x.ToJson()).ToArray()}};
         }
 
@@ -122,6 +124,8 @@ namespace EKRibbon
             l.CompactRibbon=compact==null||Json.Bool(compact);
             object pin=Json.Get(d,"pin_tab");
             l.PinTab=pin==null||Json.Bool(pin);
+            object back=Json.Get(d,"return_on_click");
+            l.ReturnOnClick=back==null||Json.Bool(back);
             string position=Json.Str(Json.Get(d,"tab_position"),"modify");
             l.TabPosition=position=="first"||position=="default"?position:"modify";
             string labels=Json.Str(Json.Get(d,"labels"),"icon");

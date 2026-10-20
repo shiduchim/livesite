@@ -80,10 +80,10 @@ namespace EKRibbon.UI
 
         void Restore(string snapshot)
         {
-            // Pin and tab position are applied live, so undo never rewinds them.
-            bool pin=layout.PinTab;string position=layout.TabPosition;
+            // Tab behaviour is applied live, so undo never rewinds it.
+            bool pin=layout.PinTab, back=layout.ReturnOnClick;string position=layout.TabPosition;
             layout=Layout.FromJson(Json.Obj(Json.Parse(snapshot)));
-            layout.PinTab=pin;layout.TabPosition=position;
+            layout.PinTab=pin;layout.ReturnOnClick=back;layout.TabPosition=position;
         }
 
         bool Edit(Func<bool> change,string message,string coalesce=null)
@@ -184,6 +184,8 @@ namespace EKRibbon.UI
             ZoomReset.Click+=(s,e)=>SetZoom(100);
             PinSwitch.Checked+=(s,e)=>SetPin(true);
             PinSwitch.Unchecked+=(s,e)=>SetPin(false);
+            ReturnSwitch.Checked+=(s,e)=>SetReturnOnClick(true);
+            ReturnSwitch.Unchecked+=(s,e)=>SetReturnOnClick(false);
             TabPositionBox.SelectionChanged+=(s,e)=>{
                 if(quiet||!(TabPositionBox.SelectedItem is ComboBoxItem item))return;
                 string position=(string)item.Tag;
@@ -228,6 +230,8 @@ namespace EKRibbon.UI
         {
             quiet=true;
             PinSwitch.IsChecked=layout.PinTab;
+            ReturnSwitch.IsChecked=layout.ReturnOnClick;
+            ReturnSwitch.IsEnabled=layout.PinTab;
             TabPositionBox.SelectedItem=TabPositionBox.Items.OfType<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==layout.TabPosition);
             LabelsBox.SelectedItem=LabelsBox.Items.OfType<ComboBoxItem>().FirstOrDefault(i=>(string)i.Tag==layout.Labels);
             BigTwoRow.IsChecked=!layout.CompactRibbon;
@@ -324,7 +328,15 @@ namespace EKRibbon.UI
             if(quiet)return;
             Instant(l=>l.PinTab=pinned,pinned?"EK Custom is pinned: Revit will keep coming back to it.":"EK Custom is no longer pinned.");
             try{TabPin.SetPinned(pinned);}catch(Exception ex){Log.Error("Pin from Ribbon Builder",ex);}
+            ReturnSwitch.IsEnabled=pinned;
             RefreshPreview();
+        }
+
+        void SetReturnOnClick(bool value)
+        {
+            if(quiet)return;
+            Instant(l=>l.ReturnOnClick=value,value?"Clicking back into a view will return to EK Custom.":"Other tabs you open stay open until Revit switches tabs.");
+            try{TabPin.SetReturnOnClick(value);}catch(Exception ex){Log.Error("Return on click from Ribbon Builder",ex);}
         }
 
         void AddDivider()

@@ -1,4 +1,4 @@
-# EK Ribbon Builder 2.0.1
+# EK Ribbon Builder 2.0.2
 
 Your own **EK Custom** tab in Revit 2024, 2025, 2026 and 2027, with the buttons you
 use, in the order you want. One layout is shared by every Revit version.
@@ -24,11 +24,17 @@ At the right end of the tab there are two buttons:
 
 | Button | What it does |
 | --- | --- |
-| Pin | **Keeps EK Custom open.** Revit comes back to this tab instead of jumping to Architecture, View, Modify, etc. The "Modify &#124; ..." tabs still open while you select or edit, and any tab you click yourself stays open until Revit switches tabs again. Click to unpin. |
+| Pin | **Keeps EK Custom open.** Revit comes back to this tab instead of jumping to Architecture, View, Modify, etc. The "Modify &#124; ..." tabs still open while you select or edit. Click to unpin. |
 | Ribbon Builder | Opens the settings window. |
 
 The tab is placed **right after Modify** by default, so the two tabs you use sit
 together. You can change this to *First tab* in the Ribbon Builder.
+
+With the pin on, you can still click any other tab and use it. As soon as you
+click back into your work (a view or sheet, Properties, the Project Browser, a
+floating view), EK Custom comes back. Clicks on the ribbon, its menus and inside
+dialogs don't count, so a command from the other tab is never interrupted. You can
+turn this off with *Come back when I click into the view* in the Ribbon Builder.
 
 If the pin ever misbehaves, run DIAGNOSTICS.cmd and send the ZIP: `pin_YEAR.txt`
 lists every tab switch it made and why.

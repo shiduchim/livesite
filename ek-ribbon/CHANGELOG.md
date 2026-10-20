@@ -1,5 +1,13 @@
 # Changelog
 
+## 2.0.2
+
+- Pin: after you use another tab, clicking back into a view, sheet, Properties,
+  the Project Browser or a floating view returns to EK Custom. Clicks on the
+  ribbon, its menus and in dialogs don't count. New setting "Come back when I
+  click into the view" (on by default).
+- Pin waits for the mouse button to be released before switching tabs.
+
 ## 2.0.1
 
 - Fixed: the pin did not keep EK Custom open. It now watches the ribbon on its

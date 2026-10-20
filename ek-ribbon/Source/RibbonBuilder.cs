@@ -202,7 +202,7 @@ namespace EKRibbon
                 pinButton.LargeImage=Icons.Pin(pinned,32);
                 pinButton.ToolTip=pinned?"EK Custom is pinned":"Pin EK Custom";
                 pinButton.LongDescription=pinned
-                    ?"Revit keeps returning to this tab. \"Modify | ...\" tabs still open while you select or edit, and any tab you click yourself stays open. Click to unpin."
+                    ?"Revit keeps returning to this tab. \"Modify | ...\" tabs still open while you select or edit. A tab you open yourself stays until you click back into a view. Click to unpin."
                     :"Click to keep this tab open: Revit will come back here instead of jumping to other tabs.";
             }
             catch(Exception ex){Log.Error("Update pin button",ex);}

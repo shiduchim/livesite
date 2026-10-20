@@ -153,7 +153,7 @@ namespace EKRibbon.Tests
             Assert.Equal("ABC",string.Concat(l.Arrange(visible)[0].Columns[0].Cells));
             Assert.True(l.Move("A",0,1,visible));
             Assert.Contains("X",l.Order);
-            Assert.True(l.Selected.Contains("X"));
+            Assert.Contains("X",l.Selected);
         }
 
         [Fact]
@@ -186,7 +186,7 @@ namespace EKRibbon.Tests
             l.Remove("B");
             Assert.Equal("ACD",Picture(l));
             Assert.False(l.Zoom.ContainsKey("B"));
-            Assert.False(l.Large.Contains("B"));
+            Assert.DoesNotContain("B",l.Large);
         }
 
         [Fact]
@@ -201,7 +201,7 @@ namespace EKRibbon.Tests
         public void JsonRoundTripPreservesEverything()
         {
             var l=Make(2,"A","_","B","|","L!");
-            l.Zoom["A"]=120;l.Labels="short";l.PinTab=false;l.TabPosition="first";l.CompactRibbon=false;
+            l.Zoom["A"]=120;l.Labels="short";l.PinTab=false;l.ReturnOnClick=false;l.TabPosition="first";l.CompactRibbon=false;
             l.GroupRows[l.Dividers.Single()]=3;
             l.Definitions.Add(new CommandInfo{Id="ID_X",Name="X",Tab="T",Panel="P"});
             var copy=Layout.FromJson(Json.Obj(Json.Parse(Json.Dump(l.ToJson()))));
@@ -209,6 +209,7 @@ namespace EKRibbon.Tests
             Assert.Equal(120,copy.ZoomOf("A"));
             Assert.Equal("short",copy.Labels);
             Assert.False(copy.PinTab);
+            Assert.False(copy.ReturnOnClick);
             Assert.Equal("first",copy.TabPosition);
             Assert.False(copy.CompactRibbon);
             Assert.Equal(3,copy.RowsOf(copy.Dividers.Single()));
@@ -227,6 +228,7 @@ namespace EKRibbon.Tests
             Assert.Equal("ABC __D",Picture(l));
             Assert.Equal(115,l.ZoomOf("A"));
             Assert.True(l.PinTab);
+            Assert.True(l.ReturnOnClick);
             Assert.Equal("modify",l.TabPosition);
         }
 
