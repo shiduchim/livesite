@@ -1,0 +1,31 @@
+name: EK Ribbon Builder
+
+on:
+  push:
+    paths: ['ek-ribbon/**', '.github/workflows/ek-ribbon.yml']
+  pull_request:
+    paths: ['ek-ribbon/**', '.github/workflows/ek-ribbon.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Test, build Revit 2024-2027, package
+        shell: pwsh
+        run: ./ek-ribbon/Build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: EK_Ribbon_Builder
+          path: ek-ribbon/out/*.zip
+          if-no-files-found: error

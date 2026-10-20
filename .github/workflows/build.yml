@@ -5,7 +5,12 @@ on:
     paths-ignore:
       - 'release/**'
       - '**.md'
+      - 'ek-ribbon/**'
+      - '.github/workflows/ek-ribbon.yml'
   pull_request:
+    paths-ignore:
+      - 'ek-ribbon/**'
+      - '.github/workflows/ek-ribbon.yml'
   workflow_dispatch:
 
 concurrency:

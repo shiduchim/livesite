@@ -1,0 +1,12 @@
+<Project>
+  <!-- Stops MSBuild from inheriting the EK Triangle settings in the repository root. -->
+  <PropertyGroup>
+    <RevitYear Condition="'$(RevitYear)' == ''">2026</RevitYear>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj/$(MSBuildProjectName)/$(RevitYear)/</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin/$(MSBuildProjectName)/$(RevitYear)/</BaseOutputPath>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>
