@@ -61,6 +61,29 @@ jobs:
           Get-Content out/bench/viewer/results.md
           if ($p.ExitCode -ne 0) { throw "viewer benchmark exit code $($p.ExitCode)" }
 
+      - name: Screenshot previews (base64 in the log, for remote review)
+        if: always()
+        run: |
+          Add-Type -AssemblyName System.Drawing
+          $jpeg = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
+          $q = New-Object System.Drawing.Imaging.EncoderParameters 1
+          $q.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter([System.Drawing.Imaging.Encoder]::Quality, [long]82)
+          Get-ChildItem out/bench/viewer -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            $img = [System.Drawing.Image]::FromFile($_.FullName)
+            # 1:1 crop from the document area (to judge sharpness) ...
+            $crop = New-Object System.Drawing.Bitmap 640, 360
+            $g = [System.Drawing.Graphics]::FromImage($crop)
+            $g.DrawImage($img, (New-Object System.Drawing.Rectangle 0, 0, 640, 360), (New-Object System.Drawing.Rectangle ([int]($img.Width / 2 - 320)), ([int]($img.Height / 2 - 180)), 640, 360), [System.Drawing.GraphicsUnit]::Pixel)
+            $ms = New-Object IO.MemoryStream; $crop.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
+            "IMGCROP $($_.BaseName) $([Convert]::ToBase64String($ms.ToArray()))"
+            # ... and the whole window, reduced.
+            $w = [Math]::Min(960, $img.Width); $h = [int]($img.Height * $w / $img.Width)
+            $small = New-Object System.Drawing.Bitmap $img, $w, $h
+            $ms2 = New-Object IO.MemoryStream; $small.Save($ms2, $jpeg, $q)
+            "IMGFULL $($_.BaseName) $([Convert]::ToBase64String($ms2.ToArray()))"
+            $img.Dispose(); $crop.Dispose(); $small.Dispose(); $g.Dispose()
+          }
+
       - name: Install, launch (Explorer, shortcuts, Open with, App Paths), print, upgrade, uninstall
         run: |
           ./tests/installer/Test-FastPdfInstall.ps1 -Setup out/installer/EK_FastPDF_Setup_v1.2.exe `
