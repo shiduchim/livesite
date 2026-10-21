@@ -46,7 +46,7 @@ algorithm (global lock, page re-parsed per 768-px tile, sequential), reproduced 
 
 Single text pages were already fast in v1.1 and stay equal within a few milliseconds (IPC and the seam margin
 cost about as much as the parse that is saved). 3–4 workers oversubscribe the two physical cores on this VM, so those columns are noisy; the automatic setting
-chose 2 workers here (physical cores). Run of record: see `docs/ci-results/RUN.txt`.
+chose 2 workers here (physical cores). Tables above: CI run 39626687134. `docs/ci-results/` always holds the latest run (numbers vary by a few percent between runs).
 
 ### Linux container (4 vCPU), 512-px tiles
 | Document | View | v1.1 | 1 worker | 2 workers | 3 workers | 4 workers | speed-up (4w vs v1.1) |
