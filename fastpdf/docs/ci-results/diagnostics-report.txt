@@ -1,7 +1,7 @@
 EK FastPDF diagnostics report
 ============================================================
 Version                   : 1.2.0.0
-Time                      : 2026-10-21 15:39:53 +00:00
+Time                      : 2026-10-21 15:53:31 +00:00
 Executable                : C:\Program Files\EK FastPDF\EKFastPDF.exe
 Base directory            : C:\Program Files\EK FastPDF\
 Working directory         : D:\a\livesite\livesite\fastpdf
@@ -35,4 +35,4 @@ Process VRAM              : 0 MB used of 7523 MB budget
 Process memory            : 43 MB working set, 12 MB private
 
 Recent log
-2026-10-21 15:39:53.729 [INFO ] app #5780: Start v1.2.0.0 pid 5780; exe "C:\Program Files\EK FastPDF\EKFastPDF.exe"; cwd "D:\a\livesite\livesite\fastpdf"; args [--diagnose]; Microsoft Windows 10.0.20348; .NET 8.0.31
+2026-10-21 15:53:31.400 [INFO ] app #5108: Start v1.2.0.0 pid 5108; exe "C:\Program Files\EK FastPDF\EKFastPDF.exe"; cwd "D:\a\livesite\livesite\fastpdf"; args [--diagnose]; Microsoft Windows 10.0.20348; .NET 8.0.31
