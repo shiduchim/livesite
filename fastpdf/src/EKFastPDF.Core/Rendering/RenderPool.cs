@@ -100,7 +100,8 @@ public sealed class RenderPool : IDisposable
         lock (_gate)
         {
             int id = ++_nextDocumentId;
-            _documents[id] = (path, password);
+            // Workers run with the program folder as working directory: always pass absolute paths.
+            _documents[id] = (Path.GetFullPath(path), password);
             return id;
         }
     }
