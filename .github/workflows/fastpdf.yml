@@ -68,7 +68,7 @@ jobs:
           Get-Content out/test-results/install/install-tests.md
 
       - name: Publish the tested installer and portable ZIP as a prerelease
-        if: success() && github.event_name == 'push'
+        if: success() && github.event_name != 'pull_request'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -96,7 +96,7 @@ jobs:
           if (Test-Path out/bench/engine.md) { '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY; Get-Content out/bench/engine.md | Select-Object -Last 120 | Out-File -Append $env:GITHUB_STEP_SUMMARY; '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY }
 
       - name: Collect results into docs/ci-results (screenshots reduced for the repository)
-        if: always()
+        if: success() || failure()
         run: |
           $dest = 'docs/ci-results'
           if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
@@ -125,7 +125,7 @@ jobs:
           }
 
       - name: Commit results to this branch
-        if: always() && github.event_name == 'push'
+        if: (success() || failure()) && github.event_name != 'pull_request'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
@@ -134,7 +134,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) {
             git commit -m "FastPDF CI results for ${env:GITHUB_SHA} [skip ci]"
             for ($i = 0; $i -lt 4; $i++) {
-              git pull --rebase origin "${env:GITHUB_REF_NAME}"
+              git pull --rebase -X theirs origin "${env:GITHUB_REF_NAME}"
               git push origin "HEAD:${env:GITHUB_REF_NAME}"
               if ($LASTEXITCODE -eq 0) { break }
               Start-Sleep -Seconds (2 * [Math]::Pow(2, $i))
