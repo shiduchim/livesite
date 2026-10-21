@@ -70,6 +70,7 @@ public sealed class PdfViewport : FrameworkElement
     public const int RevealBatchMs = 180;
 
     private static readonly int[] OverviewEdges = { 256, 1024, 1600 };
+    private static readonly int[] OverviewEdgesLargestFirst = { 1600, 1024, 256 };
     private static readonly Brush Backdrop = Frozen(new SolidColorBrush(Color.FromRgb(0xE6, 0xEB, 0xF3)));
     private static readonly Brush PageBrush = Brushes.White;
     private static readonly Brush ShadowBrush = Frozen(new SolidColorBrush(Color.FromArgb(28, 20, 40, 80)));
@@ -470,7 +471,7 @@ public sealed class PdfViewport : FrameworkElement
             int wantEdge = OverviewEdges.FirstOrDefault(e => e >= longEdgeOnScreen * 0.9, OverviewEdges[^1]);
             var (pw, ph) = TileGrid.PagePixels(wPt, hPt, level);
             bool smallPage = pw <= tileSize && ph <= tileSize;
-            foreach (int edge in OverviewEdges.Reverse())
+            foreach (int edge in OverviewEdgesLargestFirst)
             {
                 var ok = OverviewKey(s.DocId, page, wPt, hPt, edge, out _, out _);
                 if (!store.TryGet(ok, out var ov)) continue;
@@ -557,8 +558,7 @@ public sealed class PdfViewport : FrameworkElement
         // sharpens at once. If that takes long (very complex page), release in batches.
         int held = pageTiles.Sum(p => p.Held.Count);
         bool reveal = held > 0 && (missingVisible == 0
-            || (sinceChange > RevealHoldMs && TileStore.MsSince(_lastRevealAt) > RevealBatchMs)
-            || pageTiles.Any(p => p.Held.Count > 0 && !p.HasOverview && !_services.Tiles.LevelsFor(s.DocId, p.Page).Any(l => l != level)));
+            || (sinceChange > RevealHoldMs && TileStore.MsSince(_lastRevealAt) > RevealBatchMs));
         if (reveal)
         {
             foreach (var p in pageTiles) foreach (var t in p.Held) t.RevealedAt = now;

@@ -33,8 +33,23 @@ public static class Program
             return 0;
         }
         if (args.Length >= 2 && args[0] == "engine") return Engine(args);
+        if (args.Length >= 3 && args[0] == "fullpage") return FullPage(args[1], double.Parse(args[2], CultureInfo.InvariantCulture));
         Console.Error.WriteLine("usage: EKFastPDF.Bench gen <dir> | engine <dir> [--workers 1,2,4] [--tiles 256,512,1024] [--out file.json] [--quick]");
         return 1;
+    }
+
+    /// <summary>Single-threaded whole-page render at a DPI including document open and page
+    /// parse: comparable with "mutool draw -r DPI file.pdf 1" for an engine comparison.</summary>
+    private static int FullPage(string path, double dpi)
+    {
+        var sw = Stopwatch.StartNew();
+        var doc = LegacyEngine.Open(path);
+        var (w, h) = LegacyEngine.PageSize(doc, 0);
+        int pw = (int)Math.Round(w * dpi / 72), ph = (int)Math.Round(h * dpi / 72);
+        LegacyEngine.RenderTile(doc, 0, pw, ph, 0, 0, pw, ph);
+        Console.WriteLine($"PDFium full page {pw}x{ph} at {dpi} dpi incl. open+parse: {sw.ElapsedMilliseconds} ms");
+        LegacyEngine.Close(doc);
+        return 0;
     }
 
     private sealed record ViewSpec(string Name, double Zoom, double CenterX, double CenterY);
