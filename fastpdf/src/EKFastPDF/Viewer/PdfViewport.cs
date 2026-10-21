@@ -239,7 +239,18 @@ public sealed class PdfViewport : FrameworkElement
 
     public void ZoomStep(int steps, Point? deviceAnchor = null)
     {
-        if (_session is { IsReady: true }) ZoomTo(ZoomLadder.Step(_session.View.Zoom, steps), deviceAnchor);
+        if (!Ready(out var s, out var layout)) return;
+        // Walk the ladder one notch at a time, stopping at the fit-page zoom when it lies between two
+        // notches: zooming back out returns exactly to the (cached) opening view.
+        double zoom = s.View.Zoom;
+        double fit = s.View.FitPageZoom(layout, s.View.CurrentPage(layout));
+        for (int i = 0; i < Math.Abs(steps); i++)
+        {
+            double next = ZoomLadder.Step(zoom, Math.Sign(steps));
+            bool crossesFit = Math.Abs(zoom - fit) > 1e-6 && (fit - zoom) * (next - fit) > 0;
+            zoom = crossesFit ? fit : next;
+        }
+        ZoomTo(zoom, deviceAnchor);
     }
 
     public void FitPage()
