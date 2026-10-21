@@ -12,7 +12,7 @@ namespace EKScriptLauncher.UI
     sealed class SettingsForm : Form
     {
         static readonly int Pad = Dp(12);
-        static readonly int RowHeight = Dp(26);
+        static readonly int RowHeight = Dp(28);
 
         readonly TextBox pathBox = new TextBox();
         readonly TextBox quickPathBox = new TextBox();
@@ -32,7 +32,7 @@ namespace EKScriptLauncher.UI
             MinimizeBox = false;
             ShowInTaskbar = false;
             AutoScaleMode = AutoScaleMode.None;
-            ClientSize = new Size(Dp(440), Dp(162));
+            ClientSize = new Size(Dp(460), Dp(172));
             BackColor = WindowBack;
             Font = FontUi;
             KeyPreview = true;
@@ -43,10 +43,10 @@ namespace EKScriptLauncher.UI
 
             AddFolderRow(Pad, "Scripts folder", pathBox,
                 "Choose the folder containing your Python scripts");
-            AddFolderRow(Pad + Dp(52), "Quick Launch folder (exactly one .py file, optional)", quickPathBox,
+            AddFolderRow(Pad + Dp(56), "Quick Launch folder (exactly one .py file, optional)", quickPathBox,
                 "Choose a folder containing exactly one Python script");
 
-            var save = new Button { Text = "Save", Font = FontUiBold, Size = new Size(Dp(80), Dp(28)) };
+            var save = new Button { Text = "Save", Font = FontUiBold, Size = new Size(Dp(86), Dp(30)) };
             save.Location = new Point(ClientSize.Width - Pad - save.Width, ClientSize.Height - Pad - save.Height);
             StyleButton(save, primary: true);
             save.Click += OnSave;
@@ -66,7 +66,7 @@ namespace EKScriptLauncher.UI
             });
 
             var browse = new Button { Text = "...", Size = new Size(Dp(32), RowHeight) };
-            browse.Location = new Point(ClientSize.Width - Pad - browse.Width, top + Dp(19));
+            browse.Location = new Point(ClientSize.Width - Pad - browse.Width, top + Dp(21));
             StyleButton(browse);
             Controls.Add(browse);
 

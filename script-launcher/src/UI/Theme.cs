@@ -35,11 +35,22 @@ namespace EKScriptLauncher.UI
         public static readonly Color ButtonHover = Color.FromArgb(235, 238, 242);
         public static readonly Color ButtonDown = Color.FromArgb(224, 228, 234);
 
-        public static readonly Font FontUi = new Font("Segoe UI", 9f);
-        public static readonly Font FontUiBold = new Font("Segoe UI Semibold", 9f);
-        public static readonly Font FontSmall = new Font("Segoe UI", 8.25f);
-        public static readonly Font FontList = new Font("Segoe UI", 9.75f);
-        public static readonly Font FontLaunch = new Font("Segoe UI Semibold", 10f);
+        // Dark header strip.
+        public static readonly Color HeaderBack = Color.FromArgb(31, 38, 47);
+        public static readonly Color HeaderButton = Color.FromArgb(44, 53, 64);
+        public static readonly Color HeaderButtonHover = Color.FromArgb(57, 68, 81);
+        public static readonly Color HeaderButtonDown = Color.FromArgb(36, 44, 54);
+        public static readonly Color HeaderBorder = Color.FromArgb(66, 77, 91);
+        public static readonly Color HeaderText = Color.FromArgb(232, 236, 241);
+        public static readonly Color HeaderTextMuted = Color.FromArgb(163, 173, 186);
+        public static readonly Color SelectedMatchBack = Color.FromArgb(104, 134, 160);
+
+        public static readonly Font FontUi = new Font("Segoe UI", 9.75f);
+        public static readonly Font FontUiBold = new Font("Segoe UI Semibold", 9.75f);
+        public static readonly Font FontSmall = new Font("Segoe UI", 9f);
+        public static readonly Font FontList = new Font("Segoe UI", 10.5f);
+        public static readonly Font FontSearch = new Font("Segoe UI", 11f);
+        public static readonly Font FontLaunch = new Font("Segoe UI Semibold", 11.25f);
 
         public const TextFormatFlags TextFlags =
             TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
