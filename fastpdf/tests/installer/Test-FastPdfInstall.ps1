@@ -30,6 +30,18 @@ function Record($name, [bool]$ok, $detail = '') {
     Write-Host ("[{0}] {1} {2}" -f $(if ($ok) { 'PASS' } else { 'FAIL' }), $name, $detail) -ForegroundColor $color
 }
 
+# Starts a process and waits with a timeout (nothing in this script may hang the CI run).
+function Invoke-Timed([string]$file, [string[]]$arguments, [int]$timeoutSec = 180, [string]$stdout = '') {
+    $params = @{ FilePath = $file; ArgumentList = $arguments; PassThru = $true }
+    if ($stdout) { $params.RedirectStandardOutput = $stdout }
+    $p = Start-Process @params
+    if (-not $p.WaitForExit($timeoutSec * 1000)) {
+        try { $p.Kill($true) } catch {}
+        throw "$([IO.Path]::GetFileName($file)) did not finish within $timeoutSec s"
+    }
+    return $p
+}
+
 function Stop-Viewer {
     Get-Process EKFastPDF -ErrorAction SilentlyContinue | ForEach-Object { try { $_.CloseMainWindow() | Out-Null } catch {} }
     Start-Sleep -Milliseconds 800
@@ -64,7 +76,7 @@ function Test-Launch($name, [scriptblock]$start, [string]$expectTitle = '') {
     }
 }
 
-Add-Type -TypeDefinition @'
+$shellCs = @'
 using System;
 using System.Runtime.InteropServices;
 public static class ShellLaunch {
@@ -82,19 +94,34 @@ public static class ShellLaunch {
     public static void OpenWithClass(string file, string progId, string workingDir) {
         var info = new SHELLEXECUTEINFO();
         info.cbSize = Marshal.SizeOf(info);
-        info.fMask = 0x00000001 /*SEE_MASK_CLASSNAME*/ | 0x00000100 /*SEE_MASK_NOASYNC*/;
+        info.fMask = 0x00000001 /*SEE_MASK_CLASSNAME*/ | 0x00000100 /*SEE_MASK_NOASYNC*/ | 0x00000400 /*SEE_MASK_FLAG_NO_UI*/;
         info.lpVerb = "open"; info.lpFile = file; info.lpClass = progId; info.lpDirectory = workingDir; info.nShow = 1;
         if (!ShellExecuteEx(ref info)) throw new System.ComponentModel.Win32Exception(Marshal.GetLastWin32Error());
     }
 }
 '@
+Add-Type -TypeDefinition $shellCs
+$shellCsFile = Join-Path $env:TEMP 'ekfastpdf-shelllaunch.cs'
+Set-Content $shellCsFile $shellCs -Encoding UTF8
+
+# Runs ShellLaunch::OpenWithClass in a separate PowerShell with a timeout (a shell dialog must not hang the test).
+function Invoke-OpenWithClass($file, $progId, $workingDir) {
+    $script = Join-Path $env:TEMP 'ekfastpdf-openwith.ps1'
+    @"
+Add-Type -Path '$shellCsFile'
+[ShellLaunch]::OpenWithClass('$($file -replace "'", "''")', '$progId', '$workingDir')
+"@ | Set-Content $script -Encoding UTF8
+    $p = Start-Process pwsh -ArgumentList '-NoProfile', '-File', "`"$script`"" -PassThru -WindowStyle Hidden
+    if (-not $p.WaitForExit(30000)) { $p.Kill(); throw "ShellExecuteEx with class '$progId' did not return within 30 s" }
+    if ($p.ExitCode -ne 0) { throw "ShellExecuteEx with class '$progId' failed (exit $($p.ExitCode))" }
+}
 
 $userChoiceKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\.pdf\UserChoice'
 $choiceBefore = (Get-ItemProperty $userChoiceKey -ErrorAction SilentlyContinue).ProgId
 
 # ---------------------------------------------------------------- install
 $sw = [Diagnostics.Stopwatch]::StartNew()
-$p = Start-Process $Setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS="desktopicon,pdfopenwith"', "/LOG=`"$ResultDir\install.log`"" -Wait -PassThru
+$p = Invoke-Timed $Setup @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/TASKS="desktopicon,pdfopenwith"', "/LOG=`"$ResultDir\install.log`"")
 Record 'Silent install (Program Files, admin)' ($p.ExitCode -eq 0 -and (Test-Path $app)) "exit $($p.ExitCode) in $([int]$sw.Elapsed.TotalSeconds) s"
 $uninstallKey = 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{31680A75-F231-4280-A95E-9D3AF023FD36}_is1'
 $u = Get-ItemProperty $uninstallKey -ErrorAction SilentlyContinue
@@ -129,8 +156,8 @@ Test-Launch 'Start menu shortcut' { Start-Process -FilePath $startLnk | Out-Null
 Test-Launch 'Desktop shortcut' { Start-Process -FilePath $deskLnk | Out-Null }
 Test-Launch 'App Paths (Win+R "EKFastPDF")' { Start-Process -FilePath 'EKFastPDF' -WorkingDirectory $env:USERPROFILE | Out-Null }
 Test-Launch 'Quoted Unicode path with spaces, other working dir' { Start-Process -FilePath $app -ArgumentList "`"$spacedPdf`"" -WorkingDirectory $env:SystemRoot | Out-Null } 'E-101 Power Plan'
-Test-Launch 'Open with: EKFastPDF.Document ProgID (file association)' { [ShellLaunch]::OpenWithClass($spacedPdf, 'EKFastPDF.Document', $env:USERPROFILE) } 'E-101 Power Plan'
-Test-Launch 'Open with: Applications\EKFastPDF.exe' { [ShellLaunch]::OpenWithClass($second, 'Applications\EKFastPDF.exe', $env:SystemRoot) } 'second document'
+Test-Launch 'Open with: EKFastPDF.Document ProgID (file association)' { Invoke-OpenWithClass $spacedPdf 'EKFastPDF.Document' $env:USERPROFILE } 'E-101 Power Plan'
+Test-Launch 'Open with: Applications\EKFastPDF.exe' { Invoke-OpenWithClass $second 'Applications\EKFastPDF.exe' $env:SystemRoot } 'second document'
 
 # Single instance: second launch with a file opens a tab in the running window.
 Stop-Viewer
@@ -163,7 +190,7 @@ Record 'Viewer still running after corrupt file' ($alive -eq 1)
 Stop-Viewer
 
 # ---------------------------------------------------------------- diagnostics & print
-$diag = Start-Process -FilePath $app -ArgumentList '--diagnose' -Wait -PassThru -RedirectStandardOutput "$ResultDir\diagnose-path.txt"
+$diag = Invoke-Timed $app @('--diagnose') 60 "$ResultDir\diagnose-path.txt"
 $reportPath = (Get-Content "$ResultDir\diagnose-path.txt" -ErrorAction SilentlyContinue | Select-Object -First 1)
 if ($reportPath -and (Test-Path $reportPath)) { Copy-Item $reportPath "$ResultDir\diagnostics-report.txt" }
 $reportText = Get-Content "$ResultDir\diagnostics-report.txt" -Raw -ErrorAction SilentlyContinue
@@ -172,7 +199,9 @@ Record 'Diagnostics report (--diagnose)' ($diag.ExitCode -eq 0 -and $reportText 
 $printer = Get-Printer -Name 'Microsoft Print to PDF' -ErrorAction SilentlyContinue
 if ($printer) {
     $printed = Join-Path $ResultDir 'print-test-output.pdf'
-    $pp = Start-Process -FilePath $app -ArgumentList '--print-file', '"Microsoft Print to PDF"', "`"$printed`"", "`"$SamplePdf`"" -Wait -PassThru
+    try { $pp = Invoke-Timed $app @('--print-file', '"Microsoft Print to PDF"', "`"$printed`"", "`"$SamplePdf`"") 120 }
+    catch { $pp = [pscustomobject]@{ ExitCode = -1 }; Write-Warning $_.Exception.Message }
+    Get-Process EKFastPDF -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Seconds 3
     $ok = (Test-Path $printed) -and ((Get-Item $printed).Length -gt 1000)
     Record 'Vector printing (Microsoft Print to PDF)' ($pp.ExitCode -eq 0 -and $ok) "exit $($pp.ExitCode), $(if (Test-Path $printed) { (Get-Item $printed).Length } else { 0 }) bytes"
@@ -181,7 +210,7 @@ if ($printer) {
 }
 
 # ---------------------------------------------------------------- upgrade
-$p = Start-Process $Setup -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$ResultDir\upgrade.log`"" -Wait -PassThru
+$p = Invoke-Timed $Setup @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', "/LOG=`"$ResultDir\upgrade.log`"")
 Record 'Upgrade / reinstall over existing installation' ($p.ExitCode -eq 0) "exit $($p.ExitCode)"
 $dirs = @(Get-ChildItem (Split-Path $appDir) -Directory | Where-Object Name -like 'EK FastPDF*').Count
 Record 'Upgrade kept a single install folder' ($dirs -eq 1)
@@ -191,8 +220,11 @@ Stop-Viewer
 # ---------------------------------------------------------------- uninstall
 if (-not $KeepInstalled) {
     $un = Join-Path $appDir 'unins000.exe'
-    $p = Start-Process $un -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART' -Wait -PassThru
-    Start-Sleep -Seconds 3
+    $p = Invoke-Timed $un @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART')
+    # The Inno uninstaller re-launches itself from %TEMP%; wait for the real work to finish.
+    $sw = [Diagnostics.Stopwatch]::StartNew()
+    while (((Test-Path $app) -or (Test-Path $uninstallKey)) -and $sw.Elapsed.TotalSeconds -lt 90) { Start-Sleep -Milliseconds 500 }
+    Start-Sleep -Seconds 2
     Record 'Uninstall' ($p.ExitCode -eq 0 -and -not (Test-Path $app)) "exit $($p.ExitCode)"
     Record 'Uninstall removed shortcuts' (-not (Test-Path $startLnk) -and -not (Test-Path $deskLnk))
     Record 'Uninstall removed ProgID' (-not (Test-Path 'HKLM:\SOFTWARE\Classes\EKFastPDF.Document'))

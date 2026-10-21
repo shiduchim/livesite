@@ -90,7 +90,7 @@ Root: HKA; Subkey: "Software\Classes\{#ProgId}"; ValueType: string; ValueName: "
 Root: HKA; Subkey: "Software\Classes\{#ProgId}\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: """{app}\EKFastPDF.exe"",0"; Tasks: pdfopenwith
 Root: HKA; Subkey: "Software\Classes\{#ProgId}\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\EKFastPDF.exe"" ""%1"""; Tasks: pdfopenwith
 ; Listed under "Open with" for .pdf; the default handler (UserChoice) is left untouched.
-Root: HKA; Subkey: "Software\Classes\.pdf\OpenWithProgids"; ValueType: none; ValueName: "{#ProgId}"; Flags: uninsdeletevalue; Tasks: pdfopenwith
+Root: HKA; Subkey: "Software\Classes\.pdf\OpenWithProgids"; ValueType: string; ValueName: "{#ProgId}"; ValueData: ""; Flags: uninsdeletevalue; Tasks: pdfopenwith
 Root: HKA; Subkey: "Software\Classes\Applications\EKFastPDF.exe"; ValueType: string; ValueName: "FriendlyAppName"; ValueData: "EK FastPDF"; Flags: uninsdeletekey; Tasks: pdfopenwith
 Root: HKA; Subkey: "Software\Classes\Applications\EKFastPDF.exe\SupportedTypes"; ValueType: string; ValueName: ".pdf"; ValueData: ""; Tasks: pdfopenwith
 Root: HKA; Subkey: "Software\Classes\Applications\EKFastPDF.exe\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\EKFastPDF.exe"" ""%1"""; Tasks: pdfopenwith
