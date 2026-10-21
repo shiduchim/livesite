@@ -167,11 +167,12 @@ public class PoolTests
         Assert.Equal(JobOutcome.Completed, full.Result.Outcome);
 
         var tcs = new TaskCompletionSource<RenderResult>(TaskCreationOptions.RunContinuationsAsynchronously);
-        var job = new RenderJob(doc, 0, pw, ph, 3000, 1000, 3000, 3000, Pdfium.FPDF_ANNOT, 0, (_, r) => tcs.SetResult(r));
+        // Same size, equally dense area of the drawing (the right-hand side is the sparse title block).
+        var job = new RenderJob(doc, 0, pw, ph, 200, 600, 3000, 3000, Pdfium.FPDF_ANNOT, 0, (_, r) => tcs.SetResult(r));
         sw.Restart();
         _f.Pool.Submit(job);
         while (!job.IsRunning && !job.IsFinished) await Task.Delay(1);
-        await Task.Delay(Math.Max(5, (int)(uncanceled / 10)));
+        await Task.Delay(Math.Max(5, (int)(uncanceled / 8)));
         _f.Pool.Cancel(job);
         var result = await tcs.Task;
         double canceled = sw.Elapsed.TotalMilliseconds;
