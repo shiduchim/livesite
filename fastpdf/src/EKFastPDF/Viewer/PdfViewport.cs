@@ -466,35 +466,10 @@ public sealed class PdfViewport : FrameworkElement
             pre.DrawRectangle(ShadowBrush, null, new Rect(pageRect.X + 1, pageRect.Y + 2, pageRect.Width + 2, pageRect.Height + 2));
             pre.DrawRectangle(PageBrush, PageEdge, new Rect(pageRect.X - 0.5, pageRect.Y - 0.5, pageRect.Width + 1, pageRect.Height + 1));
 
-            // 1) Overview: whole page in one bitmap, the always-available fallback.
-            double longEdgeOnScreen = Math.Max(sx1 - sx0, sy1 - sy0);
-            int wantEdge = OverviewEdges.FirstOrDefault(e => e >= longEdgeOnScreen * 0.9, OverviewEdges[^1]);
             var (pw, ph) = TileGrid.PagePixels(wPt, hPt, level);
             bool smallPage = pw <= tileSize && ph <= tileSize;
-            foreach (int edge in OverviewEdgesLargestFirst)
-            {
-                var ok = OverviewKey(s.DocId, page, wPt, hPt, edge, out _, out _);
-                if (!store.TryGet(ok, out var ov)) continue;
-                pre.DrawImage(ov.Bitmap, pageRect);
-                pt.HasOverview = true;
-                break;
-            }
-            if (!smallPage)
-            {
-                var wantKey = OverviewKey(s.DocId, page, wPt, hPt, wantEdge, out int ow, out int oh);
-                if (!store.Contains(wantKey))
-                {
-                    wanted.Add(wantKey);
-                    double pageDistance = Math.Abs((sy0 + sy1) / 2 - focus.Y) / Math.Max(1, v.Height);
-                    store.Request(wantKey, ow, oh, 0, 0, ow, oh, flags, pageDistance);
-                }
-            }
-
-            // 2) Cached neighbouring resolution levels, coarse to fine, drawn scaled.
-            DrawPreviewLevels(pre, store, s.DocId, page, level, wPt, hPt, pt, vw, vh);
-
-            // 3) Exact-resolution tiles for the current zoom.
-            double fx = (double)pw / Math.Max(1e-9, sx1 - sx0);
+            // 1) Exact-resolution tiles for the current zoom (drawn later, on the sharp layer).
+            int pageMissing = 0;
             var (c0, r0, c1, r1) = TileGrid.Range(-pt.Ox, -pt.Oy, vw - pt.Ox, vh - pt.Oy, tileSize, pw, ph);
             for (int row = r0; row <= r1; row++)
             for (int col = c0; col <= c1; col++)
@@ -507,6 +482,7 @@ public sealed class PdfViewport : FrameworkElement
                 }
                 if (store.HasFailed(key)) continue;
                 missingVisible++;
+                pageMissing++;
                 wanted.Add(key);
                 if (zoomSettled)
                 {
@@ -515,6 +491,36 @@ public sealed class PdfViewport : FrameworkElement
                     store.Request(key, pw, ph, x, y, w, h, flags, 1000 + Math.Sqrt(cx * cx + cy * cy) / 10);
                 }
             }
+
+            // 2) Overview: whole page in one bitmap, the always-available fallback. Not drawn when
+            //    sharp tiles already cover the visible part of the page completely.
+            bool covered = pageMissing == 0 && pt.Held.Count == 0 && pt.Ready.Count > 0 &&
+                           pt.Ready.All(t => (now - t.RevealedAt) * 1000.0 / System.Diagnostics.Stopwatch.Frequency >= FadeMs);
+            double longEdgeOnScreen = Math.Max(sx1 - sx0, sy1 - sy0);
+            int wantEdge = OverviewEdges.FirstOrDefault(e => e >= longEdgeOnScreen * 0.9, OverviewEdges[^1]);
+            foreach (int edge in OverviewEdgesLargestFirst)
+            {
+                var ok = OverviewKey(s.DocId, page, wPt, hPt, edge, out _, out _);
+                if (!store.Contains(ok)) continue;
+                if (covered) { store.Touch(ok); pt.HasOverview = true; continue; } // keep it cached for the next zoom
+                if (pt.HasOverview) continue;
+                store.TryGet(ok, out var ov);
+                pre.DrawImage(ov.Bitmap, pageRect);
+                pt.HasOverview = true;
+            }
+            if (!smallPage)
+            {
+                var wantKey = OverviewKey(s.DocId, page, wPt, hPt, wantEdge, out int ow, out int oh);
+                if (!store.Contains(wantKey))
+                {
+                    wanted.Add(wantKey);
+                    double pageDistance = Math.Abs((sy0 + sy1) / 2 - focus.Y) / Math.Max(1, v.Height);
+                    store.Request(wantKey, ow, oh, 0, 0, ow, oh, flags, pageDistance);
+                }
+            }
+
+            // 3) Cached neighbouring resolution levels, coarse to fine, drawn scaled.
+            if (!covered) DrawPreviewLevels(pre, store, s.DocId, page, level, wPt, hPt, pt, vw, vh);
 
             // 4) Overscan ring, extended in the direction the user is panning.
             if (zoomSettled && sinceChange > 0)

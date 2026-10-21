@@ -9,6 +9,9 @@
 #>
 param(
     [string]$Iscc = '',
+    # Optional Authenticode signing, e.g. -SignTool signtool.exe -SignArgs '/a /fd SHA256 /tr http://timestamp.digicert.com /td SHA256'
+    [string]$SignTool = '',
+    [string]$SignArgs = '',
     [switch]$SkipTests,
     [string]$Version = ''
 )
@@ -34,6 +37,13 @@ Step "Publish self-contained win-x64 ($Version)"
 if (Test-Path $publish) { Remove-Item -Recurse -Force $publish }
 dotnet publish src/EKFastPDF/EKFastPDF.csproj -c Release -r win-x64 --self-contained true -p:Version=$Version -o $publish --nologo
 Check ($LASTEXITCODE -eq 0) 'Publish failed'
+
+function Sign($file) {
+    if (-not $SignTool) { return }
+    & $SignTool sign @($SignArgs -split ' ' | Where-Object { $_ }) $file
+    Check ($LASTEXITCODE -eq 0) "Signing failed: $file"
+}
+Sign (Join-Path $publish 'EKFastPDF.exe')
 
 Step 'Verify payload'
 foreach ($f in 'EKFastPDF.exe', 'EKFastPDF.dll', 'EKFastPDF.Core.dll', 'pdfium.dll', 'EKFastPDF.runtimeconfig.json', 'hostfxr.dll', 'coreclr.dll', 'PresentationFramework.dll', 'wpfgfx_cor3.dll') {
@@ -87,6 +97,7 @@ if (-not $Iscc) {
 if ($Iscc) {
     & $Iscc "/DPublishDir=$publish" "/DAppVersion=$Version" "/DOutDir=$out\installer" "/DOutName=EK_FastPDF_Setup_v$short" installer\EKFastPDF.iss
     Check ($LASTEXITCODE -eq 0) 'Inno Setup failed'
+    Sign "$out\installer\EK_FastPDF_Setup_v$short.exe"
 } else {
     Write-Warning 'Inno Setup (ISCC.exe) not found: installer skipped. Install Inno Setup 6 or pass -Iscc.'
 }

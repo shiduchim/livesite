@@ -1,0 +1,10 @@
+EK FastPDF 1.1.0 (performance update)
+- Smooth image-backed zoom previews instead of blanking tiles
+- Per-monitor DPI-aware raster target for crisp Windows scaling
+- Larger LRU image cache (512 MiB per active viewer)
+- Pixel bleed tiles to avoid seams on fractional scaling
+- Retain raster results during cancelled pan requests
+- Accelerated render request delay and reuse already drawn tile visuals
+- Preserve all v1.0 tabs, text search, page navigation and toolbar
+
+Built Windows binary: NOT INCLUDED; run BUILD_WINDOWS.cmd on Windows.
