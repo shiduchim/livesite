@@ -67,6 +67,26 @@ jobs:
             -SamplePdf out/samples/simple-text.pdf -ResultDir out/test-results/install
           Get-Content out/test-results/install/install-tests.md
 
+      - name: Publish the tested installer and portable ZIP as a prerelease
+        if: success() && github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'fastpdf-v1.2.0'
+          @"
+          EK FastPDF 1.2.0 - Windows 10/11 x64.
+
+          * EK_FastPDF_Setup_v1.2.exe - installer (Program Files, Start menu, optional desktop shortcut and "Open with" entry, uninstall in Settings > Apps).
+          * EK_FastPDF_Portable_v1.2.zip - portable folder; extract to a local disk and run EKFastPDF.exe.
+
+          Built and tested by CI on a Windows Server 2022 VM (2 cores, no GPU): unit/engine tests, scripted viewer benchmark, silent install, launch through Explorer / shortcuts / Open with / App Paths, printing, upgrade and uninstall. Not code-signed: SmartScreen may ask once (More info > Run anyway). Not yet tested on the target i7-12700 / T1000 workstation - see fastpdf/docs/WINDOWS-TEST-CHECKLIST.md.
+          Source commit: $env:GITHUB_SHA
+          "@ | Set-Content out/RELEASE-NOTES.md -Encoding UTF8
+          gh release delete $tag --yes --cleanup-tag 2>$null
+          gh release create $tag --target $env:GITHUB_SHA --prerelease --title 'EK FastPDF 1.2.0 (CI build, unsigned)' --notes-file out/RELEASE-NOTES.md `
+            out/installer/EK_FastPDF_Setup_v1.2.exe out/installer/EK_FastPDF_Portable_v1.2.zip out/installer/SHA256SUMS.txt
+          if ($LASTEXITCODE -ne 0) { throw 'Release publication failed' }
+
       - name: Summary
         if: always()
         run: |

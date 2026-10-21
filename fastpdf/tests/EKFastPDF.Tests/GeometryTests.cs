@@ -120,3 +120,28 @@ public class GeometryTests
         Assert.Equal(300, cache.Bytes);
     }
 }
+
+public class HardwareSizingTests
+{
+    private const long GB = 1024L * 1024 * 1024;
+
+    [Fact]
+    public void IntelI7_12700_Gets7Workers_And1GBCache()
+    {
+        var hw = new EKFastPDF.Core.Diagnostics.HardwareProfile(20, 12, 8, 4, 32 * GB);
+        Assert.True(hw.IsHybrid);
+        Assert.Equal(7, hw.RecommendedWorkers);       // 8 P-cores minus one for UI/composition
+        Assert.Equal(1 * GB, hw.RecommendedCacheBytes);
+    }
+
+    [Theory]
+    [InlineData(4, 2, 16, 2)]    // CI VM: 2 cores with SMT
+    [InlineData(16, 8, 64, 8)]   // 8-core desktop
+    [InlineData(32, 16, 64, 8)]  // capped at 8
+    [InlineData(8, 4, 4, 1)]     // 4 GB RAM limits workers
+    public void NonHybrid_UsesPhysicalCores_BoundedByMemory(int logical, int cores, int ramGb, int expected)
+    {
+        var hw = new EKFastPDF.Core.Diagnostics.HardwareProfile(logical, cores, cores, 0, ramGb * GB);
+        Assert.Equal(expected, hw.RecommendedWorkers);
+    }
+}
