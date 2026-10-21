@@ -1,0 +1,10 @@
+<Project>
+  <!-- Native PDFium (Chromium's PDF engine, BSD-3/Apache-2.0) from https://github.com/bblanchon/pdfium-binaries.
+       Imported by executables so pdfium.dll / libpdfium.so lands next to the entry assembly. -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'win-x64' or ('$(RuntimeIdentifier)' == '' and '$(OS)' == 'Windows_NT')">
+    <PackageReference Include="bblanchon.PDFium.Win32" Version="$(PdfiumVersion)" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' == 'linux-x64' or ('$(RuntimeIdentifier)' == '' and '$(OS)' != 'Windows_NT')">
+    <PackageReference Include="bblanchon.PDFium.Linux" Version="$(PdfiumVersion)" />
+  </ItemGroup>
+</Project>

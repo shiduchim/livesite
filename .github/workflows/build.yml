@@ -5,7 +5,12 @@ on:
     paths-ignore:
       - 'release/**'
       - '**.md'
+      - 'fastpdf/**'
+      - '.github/workflows/fastpdf.yml'
   pull_request:
+    paths-ignore:
+      - 'fastpdf/**'
+      - '.github/workflows/fastpdf.yml'
   workflow_dispatch:
 
 concurrency:

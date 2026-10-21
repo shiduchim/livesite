@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Platform-neutral engine: PDFium interop, out-of-process render workers, scheduling,
+       caching and view geometry. Runs on Windows (the product) and Linux (CI tests/benchmarks). -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <RootNamespace>EKFastPDF.Core</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="EKFastPDF.Tests" />
+    <InternalsVisibleTo Include="EKFastPDF.Bench" />
+  </ItemGroup>
+</Project>
