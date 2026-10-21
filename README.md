@@ -51,6 +51,10 @@ or run `C:\ProgramData\EKTriangle\EK Triangle Restore.exe`.
 Turn the dialog triangles off without uninstalling: set `Enabled=0` in
 `%LOCALAPPDATA%\Programs\EK Triangle\glyph.ini` and restart Revit.
 
+## Also in this repository
+
+* [EK FastPDF](fastpdf/README.md) – fast PDF viewer for large drawings (separate product, own build and workflow).
+
 ## More
 
 * [Short acceptance test](docs/ACCEPTANCE-TEST.md) – a few minutes in Revit

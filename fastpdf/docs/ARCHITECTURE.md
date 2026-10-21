@@ -95,8 +95,9 @@ after the zoom has been still for 70 ms, so workers are not spent on intermediat
 * **Atomic reveal**: newly arrived sharp tiles are held until *every* visible tile is ready, then all appear together
   with a 110 ms cross-fade over the scaled preview. If a view takes longer than 650 ms (extreme pages), tiles are
   released in batches every 180 ms instead of one by one.
-* Why not a custom Direct3D 11 swap chain? Measured UI-thread frame build time is well below 1 ms per frame and frame
-  pacing follows the display refresh (docs/BENCHMARKS.md). The expensive part is CPU rasterisation, which no
+* Why not a custom Direct3D 11 swap chain? Measured UI-thread frame build time is 0.1–0.8 ms at p95 in most
+  scenarios (6 ms worst case, during the first zoom of a document) and frames arrive at the 16.7 ms display interval
+  (p50) even with CPU-only composition on the CI VM (docs/BENCHMARKS.md). The expensive part is CPU rasterisation, which no
   presentation API changes. A D3D11 surface inside WPF needs `D3DImage` (D3D9Ex shared surface, an extra copy per
   frame) or an `HwndHost` (airspace problems with tooltips, menus and future markup overlays). The presentation is
   isolated in `PdfViewport`, so a D3D11/DirectComposition presenter can be added later if profiling on the target
