@@ -1,0 +1,15 @@
+EK FastPDF includes the following third-party software.
+
+PDFium
+  Copyright 2014 The PDFium Authors. All rights reserved.
+  https://pdfium.googlesource.com/pdfium/
+  Licensed under the BSD 3-Clause License and the Apache License 2.0 (dual), with
+  bundled components (FreeType, libjpeg-turbo, OpenJPEG, zlib, lcms2, libpng, AGG and
+  others) under their respective permissive licenses. Binary build:
+  https://github.com/bblanchon/pdfium-binaries (bblanchon.PDFium.Win32 157.0.8100, MIT build scripts).
+
+.NET 8 runtime and Windows Desktop (WPF)
+  Copyright (c) .NET Foundation and Contributors. Licensed under the MIT License.
+  https://github.com/dotnet/runtime  https://github.com/dotnet/wpf
+
+The full license texts are available at the URLs above.

@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\EKFastPDF.Core\PdfiumNative.props" />
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>EKFastPDF</AssemblyName>
+    <RootNamespace>EKFastPDF</RootNamespace>
+    <ApplicationIcon>Assets\FastPDF.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PlatformTarget>x64</PlatformTarget>
+    <SelfContained>true</SelfContained>
+    <StartupObject>EKFastPDF.Program</StartupObject>
+    <!-- Startup speed: precompiled code for the UI process and every render worker. -->
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <TieredPGO>true</TieredPGO>
+    <!-- Plain folder deployment: no single-file self-extraction into %TEMP% at launch. -->
+    <PublishSingleFile>false</PublishSingleFile>
+    <InvariantGlobalization>false</InvariantGlobalization>
+    <AssemblyTitle>EK FastPDF</AssemblyTitle>
+    <Description>EK FastPDF - fast PDF viewer for large drawings</Description>
+  </PropertyGroup>
+  <ItemGroup>
+    <Resource Include="Assets\FastPDF.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EKFastPDF.Core\EKFastPDF.Core.csproj" />
+  </ItemGroup>
+</Project>

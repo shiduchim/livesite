@@ -1,0 +1,99 @@
+name: EK FastPDF (Windows build, tests, benchmarks, installer)
+
+on:
+  push:
+    paths:
+      - 'fastpdf/**'
+      - '.github/workflows/fastpdf.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: fastpdf-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: pwsh
+    working-directory: fastpdf
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Inno Setup 6.6.1 (pinned)
+        run: |
+          $zip = Join-Path $env:RUNNER_TEMP 'inno.zip'
+          Invoke-WebRequest 'https://api.nuget.org/v3-flatcontainer/tools.innosetup/6.6.1/tools.innosetup.6.6.1.nupkg' -OutFile $zip
+          Expand-Archive $zip -DestinationPath (Join-Path $env:RUNNER_TEMP 'inno')
+          "ISCC=$(Join-Path $env:RUNNER_TEMP 'inno\tools\ISCC.exe')" >> $env:GITHUB_ENV
+
+      - name: Machine
+        run: |
+          Get-CimInstance Win32_Processor | Format-List Name, NumberOfCores, NumberOfLogicalProcessors
+          Get-CimInstance Win32_VideoController | Format-List Name, AdapterRAM, DriverVersion
+          "RAM: {0:N1} GB" -f ((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+
+      - name: Tests, publish, smoke test, portable ZIP, installer
+        run: ./build/build.ps1 -Iscc $env:ISCC
+
+      - name: Engine benchmark (v1.1 render path vs v1.2 worker pool)
+        run: |
+          New-Item -ItemType Directory -Force out/bench | Out-Null
+          $bench = 'tools/EKFastPDF.Bench/bin/Release/net8.0/EKFastPDF.Bench.exe'
+          & $bench engine out/samples --workers 1,2,3,4 --tiles 256,512,1024 --out out/bench/engine.json | Tee-Object out/bench/engine.md
+          if ($LASTEXITCODE -ne 0) { throw 'engine benchmark failed' }
+
+      - name: Viewer benchmark (real WPF window, scripted zoom/pan/search/tabs)
+        run: |
+          $exe = Resolve-Path out/publish/EKFastPDF/EKFastPDF.exe
+          $p = Start-Process -FilePath $exe -ArgumentList '--benchmark', "$PWD\out\bench\viewer" -PassThru
+          if (-not $p.WaitForExit(30 * 60 * 1000)) { $p.Kill(); throw 'viewer benchmark timed out' }
+          Get-Content out/bench/viewer/results.md
+          if ($p.ExitCode -ne 0) { throw "viewer benchmark exit code $($p.ExitCode)" }
+
+      - name: Install, launch (Explorer, shortcuts, Open with, App Paths), print, upgrade, uninstall
+        run: |
+          ./tests/installer/Test-FastPdfInstall.ps1 -Setup out/installer/EK_FastPDF_Setup_v1.2.exe `
+            -SamplePdf out/samples/simple-text.pdf -ResultDir out/test-results/install
+          Get-Content out/test-results/install/install-tests.md
+
+      - name: Summary
+        if: always()
+        run: |
+          foreach ($f in 'out/test-results/install/install-tests.md', 'out/bench/viewer/results.md') {
+            if (Test-Path $f) { Get-Content $f | Out-File -Append $env:GITHUB_STEP_SUMMARY; '' | Out-File -Append $env:GITHUB_STEP_SUMMARY }
+          }
+          if (Test-Path out/bench/engine.md) { '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY; Get-Content out/bench/engine.md | Select-Object -Last 120 | Out-File -Append $env:GITHUB_STEP_SUMMARY; '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY }
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: EK_FastPDF_v1.2_Windows
+          path: |
+            fastpdf/out/installer/EK_FastPDF_Setup_v1.2.exe
+            fastpdf/out/installer/EK_FastPDF_Portable_v1.2.zip
+            fastpdf/out/installer/SHA256SUMS.txt
+          if-no-files-found: warn
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: EK_FastPDF_test_and_benchmark_results
+          path: |
+            fastpdf/out/bench/engine.md
+            fastpdf/out/bench/engine.json
+            fastpdf/out/bench/viewer/*.md
+            fastpdf/out/bench/viewer/*.json
+            fastpdf/out/bench/viewer/*.png
+            fastpdf/out/test-results
+          if-no-files-found: warn

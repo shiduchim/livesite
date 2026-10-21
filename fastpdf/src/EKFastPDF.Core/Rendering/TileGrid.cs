@@ -55,3 +55,10 @@ public static class TileGrid
     public static double OverviewScale(double pageWidthPt, double pageHeightPt, int longEdgePx) =>
         longEdgePx / Math.Max(pageWidthPt, pageHeightPt);
 }
+
+/// <summary>PDFium render flags exposed to the viewer.</summary>
+public static class RenderFlags
+{
+    public const int Annotations = Native.Pdfium.FPDF_ANNOT;
+    public const int LcdText = Native.Pdfium.FPDF_LCD_TEXT;
+}
