@@ -11,55 +11,41 @@ using static EKScriptLauncher.UI.Theme;
 namespace EKScriptLauncher.UI
 {
     /// <summary>
-    /// The Select &amp; Launch window.
+    /// The Select &amp; Launch window: a compact, searchable list of scripts.
     ///
-    /// - Every script is shown as its own row: a coloured initials badge, the
-    ///   script name, and underneath it the file name plus the first line of
-    ///   the script's docstring (when it has one).
     /// - Search filters as you type and highlights the matching text.
     ///   Up / Down move the selection, Enter launches, Esc closes.
+    /// - Double-click a script to launch it. Hovering shows its description
+    ///   (first docstring line) and full path.
     /// - The window widens for long script names, up to the screen width; a
     ///   horizontal scrollbar appears only if a name is still too long.
-    /// - Resizable; Settings / Refresh / Cancel stay aligned.
-    /// - The large LAUNCH SCRIPT button shows which script it will run.
     /// - Closing with a script chosen sets <see cref="SelectedScript"/>; the
     ///   command runs it after the window has closed.
     /// </summary>
     sealed class LauncherForm : Form
     {
-        static readonly int MinClientWidth = Dp(560);
-        static readonly int MaxClientWidthFallback = Dp(1100);
-        static readonly int WindowHeight = Dp(660);
+        static readonly int MinClientWidth = Dp(400);
+        static readonly int MaxClientWidthFallback = Dp(1000);
+        static readonly int WindowHeight = Dp(470);
 
-        static readonly int MarginLeft = Dp(18);
-        static readonly int MarginRight = Dp(18);
-        static readonly int MarginTop = Dp(16);
-        static readonly int Gap = Dp(12);
+        static readonly int Pad = Dp(10);
+        static readonly int Gap = Dp(8);
+        static readonly int ControlHeight = Dp(28);
+        static readonly int RowHeight = Dp(26);
+        static readonly int RowPad = Dp(10);
+        static readonly int SearchTextLeft = Dp(26);
+        static readonly int CountWidth = Dp(70);
 
-        static readonly int TopButtonHeight = Dp(32);
-        static readonly int SearchTop = Dp(84);
-        static readonly int SearchHeight = Dp(40);
-        static readonly int ListTop = SearchTop + SearchHeight + Gap;
-        static readonly int LaunchHeight = Dp(62);
-
-        static readonly int RowHeight = Dp(52);
-        static readonly int RowPad = Dp(14);
-        static readonly int BadgeSize = Dp(34);
-        static readonly int BadgeGap = Dp(12);
-        static readonly int CountWidth = Dp(120);
-
-        Label titleLabel;
-        Label folderLabel;
-        Button settingsButton;
-        Button refreshButton;
-        Button cancelButton;
-        Panel searchPanel;
+        Panel searchFrame;
         TextBox searchBox;
         Label placeholder;
         Label countLabel;
         Panel listFrame;
         ListBox listBox;
         Label emptyLabel;
+        Button settingsButton;
+        Button refreshButton;
+        Button cancelButton;
         Button launchButton;
         ToolTip toolTip;
 
@@ -67,8 +53,6 @@ namespace EKScriptLauncher.UI
         List<ScriptEntry> visibleScripts = new List<ScriptEntry>();
         string query = "";
         int hoverIndex = -1;
-        bool launchHover;
-        bool launchPressed;
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string ScriptsFolder { get; private set; }
@@ -93,7 +77,7 @@ namespace EKScriptLauncher.UI
             MinimizeBox = false;
             AutoScaleMode = AutoScaleMode.None;
             ClientSize = new Size(MinClientWidth, WindowHeight);
-            MinimumSize = new Size(Width, Height - WindowHeight + Dp(460));
+            MinimumSize = new Size(Width - MinClientWidth + Dp(340), Height - WindowHeight + Dp(260));
             BackColor = WindowBack;
             Font = FontUi;
             DoubleBuffered = true;
@@ -107,126 +91,68 @@ namespace EKScriptLauncher.UI
         void BuildUi()
         {
             int width = ClientSize.Width;
+            int height = ClientSize.Height;
 
-            // Header: title + current folder on the left, buttons on the right.
-            titleLabel = new Label
-            {
-                Text = Title,
-                Font = FontTitle,
-                ForeColor = Theme.Text,
-                AutoSize = true,
-                Location = new Point(MarginLeft - Dp(3), MarginTop),
-            };
-            Controls.Add(titleLabel);
-
-            folderLabel = new Label
-            {
-                Font = FontSmall,
-                ForeColor = TextMuted,
-                AutoSize = false,
-                AutoEllipsis = true,
-                Location = new Point(MarginLeft - Dp(1), MarginTop + Dp(34)),
-                Size = new Size(width - MarginLeft - MarginRight, Dp(20)),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-            };
-            Controls.Add(folderLabel);
-
-            settingsButton = AddTopButton("Settings", OnSettings);
-            refreshButton = AddTopButton("Refresh", (s, e) => RefreshScripts());
-            cancelButton = AddTopButton("Cancel", (s, e) => Close());
-
-            SizeTopButton(settingsButton, Dp(88));
-            SizeTopButton(refreshButton, Dp(84));
-            SizeTopButton(cancelButton, Dp(80));
-
-            // Search field: a white box with a magnifier, placeholder and count.
-            searchPanel = new Panel
-            {
-                BackColor = Surface,
-                Location = new Point(MarginLeft, SearchTop),
-                Size = new Size(width - MarginLeft - MarginRight, SearchHeight),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                Cursor = Cursors.IBeam,
-            };
-            searchPanel.Paint += OnSearchPanelPaint;
-            searchPanel.Click += (s, e) => searchBox.Focus();
-            Controls.Add(searchPanel);
-
-            searchBox = new TextBox
-            {
-                BorderStyle = BorderStyle.None,
-                Font = FontSearch,
-                BackColor = Surface,
-                ForeColor = Theme.Text,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-            };
-            searchBox.Location = new Point(Dp(38), (SearchHeight - searchBox.Height) / 2);
-            searchBox.Width = searchPanel.Width - Dp(38) - CountWidth - Dp(8);
+            // Search field with magnifier, placeholder and count.
+            searchBox = new TextBox { Font = FontList };
+            searchFrame = FieldFrame(searchBox, new Rectangle(Pad, Pad, width - 2 * Pad, ControlHeight), SearchTextLeft);
+            searchFrame.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            searchBox.Width = searchFrame.Width - SearchTextLeft - CountWidth - Dp(8);
+            searchFrame.Paint += OnSearchFramePaint;
             searchBox.TextChanged += (s, e) => ApplyFilter();
             searchBox.KeyDown += OnSearchKeyDown;
-            searchBox.GotFocus += (s, e) => searchPanel.Invalidate();
-            searchBox.LostFocus += (s, e) => searchPanel.Invalidate();
-            searchPanel.Controls.Add(searchBox);
+            Controls.Add(searchFrame);
 
             placeholder = new Label
             {
                 Text = "Search scripts...",
-                Font = FontSearch,
+                Font = FontList,
                 ForeColor = TextFaint,
                 BackColor = Surface,
                 AutoSize = true,
                 Cursor = Cursors.IBeam,
-                Location = new Point(searchBox.Left + Dp(2), searchBox.Top),
+                Location = new Point(searchBox.Left + Dp(1), searchBox.Top),
             };
             placeholder.Click += (s, e) => searchBox.Focus();
-            searchPanel.Controls.Add(placeholder);
+            searchFrame.Controls.Add(placeholder);
             placeholder.BringToFront();
 
             countLabel = new Label
             {
                 Font = FontSmall,
-                ForeColor = TextMuted,
+                ForeColor = TextFaint,
                 BackColor = Surface,
                 AutoSize = false,
                 TextAlign = ContentAlignment.MiddleRight,
-                Size = new Size(CountWidth, SearchHeight - 2),
-                Location = new Point(searchPanel.Width - CountWidth - Dp(12), 1),
+                Size = new Size(CountWidth, ControlHeight - 2),
+                Location = new Point(searchFrame.Width - CountWidth - Dp(8), 1),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
             };
             countLabel.Click += (s, e) => searchBox.Focus();
-            searchPanel.Controls.Add(countLabel);
+            searchFrame.Controls.Add(countLabel);
 
-            launchButton = new Button
-            {
-                Text = "LAUNCH SCRIPT",
-                Font = FontLaunch,
-                ForeColor = Color.White,
-                BackColor = Blue,
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand,
-                Location = new Point(MarginLeft, ClientSize.Height - LaunchHeight - Dp(18)),
-                Size = new Size(width - MarginLeft - MarginRight, LaunchHeight),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
-            };
-            launchButton.FlatAppearance.BorderSize = 0;
-            launchButton.Click += OnLaunch;
-            launchButton.Paint += OnLaunchPaint;
-            launchButton.MouseEnter += (s, e) => { launchHover = true; launchButton.Invalidate(); };
-            launchButton.MouseLeave += (s, e) => { launchHover = false; launchPressed = false; launchButton.Invalidate(); };
-            launchButton.MouseDown += (s, e) =>
-            {
-                if (e.Button == MouseButtons.Left) { launchPressed = true; launchButton.Invalidate(); }
-            };
-            launchButton.MouseUp += (s, e) => { launchPressed = false; launchButton.Invalidate(); };
-            Controls.Add(launchButton);
+            // Footer: Settings / Refresh on the left, Cancel / Launch on the right.
+            int footerTop = height - Pad - ControlHeight;
+            settingsButton = AddFooterButton("Settings", Dp(72), OnSettings, AnchorStyles.Left);
+            refreshButton = AddFooterButton("Refresh", Dp(72), (s, e) => RefreshScripts(), AnchorStyles.Left);
+            cancelButton = AddFooterButton("Cancel", Dp(72), (s, e) => Close(), AnchorStyles.Right);
+            launchButton = AddFooterButton("Launch", Dp(96), OnLaunch, AnchorStyles.Right);
+            launchButton.Font = FontLaunch;
+            StyleButton(launchButton, primary: true);
 
-            // Script list: 1px border around an owner-drawn list.
+            settingsButton.Location = new Point(Pad, footerTop);
+            refreshButton.Location = new Point(settingsButton.Right + Dp(6), footerTop);
+            launchButton.Location = new Point(width - Pad - launchButton.Width, footerTop);
+            cancelButton.Location = new Point(launchButton.Left - Dp(6) - cancelButton.Width, footerTop);
+
+            // Script list: 1 px border around an owner-drawn list.
+            int listTop = searchFrame.Bottom + Gap;
             listFrame = new Panel
             {
                 BackColor = Theme.Border,
                 Padding = new Padding(1),
-                Location = new Point(MarginLeft, ListTop),
-                Size = new Size(width - MarginLeft - MarginRight, launchButton.Top - Gap - ListTop),
+                Location = new Point(Pad, listTop),
+                Size = new Size(width - 2 * Pad, footerTop - Gap - listTop),
                 Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
             };
             Controls.Add(listFrame);
@@ -236,7 +162,7 @@ namespace EKScriptLauncher.UI
                 BorderStyle = BorderStyle.None,
                 Dock = DockStyle.Fill,
                 BackColor = Surface,
-                Font = FontName,
+                Font = FontList,
                 DrawMode = DrawMode.OwnerDrawFixed,
                 ItemHeight = RowHeight,
                 HorizontalScrollbar = true,
@@ -244,7 +170,6 @@ namespace EKScriptLauncher.UI
             };
             listBox.DrawItem += OnDrawItem;
             listBox.DoubleClick += OnLaunch;
-            listBox.SelectedIndexChanged += (s, e) => launchButton.Invalidate();
             listBox.MouseMove += OnListMouseMove;
             listBox.MouseLeave += (s, e) => { InvalidateRow(hoverIndex); hoverIndex = -1; };
             listBox.KeyPress += OnListKeyPress;
@@ -256,55 +181,33 @@ namespace EKScriptLauncher.UI
                 Dock = DockStyle.Fill,
                 BackColor = Surface,
                 ForeColor = TextMuted,
-                Font = FontEmpty,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Visible = false,
             };
             listFrame.Controls.Add(emptyLabel);
             emptyLabel.BringToFront();
 
-            toolTip = new ToolTip { InitialDelay = 700 };
+            toolTip = new ToolTip { InitialDelay = 600 };
 
             AcceptButton = launchButton;
             CancelButton = cancelButton;
             ActiveControl = searchBox;
-
-            Resize += (s, e) => PositionTopButtons();
             Shown += (s, e) => searchBox.Focus();
-
-            PositionTopButtons();
         }
 
-        Button AddTopButton(string text, EventHandler handler)
+        Button AddFooterButton(string text, int width, EventHandler handler, AnchorStyles side)
         {
             var button = new Button
             {
                 Text = text,
                 Font = FontUi,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                Size = new Size(width, ControlHeight),
+                Anchor = AnchorStyles.Bottom | side,
             };
             StyleButton(button);
             button.Click += handler;
             Controls.Add(button);
             return button;
-        }
-
-        void SizeTopButton(Button button, int minimumWidth)
-        {
-            button.Size = new Size(Math.Max(minimumWidth, TextWidth(button.Text, button.Font) + Dp(30)), TopButtonHeight);
-        }
-
-        void PositionTopButtons()
-        {
-            if (cancelButton == null)
-                return;
-
-            int right = ClientSize.Width - MarginRight;
-            int top = MarginTop + Dp(1);
-
-            cancelButton.Location = new Point(right - cancelButton.Width, top);
-            refreshButton.Location = new Point(cancelButton.Left - Dp(8) - refreshButton.Width, top);
-            settingsButton.Location = new Point(refreshButton.Left - Dp(8) - settingsButton.Width, top);
         }
 
         int MaxAllowedClientWidth()
@@ -319,35 +222,19 @@ namespace EKScriptLauncher.UI
             }
         }
 
-        int RowWidthForName(string name)
-        {
-            return RowPad + BadgeSize + BadgeGap + TextWidth(name, FontName) + RowPad;
-        }
-
         int LongestRowWidth()
         {
             int longest = 0;
             foreach (ScriptEntry script in allScripts)
-                longest = Math.Max(longest, RowWidthForName(script.Name));
+                longest = Math.Max(longest, RowPad + TextWidth(script.Name, FontList) + RowPad);
             return longest;
-        }
-
-        int IdealWidthForNames()
-        {
-            // Row content + list border/scrollbar + outer margins.
-            int needed = LongestRowWidth() + SystemInformation.VerticalScrollBarWidth + 2 + MarginLeft + MarginRight;
-
-            // Also guarantee room for the title and the top buttons.
-            int topNeeded = MarginLeft + TextWidth(Title, FontTitle) + Dp(24)
-                + settingsButton.Width + Dp(8) + refreshButton.Width + Dp(8) + cancelButton.Width + MarginRight;
-
-            needed = Math.Max(needed, Math.Max(topNeeded, MinClientWidth));
-            return Math.Min(needed, MaxAllowedClientWidth());
         }
 
         void ExpandForLongNames()
         {
-            int wanted = IdealWidthForNames();
+            // Row content + list border/scrollbar + outer margins.
+            int wanted = LongestRowWidth() + SystemInformation.VerticalScrollBarWidth + 2 + 2 * Pad;
+            wanted = Math.Min(Math.Max(wanted, MinClientWidth), MaxAllowedClientWidth());
 
             // Only expand automatically. Do not shrink while the user works.
             if (wanted <= ClientSize.Width)
@@ -368,8 +255,6 @@ namespace EKScriptLauncher.UI
             catch
             {
             }
-
-            PositionTopButtons();
         }
 
         // -- data -----------------------------------------------------------
@@ -380,8 +265,11 @@ namespace EKScriptLauncher.UI
             foreach (ScriptEntry script in allScripts)
                 script.Summary = ScriptCatalog.ReadSummary(script.Path);
 
-            folderLabel.Text = ScriptsFolder.Length > 0 ? ScriptsFolder : "No scripts folder selected";
-            toolTip.SetToolTip(folderLabel, ScriptsFolder);
+            string folderName = ScriptsFolder.Length > 0
+                ? Path.GetFileName(ScriptsFolder.TrimEnd('\\', '/'))
+                : "";
+            Text = folderName.Length > 0 ? Title + "  –  " + folderName : Title;
+            toolTip.SetToolTip(settingsButton, ScriptsFolder.Length > 0 ? ScriptsFolder : "Choose the scripts folder");
 
             // Lets the list scroll sideways if a name is wider than the window.
             listBox.HorizontalExtent = LongestRowWidth();
@@ -415,7 +303,6 @@ namespace EKScriptLauncher.UI
             }
 
             UpdateStatus();
-            launchButton.Invalidate();
         }
 
         void UpdateStatus()
@@ -423,10 +310,7 @@ namespace EKScriptLauncher.UI
             int total = allScripts.Count;
             int shown = visibleScripts.Count;
 
-            if (query.Length > 0)
-                countLabel.Text = shown + " of " + total;
-            else
-                countLabel.Text = total == 1 ? "1 script" : total + " scripts";
+            countLabel.Text = query.Length > 0 ? shown + " / " + total : total.ToString();
 
             if (shown > 0)
             {
@@ -437,7 +321,7 @@ namespace EKScriptLauncher.UI
             if (ScriptsFolder.Length == 0 || !Directory.Exists(ScriptsFolder))
                 emptyLabel.Text = "No scripts folder selected.\nClick Settings to choose one.";
             else if (total == 0)
-                emptyLabel.Text = "This folder has no .py files yet.\nAdd scripts to it, then click Refresh.";
+                emptyLabel.Text = "No .py files in this folder yet.\nAdd scripts, then click Refresh.";
             else
                 emptyLabel.Text = "No scripts match “" + searchBox.Text.Trim() + "”";
 
@@ -467,48 +351,26 @@ namespace EKScriptLauncher.UI
             ScriptEntry script = visibleScripts[index];
             bool selected = (e.State & DrawItemState.Selected) == DrawItemState.Selected;
 
-            FillRect(graphics, selected ? RowSelected : index == hoverIndex ? RowHover : Surface, bounds);
-            FillRect(graphics, RowDivider, new Rectangle(bounds.Left, bounds.Bottom - 1, bounds.Width, 1));
+            FillRect(graphics, selected ? AccentTint : index == hoverIndex ? RowHover : Surface, bounds);
             if (selected)
-                FillRect(graphics, Blue, new Rectangle(bounds.Left, bounds.Top, Dp(4), bounds.Height));
+                FillRect(graphics, Accent, new Rectangle(bounds.Left, bounds.Top, Dp(3), bounds.Height));
 
-            // Coloured initials badge.
-            var badge = new Rectangle(
-                bounds.Left + RowPad,
-                bounds.Top + (bounds.Height - BadgeSize) / 2,
-                BadgeSize,
-                BadgeSize);
-            FillRounded(graphics, BadgeColors[ScriptCatalog.ColorIndex(script.Name, BadgeColors.Length)], badge, Dp(8));
-            TextRenderer.DrawText(graphics, ScriptCatalog.Initials(script.Name), FontBadge, badge, Color.White,
-                TextFlags | TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-
-            // Name on the first line, file name + description on the second.
-            int textLeft = badge.Right + BadgeGap;
-            int textRight = bounds.Right - RowPad;
-            int nameHeight = FontName.Height;
-            int detailHeight = FontDetail.Height;
-            int nameTop = bounds.Top + (bounds.Height - nameHeight - detailHeight) / 2;
+            int textLeft = bounds.Left + RowPad;
+            int textTop = bounds.Top + (bounds.Height - FontList.Height) / 2;
 
             if (query.Length > 0)
             {
                 int start = script.Name.ToLowerInvariant().IndexOf(query, StringComparison.Ordinal);
                 if (start >= 0)
                 {
-                    int before = TextWidth(script.Name.Substring(0, start), FontName, graphics);
-                    int match = TextWidth(script.Name.Substring(start, query.Length), FontName, graphics);
+                    int before = TextWidth(script.Name.Substring(0, start), FontList, graphics);
+                    int match = TextWidth(script.Name.Substring(start, query.Length), FontList, graphics);
                     FillRounded(graphics, MatchBack,
-                        new Rectangle(textLeft + before - Dp(1), nameTop, match + Dp(2), nameHeight), Dp(3));
+                        new Rectangle(textLeft + before - 1, textTop, match + 2, FontList.Height), Dp(2));
                 }
             }
 
-            TextRenderer.DrawText(graphics, script.Name, FontName, new Point(textLeft, nameTop), Theme.Text, TextFlags);
-
-            string detail = script.Summary.Length > 0
-                ? script.FileName + "  ·  " + script.Summary
-                : script.FileName;
-            TextRenderer.DrawText(graphics, detail, FontDetail,
-                new Rectangle(textLeft, nameTop + nameHeight, Math.Max(0, textRight - textLeft), detailHeight),
-                TextMuted, TextFlags | TextFormatFlags.EndEllipsis);
+            TextRenderer.DrawText(graphics, script.Name, FontList, new Point(textLeft, textTop), Theme.Text, TextFlags);
         }
 
         void InvalidateRow(int index)
@@ -527,7 +389,13 @@ namespace EKScriptLauncher.UI
             hoverIndex = index;
             InvalidateRow(index);
 
-            toolTip.SetToolTip(listBox, index >= 0 && index < visibleScripts.Count ? visibleScripts[index].Path : "");
+            string tip = "";
+            if (index >= 0 && index < visibleScripts.Count)
+            {
+                ScriptEntry script = visibleScripts[index];
+                tip = script.Summary.Length > 0 ? script.Summary + "\n" + script.Path : script.Path;
+            }
+            toolTip.SetToolTip(listBox, tip);
         }
 
         void OnListKeyPress(object sender, KeyPressEventArgs e)
@@ -542,19 +410,14 @@ namespace EKScriptLauncher.UI
 
         // -- search box -----------------------------------------------------
 
-        void OnSearchPanelPaint(object sender, PaintEventArgs e)
+        void OnSearchFramePaint(object sender, PaintEventArgs e)
         {
-            Graphics graphics = e.Graphics;
-            bool focused = searchBox.Focused;
-
-            using (var pen = new Pen(focused ? Blue : Theme.Border, 1f))
-                graphics.DrawRectangle(pen, 0, 0, searchPanel.Width - 1, searchPanel.Height - 1);
-
             // Magnifier glyph.
-            int size = Dp(11);
-            int x = Dp(14);
-            int y = (searchPanel.Height - size) / 2 - Dp(1);
-            using (var pen = new Pen(focused ? Blue : TextMuted, (float)Math.Max(1.5, 1.6 * Theme.Scale)))
+            Graphics graphics = e.Graphics;
+            int size = Dp(9);
+            int x = Dp(9);
+            int y = (searchFrame.Height - size) / 2 - Dp(1);
+            using (var pen = new Pen(searchBox.Focused ? Accent : TextFaint, (float)Math.Max(1.25, 1.4 * Theme.Scale)))
             {
                 SmoothingMode old = graphics.SmoothingMode;
                 graphics.SmoothingMode = SmoothingMode.AntiAlias;
@@ -585,37 +448,6 @@ namespace EKScriptLauncher.UI
             listBox.SelectedIndex = Math.Max(0, Math.Min(count - 1, current + step));
             e.Handled = true;
             e.SuppressKeyPress = true;
-        }
-
-        // -- launch button --------------------------------------------------
-
-        void OnLaunchPaint(object sender, PaintEventArgs e)
-        {
-            Graphics graphics = e.Graphics;
-            Rectangle rect = launchButton.ClientRectangle;
-
-            FillRect(graphics, launchPressed ? BlueDown : launchHover ? BlueHover : Blue, rect);
-
-            const string mainText = "LAUNCH SCRIPT";
-            const TextFormatFlags centered = TextFlags | TextFormatFlags.HorizontalCenter;
-            int mainHeight = FontLaunch.Height;
-            ScriptEntry selected = CurrentScript();
-
-            if (selected == null)
-            {
-                TextRenderer.DrawText(graphics, mainText, FontLaunch, rect, Color.White,
-                    centered | TextFormatFlags.VerticalCenter);
-                return;
-            }
-
-            int subHeight = FontLaunchSub.Height;
-            int top = (rect.Height - mainHeight - subHeight) / 2;
-
-            TextRenderer.DrawText(graphics, mainText, FontLaunch,
-                new Rectangle(0, top, rect.Width, mainHeight), Color.White, centered);
-            TextRenderer.DrawText(graphics, selected.Name, FontLaunchSub,
-                new Rectangle(Dp(16), top + mainHeight, rect.Width - Dp(32), subHeight),
-                BlueSoftText, centered | TextFormatFlags.EndEllipsis);
         }
 
         // -- commands -------------------------------------------------------

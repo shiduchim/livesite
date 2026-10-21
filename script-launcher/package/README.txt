@@ -1,7 +1,7 @@
 EK SCRIPT LAUNCHER
 ==================
 
-Version 2.0 - C# Revit add-in for Revit 2024, 2025, 2026 and 2027.
+Version 2.1 - C# Revit add-in for Revit 2024, 2025, 2026 and 2027.
 
 WHAT IT DOES
 
@@ -10,14 +10,12 @@ WHAT IT DOES
   your folder and runs the one you pick.
 - "Quick Launch" immediately runs the only .py file in its assigned folder.
   It stops with a warning if that folder has zero or several .py files.
-- Each script gets its own row with a coloured initials badge, the script
-  name, and underneath it the file name plus the first line of the
-  script's docstring, so scripts are easy to tell apart.
+- A small, plain window: one script name per row, searchable.
 - Search filters as you type and highlights the matching letters.
   Up/Down arrows move the selection, Enter launches, Esc closes.
-- The LAUNCH SCRIPT button shows which script it is about to run.
   Double-clicking a script also launches it.
-- Hovering a script shows its full file path.
+- Hovering a script shows its description (first docstring line) and
+  full file path.
 - Settings (inside the launcher) chooses both folders.
 - The folder is rescanned every time the launcher opens and when Refresh
   is clicked. No Revit restart is needed when you add or edit scripts.
@@ -59,12 +57,10 @@ QUICK LAUNCH
 
 SCRIPT DESCRIPTIONS
 
-To give a script a description line in the launcher, start the .py file
-with a docstring, for example:
+To give a script a description (shown when you hover over it), start the
+.py file with a docstring, for example:
 
     """Renumber sheets in the order they appear in a schedule."""
-
-Scripts without one simply show their file name.
 
 UPDATING
 

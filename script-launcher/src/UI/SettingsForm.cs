@@ -11,9 +11,11 @@ namespace EKScriptLauncher.UI
     /// <summary>The two folder paths + Browse + Save. Nothing else.</summary>
     sealed class SettingsForm : Form
     {
-        readonly TextBox pathBox;
-        readonly TextBox quickPathBox;
+        static readonly int Pad = Dp(12);
+        static readonly int RowHeight = Dp(26);
 
+        readonly TextBox pathBox = new TextBox();
+        readonly TextBox quickPathBox = new TextBox();
 
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string SavedFolder { get; private set; }
@@ -30,28 +32,22 @@ namespace EKScriptLauncher.UI
             MinimizeBox = false;
             ShowInTaskbar = false;
             AutoScaleMode = AutoScaleMode.None;
-            ClientSize = new Size(Dp(640), Dp(262));
+            ClientSize = new Size(Dp(440), Dp(162));
             BackColor = WindowBack;
             Font = FontUi;
             KeyPreview = true;
             KeyDown += (s, e) => { if (e.KeyCode == Keys.Escape) Close(); };
 
-            pathBox = AddFolderRow(
-                Dp(18),
-                "Script Launcher folder",
-                "Every .py file in this folder appears in the launcher list.",
-                currentFolder,
-                "Choose the folder containing your Python scripts");
+            pathBox.Text = currentFolder ?? "";
+            quickPathBox.Text = currentQuickFolder ?? "";
 
-            quickPathBox = AddFolderRow(
-                Dp(108),
-                "Quick Launch folder (exactly one .py file)",
-                "The Quick Launch ribbon button runs the single script in here. Leave blank if unused.",
-                currentQuickFolder,
+            AddFolderRow(Pad, "Scripts folder", pathBox,
+                "Choose the folder containing your Python scripts");
+            AddFolderRow(Pad + Dp(52), "Quick Launch folder (exactly one .py file, optional)", quickPathBox,
                 "Choose a folder containing exactly one Python script");
 
-            var save = new Button { Text = "Save", Font = FontUiBold, Size = new Size(Dp(110), Dp(36)) };
-            save.Location = new Point(ClientSize.Width - Dp(18) - save.Width, ClientSize.Height - Dp(18) - save.Height);
+            var save = new Button { Text = "Save", Font = FontUiBold, Size = new Size(Dp(80), Dp(28)) };
+            save.Location = new Point(ClientSize.Width - Pad - save.Width, ClientSize.Height - Pad - save.Height);
             StyleButton(save, primary: true);
             save.Click += OnSave;
             Controls.Add(save);
@@ -59,62 +55,27 @@ namespace EKScriptLauncher.UI
             AcceptButton = save;
         }
 
-        TextBox AddFolderRow(int top, string title, string hint, string value, string browseDescription)
+        void AddFolderRow(int top, string title, TextBox box, string browseDescription)
         {
             Controls.Add(new Label
             {
                 Text = title,
-                Font = FontUiBold,
                 ForeColor = Theme.Text,
                 AutoSize = true,
-                Location = new Point(Dp(18), top),
+                Location = new Point(Pad - Dp(2), top),
             });
 
-            Controls.Add(new Label
-            {
-                Text = hint,
-                Font = FontSmall,
-                ForeColor = TextMuted,
-                AutoSize = true,
-                Location = new Point(Dp(18), top + Dp(22)),
-            });
-
-            var browse = new Button { Text = "Browse...", Size = new Size(Dp(104), Dp(32)) };
-            browse.Location = new Point(ClientSize.Width - Dp(18) - browse.Width, top + Dp(46));
+            var browse = new Button { Text = "...", Size = new Size(Dp(32), RowHeight) };
+            browse.Location = new Point(ClientSize.Width - Pad - browse.Width, top + Dp(19));
             StyleButton(browse);
             Controls.Add(browse);
 
-            // Borderless text box inside a white panel, so the field is the same
-            // height as the Browse button.
-            var field = new Panel
-            {
-                BackColor = Surface,
-                Cursor = Cursors.IBeam,
-                Location = new Point(Dp(18), browse.Top),
-                Size = new Size(browse.Left - Dp(8) - Dp(18), browse.Height),
-            };
-            Controls.Add(field);
+            Controls.Add(FieldFrame(
+                box,
+                new Rectangle(Pad, browse.Top, browse.Left - Dp(6) - Pad, RowHeight),
+                Dp(6)));
 
-            var box = new TextBox
-            {
-                Text = value ?? "",
-                BorderStyle = BorderStyle.None,
-                BackColor = Surface,
-                ForeColor = Theme.Text,
-            };
-            box.Location = new Point(Dp(8), (field.Height - box.Height) / 2);
-            box.Width = field.Width - Dp(16);
-            field.Controls.Add(box);
-
-            field.Paint += (s, e) =>
-            {
-                using (var pen = new Pen(box.Focused ? Blue : Border, 1f))
-                    e.Graphics.DrawRectangle(pen, 0, 0, field.Width - 1, field.Height - 1);
-            };
-            field.Click += (s, e) => box.Focus();
-            box.GotFocus += (s, e) => field.Invalidate();
-            box.LostFocus += (s, e) => field.Invalidate();
-
+            new ToolTip().SetToolTip(browse, "Browse");
             browse.Click += (s, e) =>
             {
                 using (var dialog = new FolderBrowserDialog { Description = browseDescription })
@@ -125,8 +86,6 @@ namespace EKScriptLauncher.UI
                         box.Text = dialog.SelectedPath;
                 }
             };
-
-            return box;
         }
 
         void OnSave(object sender, EventArgs e)

@@ -25,8 +25,6 @@ namespace EKScriptLauncher.Core
             "^__doc__\\s*=\\s*[rRuU]{0,2}(\"\"\"|'''|\"|')(.*?)\\1",
             RegexOptions.Singleline | RegexOptions.Multiline);
 
-        static readonly Regex WordRegex = new Regex("[^\\W_]+");
-        static readonly Regex CamelRegex = new Regex("[A-Z][a-z0-9]*|[a-z0-9]+");
 
         public static string DisplayName(string path)
         {
@@ -109,49 +107,6 @@ namespace EKScriptLauncher.Core
                 return line.Length > 200 ? line.Substring(0, 200) : line;
             }
             return "";
-        }
-
-        public static string Initials(string displayName)
-        {
-            var words = new List<string>();
-            foreach (Match m in WordRegex.Matches(displayName))
-                words.Add(m.Value);
-
-            if (words.Count == 0)
-                return "Py";
-
-            string first = words[0];
-            if (IsAllDigits(first))
-                return first.Length > 2 ? first.Substring(0, 2) : first;
-
-            if (words.Count == 1)
-            {
-                MatchCollection parts = CamelRegex.Matches(first);
-                if (parts.Count >= 2)
-                    return (parts[0].Value.Substring(0, 1) + parts[1].Value.Substring(0, 1)).ToUpperInvariant();
-
-                string two = first.Length > 2 ? first.Substring(0, 2) : first;
-                return two.Substring(0, 1).ToUpperInvariant() + two.Substring(1).ToLowerInvariant();
-            }
-
-            return (first.Substring(0, 1) + words[1].Substring(0, 1)).ToUpperInvariant();
-        }
-
-        /// <summary>Deterministic, so a script keeps its colour between sessions.</summary>
-        public static int ColorIndex(string displayName, int paletteSize)
-        {
-            long value = 0;
-            foreach (char c in displayName.ToLowerInvariant())
-                value = (value * 31 + c) & 0xFFFFFFF;
-            return (int)(value % paletteSize);
-        }
-
-        static bool IsAllDigits(string text)
-        {
-            foreach (char c in text)
-                if (!char.IsDigit(c))
-                    return false;
-            return text.Length > 0;
         }
     }
 }

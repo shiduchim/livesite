@@ -18,53 +18,28 @@ namespace EKScriptLauncher.UI
             return (int)Math.Round(value * Scale);
         }
 
-        // Muted blue, intentionally less bright/tiring than standard Revit blue.
-        public static readonly Color Blue = Color.FromArgb(70, 101, 128);
-        public static readonly Color BlueHover = Color.FromArgb(82, 116, 146);
-        public static readonly Color BlueDown = Color.FromArgb(58, 85, 109);
-        public static readonly Color BlueSoftText = Color.FromArgb(208, 221, 233);
+        // One muted accent colour; everything else is neutral grey.
+        public static readonly Color Accent = Color.FromArgb(70, 101, 128);
+        public static readonly Color AccentHover = Color.FromArgb(82, 116, 146);
+        public static readonly Color AccentDown = Color.FromArgb(58, 85, 109);
+        public static readonly Color AccentTint = Color.FromArgb(226, 233, 240);
 
-        public static readonly Color WindowBack = Color.FromArgb(241, 243, 246);
+        public static readonly Color WindowBack = Color.FromArgb(243, 244, 246);
         public static readonly Color Surface = Color.White;
-        public static readonly Color Border = Color.FromArgb(211, 216, 224);
-        public static readonly Color Text = Color.FromArgb(30, 38, 50);
-        public static readonly Color TextMuted = Color.FromArgb(104, 112, 125);
-        public static readonly Color TextFaint = Color.FromArgb(150, 157, 168);
+        public static readonly Color Border = Color.FromArgb(206, 211, 218);
+        public static readonly Color Text = Color.FromArgb(32, 36, 42);
+        public static readonly Color TextMuted = Color.FromArgb(110, 116, 126);
+        public static readonly Color TextFaint = Color.FromArgb(150, 155, 163);
+        public static readonly Color RowHover = Color.FromArgb(244, 246, 248);
+        public static readonly Color MatchBack = Color.FromArgb(206, 219, 231);
+        public static readonly Color ButtonHover = Color.FromArgb(235, 238, 242);
+        public static readonly Color ButtonDown = Color.FromArgb(224, 228, 234);
 
-        public static readonly Color RowHover = Color.FromArgb(245, 247, 250);
-        public static readonly Color RowSelected = Color.FromArgb(225, 233, 241);
-        public static readonly Color RowDivider = Color.FromArgb(234, 237, 241);
-        public static readonly Color MatchBack = Color.FromArgb(255, 224, 138);
-        public static readonly Color ButtonHover = Color.FromArgb(234, 238, 243);
-        public static readonly Color ButtonDown = Color.FromArgb(222, 228, 235);
-
-        // Badge colours: muted so a long list stays calm, but different enough
-        // that neighbouring scripts no longer blend together.
-        public static readonly Color[] BadgeColors =
-        {
-            Color.FromArgb(70, 101, 128),   // slate blue
-            Color.FromArgb(38, 124, 118),   // teal
-            Color.FromArgb(78, 128, 66),    // green
-            Color.FromArgb(168, 112, 30),   // amber
-            Color.FromArgb(168, 76, 60),    // brick
-            Color.FromArgb(122, 82, 140),   // plum
-            Color.FromArgb(74, 84, 160),    // indigo
-            Color.FromArgb(148, 78, 108),   // rose
-            Color.FromArgb(92, 106, 60),    // olive
-            Color.FromArgb(48, 112, 158),   // sky
-        };
-
-        public static readonly Font FontUi = new Font("Segoe UI", 9.75f);
-        public static readonly Font FontUiBold = new Font("Segoe UI Semibold", 9.75f);
-        public static readonly Font FontTitle = new Font("Segoe UI Semibold", 14f);
-        public static readonly Font FontSmall = new Font("Segoe UI", 9f);
-        public static readonly Font FontSearch = new Font("Segoe UI", 11f);
-        public static readonly Font FontName = new Font("Segoe UI Semibold", 10.5f);
-        public static readonly Font FontDetail = new Font("Segoe UI", 8.75f);
-        public static readonly Font FontBadge = new Font("Segoe UI Semibold", 10f);
-        public static readonly Font FontEmpty = new Font("Segoe UI", 10.5f);
-        public static readonly Font FontLaunch = new Font("Segoe UI", 13f, FontStyle.Bold);
-        public static readonly Font FontLaunchSub = new Font("Segoe UI", 9f);
+        public static readonly Font FontUi = new Font("Segoe UI", 9f);
+        public static readonly Font FontUiBold = new Font("Segoe UI Semibold", 9f);
+        public static readonly Font FontSmall = new Font("Segoe UI", 8.25f);
+        public static readonly Font FontList = new Font("Segoe UI", 9.75f);
+        public static readonly Font FontLaunch = new Font("Segoe UI Semibold", 10f);
 
         public const TextFormatFlags TextFlags =
             TextFormatFlags.NoPadding | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
@@ -105,7 +80,7 @@ namespace EKScriptLauncher.UI
 
         public static void FillRounded(Graphics graphics, Color color, Rectangle rect, int radius)
         {
-            int d = radius * 2;
+            int d = Math.Max(1, Math.Min(radius * 2, Math.Min(rect.Width, rect.Height)));
             using (var path = new GraphicsPath())
             using (var brush = new SolidBrush(color))
             {
@@ -129,11 +104,11 @@ namespace EKScriptLauncher.UI
             button.UseVisualStyleBackColor = false;
             if (primary)
             {
-                button.BackColor = Blue;
+                button.BackColor = Accent;
                 button.ForeColor = Color.White;
                 button.FlatAppearance.BorderSize = 0;
-                button.FlatAppearance.MouseOverBackColor = BlueHover;
-                button.FlatAppearance.MouseDownBackColor = BlueDown;
+                button.FlatAppearance.MouseOverBackColor = AccentHover;
+                button.FlatAppearance.MouseDownBackColor = AccentDown;
             }
             else
             {
@@ -143,6 +118,35 @@ namespace EKScriptLauncher.UI
                 button.FlatAppearance.MouseOverBackColor = ButtonHover;
                 button.FlatAppearance.MouseDownBackColor = ButtonDown;
             }
+        }
+
+        /// <summary>A white box with a 1 px border (accent when focused) holding a borderless text box.</summary>
+        public static Panel FieldFrame(TextBox box, Rectangle bounds, int textLeft)
+        {
+            var frame = new Panel
+            {
+                BackColor = Surface,
+                Bounds = bounds,
+                Cursor = Cursors.IBeam,
+            };
+
+            box.BorderStyle = BorderStyle.None;
+            box.BackColor = Surface;
+            box.ForeColor = Text;
+            box.Location = new Point(textLeft, (bounds.Height - box.Height) / 2);
+            box.Width = bounds.Width - textLeft - Dp(6);
+            box.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            frame.Controls.Add(box);
+
+            frame.Paint += (s, e) =>
+            {
+                using (var pen = new Pen(box.Focused ? Accent : Border, 1f))
+                    e.Graphics.DrawRectangle(pen, 0, 0, frame.Width - 1, frame.Height - 1);
+            };
+            frame.Click += (s, e) => box.Focus();
+            box.GotFocus += (s, e) => frame.Invalidate();
+            box.LostFocus += (s, e) => frame.Invalidate();
+            return frame;
         }
 
         public static void Message(IWin32Window owner, string text, MessageBoxIcon icon, string title = Title)
