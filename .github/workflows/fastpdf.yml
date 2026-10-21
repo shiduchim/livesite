@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
 
 defaults:
   run:
@@ -61,29 +61,6 @@ jobs:
           Get-Content out/bench/viewer/results.md
           if ($p.ExitCode -ne 0) { throw "viewer benchmark exit code $($p.ExitCode)" }
 
-      - name: Screenshot previews (base64 in the log, for remote review)
-        if: always()
-        run: |
-          Add-Type -AssemblyName System.Drawing
-          $jpeg = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
-          $q = New-Object System.Drawing.Imaging.EncoderParameters 1
-          $q.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter([System.Drawing.Imaging.Encoder]::Quality, [long]82)
-          Get-ChildItem out/bench/viewer -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
-            $img = [System.Drawing.Image]::FromFile($_.FullName)
-            # 1:1 crop from the document area (to judge sharpness) ...
-            $crop = New-Object System.Drawing.Bitmap 640, 360
-            $g = [System.Drawing.Graphics]::FromImage($crop)
-            $g.DrawImage($img, (New-Object System.Drawing.Rectangle 0, 0, 640, 360), (New-Object System.Drawing.Rectangle ([int]($img.Width / 2 - 320)), ([int]($img.Height / 2 - 180)), 640, 360), [System.Drawing.GraphicsUnit]::Pixel)
-            $ms = New-Object IO.MemoryStream; $crop.Save($ms, [System.Drawing.Imaging.ImageFormat]::Png)
-            "IMGCROP $($_.BaseName) $([Convert]::ToBase64String($ms.ToArray()))"
-            # ... and the whole window, reduced.
-            $w = [Math]::Min(960, $img.Width); $h = [int]($img.Height * $w / $img.Width)
-            $small = New-Object System.Drawing.Bitmap $img, $w, $h
-            $ms2 = New-Object IO.MemoryStream; $small.Save($ms2, $jpeg, $q)
-            "IMGFULL $($_.BaseName) $([Convert]::ToBase64String($ms2.ToArray()))"
-            $img.Dispose(); $crop.Dispose(); $small.Dispose(); $g.Dispose()
-          }
-
       - name: Install, launch (Explorer, shortcuts, Open with, App Paths), print, upgrade, uninstall
         run: |
           ./tests/installer/Test-FastPdfInstall.ps1 -Setup out/installer/EK_FastPDF_Setup_v1.2.exe `
@@ -97,6 +74,52 @@ jobs:
             if (Test-Path $f) { Get-Content $f | Out-File -Append $env:GITHUB_STEP_SUMMARY; '' | Out-File -Append $env:GITHUB_STEP_SUMMARY }
           }
           if (Test-Path out/bench/engine.md) { '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY; Get-Content out/bench/engine.md | Select-Object -Last 120 | Out-File -Append $env:GITHUB_STEP_SUMMARY; '```' | Out-File -Append $env:GITHUB_STEP_SUMMARY }
+
+      - name: Collect results into docs/ci-results (screenshots reduced for the repository)
+        if: always()
+        run: |
+          $dest = 'docs/ci-results'
+          if (Test-Path $dest) { Remove-Item -Recurse -Force $dest }
+          New-Item -ItemType Directory -Force $dest | Out-Null
+          foreach ($f in 'out/bench/engine.md', 'out/bench/viewer/results.md', 'out/test-results/install/install-tests.md', 'out/test-results/install/diagnostics-report.txt', 'out/installer/SHA256SUMS.txt') {
+            if (Test-Path $f) { Copy-Item $f $dest }
+          }
+          if (Test-Path "$dest/results.md") { Rename-Item "$dest/results.md" 'viewer-benchmark.md' }
+          if (Test-Path "$dest/engine.md") { Rename-Item "$dest/engine.md" 'engine-benchmark.md' }
+          "Run: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID (commit $env:GITHUB_SHA), $(Get-Date -Format u)" | Set-Content "$dest/RUN.txt"
+          Add-Type -AssemblyName System.Drawing
+          $jpeg = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Object MimeType -eq 'image/jpeg'
+          $q = New-Object System.Drawing.Imaging.EncoderParameters 1
+          $q.Param[0] = New-Object System.Drawing.Imaging.EncoderParameter([System.Drawing.Imaging.Encoder]::Quality, [long]85)
+          Get-ChildItem out/bench/viewer -Filter *.png -ErrorAction SilentlyContinue | ForEach-Object {
+            $img = [System.Drawing.Image]::FromFile($_.FullName)
+            $w = [Math]::Min(1100, $img.Width); $h = [int]($img.Height * $w / $img.Width)
+            $small = New-Object System.Drawing.Bitmap $img, $w, $h
+            $small.Save((Join-Path $dest "$($_.BaseName).jpg"), $jpeg, $q)
+            # 1:1 crop of the document area to judge sharpness.
+            $crop = New-Object System.Drawing.Bitmap 600, 340
+            $g = [System.Drawing.Graphics]::FromImage($crop)
+            $g.DrawImage($img, (New-Object System.Drawing.Rectangle 0, 0, 600, 340), (New-Object System.Drawing.Rectangle ([int]($img.Width / 2 - 300)), ([int]($img.Height / 2 - 120)), 600, 340), [System.Drawing.GraphicsUnit]::Pixel)
+            $crop.Save((Join-Path $dest "$($_.BaseName)-crop100.png"), [System.Drawing.Imaging.ImageFormat]::Png)
+            $g.Dispose(); $crop.Dispose(); $small.Dispose(); $img.Dispose()
+          }
+
+      - name: Commit results to this branch
+        if: always() && github.event_name == 'push'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add docs/ci-results
+          git diff --cached --quiet
+          if ($LASTEXITCODE -ne 0) {
+            git commit -m "FastPDF CI results for ${env:GITHUB_SHA} [skip ci]"
+            for ($i = 0; $i -lt 4; $i++) {
+              git pull --rebase origin "${env:GITHUB_REF_NAME}"
+              git push origin "HEAD:${env:GITHUB_REF_NAME}"
+              if ($LASTEXITCODE -eq 0) { break }
+              Start-Sleep -Seconds (2 * [Math]::Pow(2, $i))
+            }
+          }
 
       - uses: actions/upload-artifact@v4
         if: always()
