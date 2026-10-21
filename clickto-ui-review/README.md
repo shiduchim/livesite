@@ -10,5 +10,5 @@ Design review of the ribbon buttons, Settings windows and icon for **ClickTo3D 1
   the same Lanczos reduction as the shipped 32 px and 16 px files. The shipped icons stay as they are.
 - `icons/icon-test-versions.png`: the sharper test versions that were compared and not chosen.
 
-Recommendation: Settings in the panel slide-out (official `RibbonPanel.AddSlideOut`), and the
+Recommendation: box height as two text boxes on the ribbon next to a small, visible Settings button (Q1), and the
 "Native Modern" WPF Settings window as one shared template for every app.
