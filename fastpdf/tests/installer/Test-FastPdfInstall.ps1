@@ -157,7 +157,10 @@ Test-Launch 'Desktop shortcut' { Start-Process -FilePath $deskLnk | Out-Null }
 Test-Launch 'App Paths (Win+R "EKFastPDF")' { Start-Process -FilePath 'EKFastPDF' -WorkingDirectory $env:USERPROFILE | Out-Null }
 Test-Launch 'Quoted Unicode path with spaces, other working dir' { Start-Process -FilePath $app -ArgumentList "`"$spacedPdf`"" -WorkingDirectory $env:SystemRoot | Out-Null } 'E-101 Power Plan'
 Test-Launch 'Open with: EKFastPDF.Document ProgID (file association)' { Invoke-OpenWithClass $spacedPdf 'EKFastPDF.Document' $env:USERPROFILE } 'E-101 Power Plan'
-Test-Launch 'Open with: Applications\EKFastPDF.exe' { Invoke-OpenWithClass $second 'Applications\EKFastPDF.exe' $env:SystemRoot } 'second document'
+# "Choose another app" uses HKCR\Applications\EKFastPDF.exe; the launch itself is the same command as the ProgID above.
+$appCmd = (Get-ItemProperty 'HKLM:\SOFTWARE\Classes\Applications\EKFastPDF.exe\shell\open\command' -ErrorAction SilentlyContinue).'(default)'
+$appTypes = Get-Item 'HKLM:\SOFTWARE\Classes\Applications\EKFastPDF.exe\SupportedTypes' -ErrorAction SilentlyContinue
+Record 'Applications\EKFastPDF.exe registration (Choose another app)' ($appCmd -eq "`"$app`" `"%1`"" -and $appTypes.GetValueNames() -contains '.pdf') $appCmd
 
 # Single instance: second launch with a file opens a tab in the running window.
 Stop-Viewer

@@ -25,12 +25,28 @@ Time until **every tile covering a 2560×1440 viewport** is rendered (ms; "first
 algorithm (global lock, page re-parsed per 768-px tile, sequential), reproduced in `LegacyEngine.cs` with the same PDFium.
 
 ### Windows CI VM (2 cores / 4 threads), 512-px tiles
-| Document | View | v1.1 | v1.2, 1 worker | v1.2, 2 workers | v1.2, 4 workers |
-|---|---|---:|---:|---:|---:|
-| cad-dense | fit (cold page) | 1 439 | WIN_DENSE_FIT |
-| cad-dense | zoom 400 % | 2 750 | WIN_DENSE_Z400 |
-| cad-dense | pan at 400 % | 2 256 | WIN_DENSE_PAN |
-| cad-dense | zoom 1600 % | 1 364 | WIN_DENSE_Z1600 |
+| Document | View | v1.1 | 1 worker | 2 workers | 3 workers | 4 workers | speed-up (2 workers = auto) |
+|---|---|---:|---:|---:|---:|---:|---:|
+| cad-dense | fit (cold page) | 1 461 | 497 | 398 | 351 | 389 | 3.7× |
+| cad-dense | zoom 400 % | 2 714 | 169 | 117 | 78 | 612 | 23.2× |
+| cad-dense | pan at 400 % | 2 168 | 157 | 109 | 170 | 138 | 19.9× |
+| cad-dense | zoom 1600 % | 1 304 | 70 | 45 | 81 | 34 | 29.0× |
+| cad-extreme | fit (cold page) | 5 696 | 1 776 | 1 495 | 1 378 | 1 267 | 3.8× |
+| cad-extreme | zoom 400 % | 10 281 | 590 | 377 | 281 | 795 | 27.3× |
+| cad-extreme | pan at 400 % | 8 164 | 574 | 360 | 282 | 214 | 22.7× |
+| cad-extreme | zoom 1600 % | 5 186 | 287 | 175 | 131 | 143 | 29.6× |
+| image-heavy | fit (cold page) | 247 | 68 | 66 | 65 | 64 | 3.7× |
+| image-heavy | zoom 400 % | 529 | 84 | 47 | 35 | 31 | 11.3× |
+| image-heavy | pan at 400 % | 518 | 81 | 43 | 34 | 29 | 12.0× |
+| image-heavy | zoom 1600 % | 490 | 33 | 17 | 17 | 11 | 28.8× |
+| many-pages (p. 301) | fit (cold page) | 9 | 9 | 16 | 16 | 18 | 0.6× |
+| many-pages (p. 301) | zoom 400 % | 57 | 79 | 48 | 39 | 33 | 1.2× |
+| many-pages (p. 301) | pan at 400 % | 58 | 68 | 46 | 35 | 27 | 1.3× |
+| many-pages (p. 301) | zoom 1600 % | 25 | 44 | 26 | 20 | 18 | 1.0× |
+
+Single text pages were already fast in v1.1 and stay equal within a few milliseconds (IPC and the seam margin
+cost about as much as the parse that is saved). 3–4 workers oversubscribe the two physical cores on this VM, so those columns are noisy; the automatic setting
+chose 2 workers here (physical cores). Run of record: see `docs/ci-results/RUN.txt`.
 
 ### Linux container (4 vCPU), 512-px tiles
 | Document | View | v1.1 | 1 worker | 2 workers | 3 workers | 4 workers | speed-up (4w vs v1.1) |
@@ -63,7 +79,75 @@ CI VM above, 2 render workers (auto: 2 physical cores), window 1044×672 DIP at 
 "Sharp" = every visible tile at exact device resolution and revealed. Frame interval = time between composed frames
 during the interaction (16.7 ms = 60 Hz); UI build = UI-thread time to build one frame.
 
-VIEWER_TABLE
+| Document | Scenario | Result (ms) | Frame interval p50/p95 | UI frame build p95 | Input→frame p95 |
+|---|---|---:|---:|---:|---:|
+| cad-dense-e1.pdf | open: document ready | 22 |  |  |  |
+| cad-dense-e1.pdf | open: first pixels | 682 |  |  |  |
+| cad-dense-e1.pdf | open: viewport fully sharp | 881 |  |  |  |
+| cad-dense-e1.pdf | zoom in 10 notches (cold): sharp after last input (cache hits 60%) | 1069 | 16.0 / 31.7 | 5.92 | 13.4 |
+| cad-dense-e1.pdf | zoom out 10 notches (cached levels): sharp after last input (cache hits 75%) | 71 | 15.8 / 32.3 | 0.77 | 15.7 |
+| cad-dense-e1.pdf | rapid zoom reversals 5x(3 in, 3 out): sharp after last input (cache hits 86%) | 72 | 16.0 / 16.5 | 0.62 | 8.9 |
+| cad-dense-e1.pdf | drag-pan 90 frames at 1600%-class zoom: sharp after last input (cache hits 100%) | 2 | 16.3 / 31.9 | 0.27 | 10.7 |
+| cad-extreme-e1.pdf | open: document ready | 8 |  |  |  |
+| cad-extreme-e1.pdf | open: first pixels | 1267 |  |  |  |
+| cad-extreme-e1.pdf | open: viewport fully sharp | 2595 |  |  |  |
+| cad-extreme-e1.pdf | zoom in 10 notches (cold): sharp after last input (cache hits 57%) | 2881 | 16.0 / 16.8 | 0.35 | 5.6 |
+| cad-extreme-e1.pdf | zoom out 10 notches (cached levels): sharp after last input (cache hits 68%) | 58 | 16.1 / 32.5 | 0.57 | 7.2 |
+| cad-extreme-e1.pdf | rapid zoom reversals 5x(3 in, 3 out): sharp after last input (cache hits 73%) | 59 | 16.0 / 16.5 | 0.32 | 11.0 |
+| cad-extreme-e1.pdf | drag-pan 90 frames at 1600%-class zoom: sharp after last input (cache hits 91%) | 1 | 16.0 / 31.5 | 0.14 | 11.1 |
+| image-heavy.pdf | open: document ready | 6 |  |  |  |
+| image-heavy.pdf | open: first pixels | 87 |  |  |  |
+| image-heavy.pdf | open: viewport fully sharp | 343 |  |  |  |
+| image-heavy.pdf | zoom in 10 notches (cold): sharp after last input (cache hits 57%) | 233 | 15.9 / 16.3 | 0.27 | 15.7 |
+| image-heavy.pdf | zoom out 10 notches (cached levels): sharp after last input (cache hits 78%) | 63 | 16.2 / 31.9 | 0.30 | 14.4 |
+| image-heavy.pdf | rapid zoom reversals 5x(3 in, 3 out): sharp after last input (cache hits 85%) | 69 | 16.0 / 31.4 | 0.31 | 10.3 |
+| image-heavy.pdf | drag-pan 90 frames at 1600%-class zoom: sharp after last input (cache hits 100%) | 1 | 16.2 / 31.6 | 0.14 | 9.2 |
+| many-pages-600.pdf | open: document ready | 17 |  |  |  |
+| many-pages-600.pdf | open: first pixels | 32 |  |  |  |
+| many-pages-600.pdf | open: viewport fully sharp | 226 |  |  |  |
+| many-pages-600.pdf | zoom in 10 notches (cold): sharp after last input (cache hits 51%) | 192 | 16.0 / 16.5 | 0.25 | 5.3 |
+| many-pages-600.pdf | zoom out 10 notches (cached levels): sharp after last input (cache hits 73%) | 71 | 16.1 / 31.9 | 0.32 | 9.9 |
+| many-pages-600.pdf | rapid zoom reversals 5x(3 in, 3 out): sharp after last input (cache hits 80%) | 56 | 16.0 / 16.1 | 0.29 | 10.7 |
+| many-pages-600.pdf | drag-pan 90 frames at 1600%-class zoom: sharp after last input (cache hits 100%) | 16 | 31.6 / 31.8 | 0.14 | 6.9 |
+| many-pages-600.pdf | jump to middle page: sharp | 191 |  |  |  |
+| many-pages-600.pdf | jump back to page 2: sharp | 162 |  |  |  |
+| cad-set-12-sheets.pdf | open: document ready | 11 |  |  |  |
+| cad-set-12-sheets.pdf | open: first pixels | 225 |  |  |  |
+| cad-set-12-sheets.pdf | open: viewport fully sharp | 658 |  |  |  |
+| cad-set-12-sheets.pdf | zoom in 10 notches (cold): sharp after last input (cache hits 53%) | 433 | 15.9 / 16.2 | 0.29 | 12.0 |
+| cad-set-12-sheets.pdf | zoom out 10 notches (cached levels): sharp after last input (cache hits 77%) | 59 | 16.2 / 31.9 | 0.32 | 9.2 |
+| cad-set-12-sheets.pdf | rapid zoom reversals 5x(3 in, 3 out): sharp after last input (cache hits 85%) | 70 | 16.0 / 31.5 | 0.31 | 14.1 |
+| cad-set-12-sheets.pdf | drag-pan 90 frames at 1600%-class zoom: sharp after last input (cache hits 100%) | 16 | 16.1 / 31.8 | 0.15 | 7.2 |
+| cad-dense-e1.pdf | tab switch: sharp | 4 |  |  |  |
+| cad-extreme-e1.pdf | tab switch: sharp | 2 |  |  |  |
+| image-heavy.pdf | tab switch: sharp | 3 |  |  |  |
+| many-pages-600.pdf | tab switch: sharp | 3 |  |  |  |
+| cad-set-12-sheets.pdf | tab switch: sharp | 9 |  |  |  |
+| many-pages-600.pdf | search 600 pages while panning: first hit | 129 | 16.0 / 16.9 | 0.13 | 12.7 |
+| many-pages-600.pdf | search 600 pages while panning: complete (600 hits) | 1309 |  |  |  |
+
+**Resources at the end of the run**
+
+- viewerWorkingSetMB: 1184.43
+- viewerPrivateMB: 1137.79
+- workerProcesses: 2
+- workersWorkingSetMB: 602.94
+- tileCacheMB: 389.48
+- tileCacheHitRate: 0.79
+- vramUsageMB: 0.01
+- vramBudgetMB: 7523.9
+- tileRenderP50: 13.35
+- tileRenderP95: 353.79
+- tiles: 284
+- queueWaitP50: 68.49
+- queueWaitP95: 1815.35
+- workerCrashes: 0
+
+Notes: "zoom out 10 notches" returns to the opening view, so it is served from the cache (zoom steps stop at the
+fit-page zoom). Frame interval p95 ≈ 32 ms means an occasional single skipped frame while WARP (CPU) composes; on a
+GPU the composition runs on the graphics card. The viewer's working set includes WPF's software-composition copy of
+every visible bitmap; with a GPU these copies live in video memory. `vramUsageMB` is not meaningful on this VM
+(no hardware adapter).
 
 ## 3. What to expect on the i7-12700 / T1000
 Not measured. Expected from the scaling above: 7 workers on 8 P-cores ≈ 3–4× the 2-worker CI numbers for
