@@ -5,9 +5,9 @@ namespace Offline3D.RevitExporter;
 public sealed class RibbonApplication:IExternalApplication
 {
     public Result OnStartup(UIControlledApplication app){
-        var panel=app.CreateRibbonPanel("Offline 3D PDF v0.5.2");
+        var panel=app.CreateRibbonPanel("Offline 3D PDF v"+ExportCommand.ExporterVersion);
         var button=(PushButton)panel.AddItem(new PushButtonData("Offline3D.Export","Export 3D PDF",Assembly.GetExecutingAssembly().Location,typeof(ExportCommand).FullName));
-        button.ToolTip="Export the open floor plan, or a plan on the open sheet, as a PDF with clickable offline 3D. No viewport selection is needed for one plan. Automatic registration is checked before delivery.";
+        button.ToolTip="Export the open plan, RCP, section, elevation or orthographic 3D view (or the model views on the open sheet) as a PDF with clickable offline 3D, cropped to the view. Automatic registration is checked before delivery.";
         button.AvailabilityClassName=typeof(ExportAvailability).FullName;
         return Result.Succeeded;
     }

@@ -10,15 +10,16 @@
  <ReferenceVersion Condition="'$(RevitYear)'=='2027'">2027.0.0</ReferenceVersion>
  <TargetFramework Condition="'$(RevitHostFramework)'!=''">$(RevitHostFramework)</TargetFramework>
  <AssemblyName>Offline3DPrototype.Revit$(RevitYear)</AssemblyName>
- <Version>0.5.2</Version><FileVersion>0.5.2.0</FileVersion>
+ <Version>0.5.3</Version><FileVersion>0.5.3.0</FileVersion>
  <UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><PlatformTarget>x64</PlatformTarget>
  <OutputPath>bin/$(RevitYear)/$(Configuration)/</OutputPath>
  <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
  <DefineConstants>$(DefineConstants);REVIT$(RevitYear)</DefineConstants>
 </PropertyGroup>
-<!-- Link only pure data/math/geometry plus the built-in output writer. No
- Core.dll, JSON NuGet assembly, or NuGet BCL assembly runs inside Revit. -->
+<!-- Link only pure data/math/geometry. The GLB writer, mesh builder and
+ geometry stream are exporter-owned (Collection/). No Core.dll, JSON NuGet
+ assembly, or NuGet BCL assembly runs inside Revit. -->
 <ItemGroup>
  <Compile Include="../Core/SceneLimits.cs" Link="Wire/SceneLimits.cs"/>
  <Compile Include="../Core/ExportVolume.cs" Link="Wire/ExportVolume.cs"/>
@@ -26,8 +27,6 @@
  <Compile Include="../Core/Geometry.cs" Link="Wire/Geometry.cs"/>
  <Compile Include="../Core/FeatureEdges.cs" Link="Wire/FeatureEdges.cs"/>
  <Compile Include="../Core/CreaseNormals.cs" Link="Wire/CreaseNormals.cs"/>
-<Compile Include="../Core/IndexedGeometry.cs" Link="Wire/IndexedGeometry.cs"/>
- <Compile Include="../Core/SpoolSceneWriter.cs" Link="Wire/SpoolSceneWriter.cs"/>
  <Compile Include="../Core/GlbBuilder.cs" Link="Wire/GlbBuilder.cs"/>
  <Compile Include="../Core/AutomaticExport.cs" Link="Wire/AutomaticExport.cs"/>
 </ItemGroup>

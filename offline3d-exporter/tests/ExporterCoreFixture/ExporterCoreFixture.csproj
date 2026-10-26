@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<!-- The exact Revit-independent files the Revit DLL compiles, built as a
+ library so Linux tests can drive them. Same sources, no Revit API. -->
+<PropertyGroup><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup>
+<ItemGroup>
+ <Compile Include="../../src/Core/Geometry.cs" Link="Wire/Geometry.cs"/>
+ <Compile Include="../../src/Core/ContractModels.cs" Link="Wire/ContractModels.cs"/>
+ <Compile Include="../../src/Core/SceneLimits.cs" Link="Wire/SceneLimits.cs"/>
+ <Compile Include="../../src/Core/ExportVolume.cs" Link="Wire/ExportVolume.cs"/>
+ <Compile Include="../../src/Core/GlbBuilder.cs" Link="Wire/GlbBuilder.cs"/>
+ <Compile Include="../../src/Core/CreaseNormals.cs" Link="Wire/CreaseNormals.cs"/>
+ <Compile Include="../../src/Core/FeatureEdges.cs" Link="Wire/FeatureEdges.cs"/>
+ <Compile Include="../../src/Core/AutomaticExport.cs" Link="Wire/AutomaticExport.cs"/>
+ <Compile Include="../../src/RevitExporter/ExportWireJson.cs" Link="ExportWireJson.cs"/>
+ <Compile Include="../../src/RevitExporter/Collection/*.cs" Link="Collection/%(Filename)%(Extension)"/>
+ <InternalsVisibleTo Include="ExporterCoreTests"/>
+</ItemGroup>
+</Project>
