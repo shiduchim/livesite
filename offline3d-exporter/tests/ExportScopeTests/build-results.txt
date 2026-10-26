@@ -1,0 +1,11 @@
+  Determining projects to restore...
+  Restored /workspace/work/3dpdf/tests/ExportScopeTests/ExportScopeTests.csproj (in 2.67 sec).
+/workspace/work/3dpdf/tests/ExportScopeTests/Program.cs(25,84): error CS1503: Argument 1: cannot convert from 'void' to 'System.Collections.Generic.IEnumerable<Offline3D.Point3>' [/workspace/work/3dpdf/tests/ExportScopeTests/ExportScopeTests.csproj]
+
+Build FAILED.
+
+/workspace/work/3dpdf/tests/ExportScopeTests/Program.cs(25,84): error CS1503: Argument 1: cannot convert from 'void' to 'System.Collections.Generic.IEnumerable<Offline3D.Point3>' [/workspace/work/3dpdf/tests/ExportScopeTests/ExportScopeTests.csproj]
+    0 Warning(s)
+    1 Error(s)
+
+Time Elapsed 00:00:04.96

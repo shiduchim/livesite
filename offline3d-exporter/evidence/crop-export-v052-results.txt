@@ -1,0 +1,17 @@
+PASS inside and boundary triangles retained
+PASS outside XY geometry rejected
+PASS outside height geometry rejected
+PASS crossing triangle kept without splitting
+PASS overlapping triangle AABB does not admit triangle outside crop corner
+PASS translated linked mesh outside crop rejected
+PASS rotated linked mesh inside crop retained once
+PASS rotated crop does not export the corners of its global AABB
+PASS multiple crops use a union without admitting space between them
+PASS all up changes only upper height
+PASS all down changes only lower height
+PASS all up and down retain horizontal crop
+PASS explicit outside-crop scope still retains selected level range
+PASS SAT agrees with independent polygon clipping on 5000 random triangles
+PASS 10000 off-crop linked parts produce zero exported triangles
+PASS quick GLB retains colors and geometry with no feature-edge payload
+16 crop/linked/height/quick checks passed. Plain geometry on Linux; native Revit runtime remains untested.

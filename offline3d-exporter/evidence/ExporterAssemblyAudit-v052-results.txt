@@ -1,0 +1,88 @@
+PASS manifest contains all six exporter variants
+PASS unique supported variant 2024-net48
+PASS 2024-net48 assembly path is within payload
+PASS 2024-net48 contains exactly its standalone exporter DLL
+PASS 2024-net48 contains managed metadata
+PASS 2024-net48 assembly identity matches its Revit year
+REFERENCES 2024-net48: RevitAPI, RevitAPIUI, System, System.Core, System.Drawing, System.Windows.Forms, mscorlib
+REFERENCE VERSIONS 2024-net48: mscorlib/4.0.0.0, System.Core/4.0.0.0, RevitAPI/24.0.0.0, RevitAPIUI/24.0.0.0, System.Windows.Forms/4.0.0.0, System.Drawing/4.0.0.0, System/4.0.0.0
+PASS 2024-net48 has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2024-net48 references only Revit APIs and standard framework assemblies
+PASS 2024-net48 RevitAPI reference matches host year
+PASS 2024-net48 RevitAPIUI reference matches host year
+PASS 2024-net48 embeds its own writer, scene builder and plain contract types
+PASS 2024-net48 includes early indexed geometry sharing and the spool writer
+PASS 2024-net48 contains the Revit command and application entry points
+PASS unique supported variant 2025-net8.0-windows
+PASS 2025-net8.0-windows assembly path is within payload
+PASS 2025-net8.0-windows contains exactly its standalone exporter DLL
+PASS 2025-net8.0-windows contains managed metadata
+PASS 2025-net8.0-windows assembly identity matches its Revit year
+REFERENCES 2025-net8.0-windows: RevitAPI, RevitAPIUI, System.Collections, System.ComponentModel.Primitives, System.Diagnostics.Process, System.Drawing.Common, System.Drawing.Primitives, System.Linq, System.Memory, System.Runtime, System.Security.Cryptography, System.Text.Encoding.Extensions, System.Threading, System.Windows.Forms, System.Windows.Forms.Primitives
+REFERENCE VERSIONS 2025-net8.0-windows: System.Runtime/8.0.0.0, System.Collections/8.0.0.0, System.Security.Cryptography/8.0.0.0, RevitAPI/25.0.0.0, RevitAPIUI/25.0.0.0, System.Windows.Forms/8.0.0.0, System.Drawing.Primitives/8.0.0.0, System.Drawing.Common/8.0.0.0, System.Text.Encoding.Extensions/8.0.0.0, System.Threading/8.0.0.0, System.Linq/8.0.0.0, System.Diagnostics.Process/8.0.0.0, System.ComponentModel.Primitives/8.0.0.0, System.Windows.Forms.Primitives/8.0.0.0, System.Memory/8.0.0.0
+PASS 2025-net8.0-windows has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2025-net8.0-windows references only Revit APIs and standard framework assemblies
+PASS 2025-net8.0-windows RevitAPI reference matches host year
+PASS 2025-net8.0-windows RevitAPIUI reference matches host year
+PASS 2025-net8.0-windows embeds its own writer, scene builder and plain contract types
+PASS 2025-net8.0-windows includes early indexed geometry sharing and the spool writer
+PASS 2025-net8.0-windows contains the Revit command and application entry points
+PASS unique supported variant 2025-net10.0-windows
+PASS 2025-net10.0-windows assembly path is within payload
+PASS 2025-net10.0-windows contains exactly its standalone exporter DLL
+PASS 2025-net10.0-windows contains managed metadata
+PASS 2025-net10.0-windows assembly identity matches its Revit year
+REFERENCES 2025-net10.0-windows: RevitAPI, RevitAPIUI, System.Collections, System.ComponentModel.Primitives, System.Diagnostics.Process, System.Drawing.Common, System.Drawing.Primitives, System.Linq, System.Memory, System.Runtime, System.Security.Cryptography, System.Text.Encoding.Extensions, System.Threading, System.Windows.Forms, System.Windows.Forms.Primitives
+REFERENCE VERSIONS 2025-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/25.0.0.0, RevitAPIUI/25.0.0.0, System.Windows.Forms/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.Memory/10.0.0.0
+PASS 2025-net10.0-windows has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2025-net10.0-windows references only Revit APIs and standard framework assemblies
+PASS 2025-net10.0-windows RevitAPI reference matches host year
+PASS 2025-net10.0-windows RevitAPIUI reference matches host year
+PASS 2025-net10.0-windows embeds its own writer, scene builder and plain contract types
+PASS 2025-net10.0-windows includes early indexed geometry sharing and the spool writer
+PASS 2025-net10.0-windows contains the Revit command and application entry points
+PASS unique supported variant 2026-net8.0-windows
+PASS 2026-net8.0-windows assembly path is within payload
+PASS 2026-net8.0-windows contains exactly its standalone exporter DLL
+PASS 2026-net8.0-windows contains managed metadata
+PASS 2026-net8.0-windows assembly identity matches its Revit year
+REFERENCES 2026-net8.0-windows: RevitAPI, RevitAPIUI, System.Collections, System.ComponentModel.Primitives, System.Diagnostics.Process, System.Drawing.Common, System.Drawing.Primitives, System.Linq, System.Memory, System.Runtime, System.Security.Cryptography, System.Text.Encoding.Extensions, System.Threading, System.Windows.Forms, System.Windows.Forms.Primitives
+REFERENCE VERSIONS 2026-net8.0-windows: System.Runtime/8.0.0.0, System.Collections/8.0.0.0, System.Security.Cryptography/8.0.0.0, RevitAPI/26.0.4.0, RevitAPIUI/26.0.4.0, System.Windows.Forms/8.0.0.0, System.Drawing.Primitives/8.0.0.0, System.Drawing.Common/8.0.0.0, System.Text.Encoding.Extensions/8.0.0.0, System.Threading/8.0.0.0, System.Linq/8.0.0.0, System.Diagnostics.Process/8.0.0.0, System.ComponentModel.Primitives/8.0.0.0, System.Windows.Forms.Primitives/8.0.0.0, System.Memory/8.0.0.0
+PASS 2026-net8.0-windows has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2026-net8.0-windows references only Revit APIs and standard framework assemblies
+PASS 2026-net8.0-windows RevitAPI reference matches host year
+PASS 2026-net8.0-windows RevitAPIUI reference matches host year
+PASS 2026-net8.0-windows embeds its own writer, scene builder and plain contract types
+PASS 2026-net8.0-windows includes early indexed geometry sharing and the spool writer
+PASS 2026-net8.0-windows contains the Revit command and application entry points
+PASS unique supported variant 2026-net10.0-windows
+PASS 2026-net10.0-windows assembly path is within payload
+PASS 2026-net10.0-windows contains exactly its standalone exporter DLL
+PASS 2026-net10.0-windows contains managed metadata
+PASS 2026-net10.0-windows assembly identity matches its Revit year
+REFERENCES 2026-net10.0-windows: RevitAPI, RevitAPIUI, System.Collections, System.ComponentModel.Primitives, System.Diagnostics.Process, System.Drawing.Common, System.Drawing.Primitives, System.Linq, System.Memory, System.Runtime, System.Security.Cryptography, System.Text.Encoding.Extensions, System.Threading, System.Windows.Forms, System.Windows.Forms.Primitives
+REFERENCE VERSIONS 2026-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/26.0.4.0, RevitAPIUI/26.0.4.0, System.Windows.Forms/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.Memory/10.0.0.0
+PASS 2026-net10.0-windows has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2026-net10.0-windows references only Revit APIs and standard framework assemblies
+PASS 2026-net10.0-windows RevitAPI reference matches host year
+PASS 2026-net10.0-windows RevitAPIUI reference matches host year
+PASS 2026-net10.0-windows embeds its own writer, scene builder and plain contract types
+PASS 2026-net10.0-windows includes early indexed geometry sharing and the spool writer
+PASS 2026-net10.0-windows contains the Revit command and application entry points
+PASS unique supported variant 2027-net10.0-windows
+PASS 2027-net10.0-windows assembly path is within payload
+PASS 2027-net10.0-windows contains exactly its standalone exporter DLL
+PASS 2027-net10.0-windows contains managed metadata
+PASS 2027-net10.0-windows assembly identity matches its Revit year
+REFERENCES 2027-net10.0-windows: RevitAPI, RevitAPIUI, System.Collections, System.ComponentModel.Primitives, System.Diagnostics.Process, System.Drawing.Common, System.Drawing.Primitives, System.Linq, System.Memory, System.Runtime, System.Security.Cryptography, System.Text.Encoding.Extensions, System.Threading, System.Windows.Forms, System.Windows.Forms.Primitives
+REFERENCE VERSIONS 2027-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/27.0.0.0, RevitAPIUI/27.0.0.0, System.Windows.Forms/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.Memory/10.0.0.0
+PASS 2027-net10.0-windows has no Core, JSON or NuGet BCL dependencies (modern framework System.Memory is allowed)
+PASS 2027-net10.0-windows references only Revit APIs and standard framework assemblies
+PASS 2027-net10.0-windows RevitAPI reference matches host year
+PASS 2027-net10.0-windows RevitAPIUI reference matches host year
+PASS 2027-net10.0-windows embeds its own writer, scene builder and plain contract types
+PASS 2027-net10.0-windows includes early indexed geometry sharing and the spool writer
+PASS 2027-net10.0-windows contains the Revit command and application entry points
+PASS all expected Revit/framework pairs inspected
+PASS no Autodesk API/UI runtime DLL is redistributed anywhere in payload
+75 exporter assembly audit checks passed. Read-only PE metadata inspection; not a Windows/Revit execution test.

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net8.0</TargetFramework><EnableDefaultCompileItems>false</EnableDefaultCompileItems></PropertyGroup><ItemGroup>
+<Compile Include="../../src/Core/ContractModels.cs" Link="ContractModels.cs"/>
+<Compile Include="../../src/Core/SceneLimits.cs" Link="SceneLimits.cs"/>
+<Compile Include="../../src/Core/Geometry.cs" Link="Geometry.cs"/>
+<Compile Include="../../src/Core/AutomaticExport.cs" Link="AutomaticExport.cs"/>
+<Compile Include="../../src/Core/FeatureEdges.cs" Link="Wire/FeatureEdges.cs"/>
+ <Compile Include="../../src/Core/CreaseNormals.cs" Link="Wire/CreaseNormals.cs"/>
+<Compile Include="../../src/Core/IndexedGeometry.cs" Link="IndexedGeometry.cs"/>
+<Compile Include="../../src/Core/SpoolSceneWriter.cs" Link="SpoolSceneWriter.cs"/>
+<Compile Include="../../src/Core/GlbBuilder.cs" Link="GlbBuilder.cs"/>
+<Compile Include="../../src/RevitExporter/ExportWireJson.cs" Link="ExportWireJson.cs"/>
+</ItemGroup></Project>

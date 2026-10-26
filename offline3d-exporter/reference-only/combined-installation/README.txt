@@ -1,0 +1,1 @@
+Original combined application installer references. These scripts assume the complete viewer + exporter + payload tree. They are provided for Claude to inspect Revit detection/registration and deployment patterns. Do not run them from this source handoff. No split installer is supplied.

@@ -1,0 +1,12 @@
+{
+  "errors": 0,
+  "warnings": 0,
+  "messages": [
+    {
+      "code": "NODE_MATRIX_DEFAULT",
+      "message": "Do not specify default transform matrix.",
+      "severity": 2,
+      "pointer": "/nodes/0/matrix"
+    }
+  ]
+}

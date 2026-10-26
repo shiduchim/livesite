@@ -1,0 +1,19 @@
+PASS rotated sockets share one stored mesh
+PASS world positions and winding agree with legacy transformed triangles
+PASS mirror prototypes stay separate with positive node transforms
+PASS changed dimensions and materials never share incorrectly
+PASS forced hash collisions require exact geometry byte equality
+PASS running bounds include rotated and mirrored placements
+PASS spool files are removed after normal disposal
+PASS spool and partial output are removed after write failure
+PASS two million placed triangles export below the old cap using one mesh
+PASS strict validator accepts repeated geometry over 1.5 million triangles
+PASS stock reset restores fixed dimensions at the clicked level
+PASS box defaults persist metres and display units across reopen
+PASS invalid preferences recover factory defaults without changing saved valid data
+PASS singular matrix is rejected
+PASS mirrored node matrices are rejected until winding is baked
+PASS perspective node matrices are rejected
+PASS sheared node matrices are rejected
+PASS invalid metadata references are rejected
+18 indexed/spooled instancing checks passed. Large fixture time: 247 ms; peak working set: 74899456 bytes. Linux synthetic fixture, not Revit runtime.

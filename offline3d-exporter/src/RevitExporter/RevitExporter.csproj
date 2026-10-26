@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<PropertyGroup>
+ <RevitYear Condition="'$(RevitYear)'==''">2024</RevitYear>
+ <TargetFramework Condition="'$(RevitYear)'=='2024'">net48</TargetFramework>
+ <TargetFramework Condition="'$(RevitYear)'=='2025' Or '$(RevitYear)'=='2026'">net8.0-windows</TargetFramework>
+ <TargetFramework Condition="'$(RevitYear)'=='2027'">net10.0-windows</TargetFramework>
+ <ReferenceVersion Condition="'$(RevitYear)'=='2024'">2024.0.0</ReferenceVersion>
+ <ReferenceVersion Condition="'$(RevitYear)'=='2025'">2025.0.2</ReferenceVersion>
+ <ReferenceVersion Condition="'$(RevitYear)'=='2026'">2026.0.4</ReferenceVersion>
+ <ReferenceVersion Condition="'$(RevitYear)'=='2027'">2027.0.0</ReferenceVersion>
+ <TargetFramework Condition="'$(RevitHostFramework)'!=''">$(RevitHostFramework)</TargetFramework>
+ <AssemblyName>Offline3DPrototype.Revit$(RevitYear)</AssemblyName>
+ <Version>0.5.2</Version><FileVersion>0.5.2.0</FileVersion>
+ <UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><PlatformTarget>x64</PlatformTarget>
+ <OutputPath>bin/$(RevitYear)/$(Configuration)/</OutputPath>
+ <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
+ <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+ <DefineConstants>$(DefineConstants);REVIT$(RevitYear)</DefineConstants>
+</PropertyGroup>
+<!-- Link only pure data/math/geometry plus the built-in output writer. No
+ Core.dll, JSON NuGet assembly, or NuGet BCL assembly runs inside Revit. -->
+<ItemGroup>
+ <Compile Include="../Core/SceneLimits.cs" Link="Wire/SceneLimits.cs"/>
+ <Compile Include="../Core/ExportVolume.cs" Link="Wire/ExportVolume.cs"/>
+ <Compile Include="../Core/ContractModels.cs" Link="Wire/ContractModels.cs"/>
+ <Compile Include="../Core/Geometry.cs" Link="Wire/Geometry.cs"/>
+ <Compile Include="../Core/FeatureEdges.cs" Link="Wire/FeatureEdges.cs"/>
+ <Compile Include="../Core/CreaseNormals.cs" Link="Wire/CreaseNormals.cs"/>
+<Compile Include="../Core/IndexedGeometry.cs" Link="Wire/IndexedGeometry.cs"/>
+ <Compile Include="../Core/SpoolSceneWriter.cs" Link="Wire/SpoolSceneWriter.cs"/>
+ <Compile Include="../Core/GlbBuilder.cs" Link="Wire/GlbBuilder.cs"/>
+ <Compile Include="../Core/AutomaticExport.cs" Link="Wire/AutomaticExport.cs"/>
+</ItemGroup>
+<ItemGroup Condition="'$(RevitApiDir)'==''">
+ <PackageReference Include="Nice3point.Revit.Api.RevitAPI" Version="$(ReferenceVersion)" PrivateAssets="all" IncludeAssets="compile;build"/>
+ <PackageReference Include="Nice3point.Revit.Api.RevitAPIUI" Version="$(ReferenceVersion)" PrivateAssets="all" IncludeAssets="compile;build"/>
+</ItemGroup>
+<ItemGroup Condition="'$(RevitApiDir)'!=''">
+ <Reference Include="RevitAPI"><HintPath>$(RevitApiDir)/RevitAPI.dll</HintPath><Private>false</Private></Reference>
+ <Reference Include="RevitAPIUI"><HintPath>$(RevitApiDir)/RevitAPIUI.dll</HintPath><Private>false</Private></Reference>
+</ItemGroup>
+<ItemGroup Condition="'$(RevitYear)'=='2024'"><PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all"/></ItemGroup>
+<Target Name="ValidateRevitYear" BeforeTargets="PrepareForBuild"><Error Condition="'$(RevitYear)'!='2024' And '$(RevitYear)'!='2025' And '$(RevitYear)'!='2026' And '$(RevitYear)'!='2027'" Text="Revit year must be 2024, 2025, 2026 or 2027."/></Target>
+</Project>

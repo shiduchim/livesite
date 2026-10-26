@@ -1,0 +1,14 @@
+PASS standalone and reader share the 512 MiB scene / 64 MiB metadata policy
+Distinct scene bytes: 79733700; unique triangles: 737280
+PASS standalone exporter spools over 64 MiB of distinct geometry without lowering detail
+PASS strict reader validates actual large unique geometry
+PASS large scene capability is explicit and accepted
+PASS a large scene without capability is rejected
+PASS metadata and scene limits remain independent
+PASS large scene packages and reopens with exact bytes and all nodes
+PASS compressed large attachment reopens through the exact-size bounded decoder
+PASS large package failure preserves an existing destination
+PASS missing preview output reports an error instead of returning null
+PASS native PNG name and upper-case extension are accepted
+PASS empty or ambiguous preview output is rejected
+12 large resource / preview checks passed in 23494 ms. Peak working set 446185472 bytes; Linux synthetic data, not Revit runtime.
