@@ -1,0 +1,136 @@
+== CropExportTests
+PASS inside and boundary triangles retained
+PASS outside XY geometry rejected
+PASS outside height geometry rejected
+PASS crossing triangle kept without splitting
+PASS overlapping triangle AABB does not admit triangle outside crop corner
+PASS translated linked mesh outside crop rejected
+PASS rotated linked mesh inside crop retained once
+PASS rotated crop does not export the corners of its global AABB
+PASS multiple crops use a union without admitting space between them
+PASS all up changes only upper height
+PASS all down changes only lower height
+PASS all up and down retain horizontal crop
+PASS explicit outside-crop scope still retains selected level range
+PASS SAT agrees with independent polygon clipping on 5000 random triangles
+PASS 10000 off-crop linked parts produce zero exported triangles
+PASS quick GLB retains colors and geometry with no feature-edge payload
+16 crop/linked/height/quick checks passed. Plain geometry on Linux; native Revit runtime remains untested.
+== ExportScopeTests
+PASS nearest distinct levels replace full 60-metre height
+PASS same-elevation level duplicates are skipped
+PASS missing upper level uses configurable positive fallback
+PASS missing lower level uses configurable fallback
+PASS no adjacent levels use defaults and preserve project elevation
+PASS invalid level ranges are rejected
+PASS inside and boundary points are accepted
+PASS horizontal and vertical outside points are rejected
+PASS fully inside triangle retains geometry and area
+PASS outside triangles are rejected before output budget
+PASS crossing triangle is clipped to exact area and crop
+PASS height clipping returns only level-contained triangles
+PASS clockwise crop winding clips identically
+PASS rotated crop rejects its axis-aligned bounding-box corners
+PASS rotated crop triangle clipping follows actual diagonal edges
+PASS bounding-box containment and conservative overlap are consistent
+PASS intersection normals are interpolated and normalized
+PASS degenerate triangles emit no geometry
+PASS nonfinite mesh data is rejected
+PASS invalid concave and self-crossing crop polygons are rejected
+PASS large-origin crop uses local distance arithmetic
+21 export scope and exact crop checks passed. Linux plain-data tests; native Revit section-box/export execution remains untested.
+== LargeSceneTests
+PASS rotated sockets share one stored mesh
+PASS world positions and winding agree with legacy transformed triangles
+PASS mirror prototypes stay separate with positive node transforms
+PASS changed dimensions and materials never share incorrectly
+PASS forced hash collisions require exact geometry byte equality
+PASS running bounds include rotated and mirrored placements
+PASS spool files are removed after normal disposal
+PASS spool and partial output are removed after write failure
+PASS two million placed triangles export below the old cap using one mesh
+PASS strict validator accepts repeated geometry over 1.5 million triangles
+PASS stock reset restores fixed dimensions at the clicked level
+PASS box defaults persist metres and display units across reopen
+PASS invalid preferences recover factory defaults without changing saved valid data
+PASS singular matrix is rejected
+PASS mirrored node matrices are rejected until winding is baked
+PASS perspective node matrices are rejected
+PASS sheared node matrices are rejected
+PASS invalid metadata references are rejected
+18 indexed/spooled instancing checks passed. Large fixture time: 702 ms; peak working set: 81096704 bytes. Linux synthetic fixture, not Revit runtime.
+== ExportWireInterop
+PASS registration draft roundtrips through unchanged viewer decoder
+PASS 25 automatic sheet markers match viewer schema
+PASS identities preserve unicode quotes nulls and mesh names
+PASS control candidate anonymous values preserve exact numeric coordinates
+PASS escaped JSON strings and controls roundtrip
+PASS numbers roundtrip invariantly under a comma-decimal culture
+PASS camel-case DTOs and exact uppercase glTF keys differ correctly
+PASS NaN is rejected
+PASS infinity is rejected
+PASS wire GLB passes unchanged strict viewer validation
+PASS GLB preserves POSITION NORMAL indices and PBR material
+PASS material hashing is stable and respects changes
+PASS registration JSON can be embedded and read by unchanged PDF packager
+13 exporter/viewer wire interoperability checks passed; Linux .NET 8, not Revit runtime.
+== ExportWireWriterTests
+PASS camel-case DTO property names match original serializer
+PASS exact glTF names preserve POSITION and NORMAL
+PASS null and empty arrays preserve JSON shape
+PASS control characters quotes backslashes Hebrew and emoji round-trip
+PASS malformed high surrogate is rejected
+PASS malformed low surrogate is rejected
+PASS high surrogate followed by ordinary character is rejected
+PASS NaN is rejected
+PASS positive infinity is rejected
+PASS negative infinity float is rejected
+PASS floating point exponent and tiny values round-trip
+PASS numbers ignore process decimal culture
+PASS integer ranges remain exact
+PASS string dictionary keys are preserved exactly
+PASS non-string dictionary keys are rejected
+PASS cyclic sequence is rejected
+PASS shared sibling reference is accepted
+PASS thirty-two nested containers are accepted
+PASS thirty-three nested containers are rejected
+PASS foreign framework objects are rejected
+PASS SHA256 matches established digest
+PASS JSON output is bounded at 32 MiB
+22 exporter JSON writer checks passed on Linux .NET 8; production writer has no JSON library dependency.
+== LinkOverrideTests
+PASS reported unsupported source-view exception falls back for every link
+PASS unsupported target view does not abort geometry preparation
+PASS absent instance overrides inherit type settings
+PASS absent instance and type overrides use nonnull By Host View settings
+PASS custom settings use documented API fallback
+PASS incompatible plan-linked settings are reset before the next region
+PASS generic graphics capability rejection avoids link API calls
+PASS one invalid link does not drop other links
+PASS cancellation is not swallowed as an optional graphics failure
+PASS unexpected failures remain visible
+10 link-override fallback checks passed with API test doubles; not native Revit execution.
+== LargeResourceTests
+PASS standalone and reader share the 512 MiB scene / 64 MiB metadata policy
+Distinct scene bytes: 79733700; unique triangles: 737280
+PASS standalone exporter spools over 64 MiB of distinct geometry without lowering detail
+PASS strict reader validates actual large unique geometry
+PASS large scene capability is explicit and accepted
+PASS a large scene without capability is rejected
+PASS metadata and scene limits remain independent
+PASS large scene packages and reopens with exact bytes and all nodes
+PASS compressed large attachment reopens through the exact-size bounded decoder
+PASS large package failure preserves an existing destination
+PASS missing preview output reports an error instead of returning null
+PASS native PNG name and upper-case extension are accepted
+PASS empty or ambiguous preview output is rejected
+12 large resource / preview checks passed in 67732 ms. Peak working set 453447680 bytes; Linux synthetic data, not Revit runtime.
+== ExporterRegression
+PASS one viewport without selection is automatic
+PASS one viewport ignores titleblock or unrelated selection
+PASS one viewport already selected is automatic
+PASS multiple plans honor one selected viewport
+PASS multiple plans without selection ask for a plan
+PASS multiple selected plans require chooser
+PASS no floor plans produce no automatic choice
+7 selection regression checks passed. Revit UI execution remains untested.

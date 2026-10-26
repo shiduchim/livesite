@@ -1,0 +1,29 @@
+PASS mesh builder output is bit-identical to the v0.5.2 accumulator (all normal layouts, shared corners, zero normals)
+PASS feature edges are identical to Core/FeatureEdges.cs, in the same order
+  feature edges for 7200 triangles: v0.5.2 45 ms, v0.5.3 8 ms
+  feature edges for 320000 triangles: v0.5.3 198 ms
+PASS feature edges stay fast on large tessellated grids (v0.5.2 hashing was quadratic) and match the original
+PASS new writer without merging matches the v0.5.2 SpoolSceneWriter output (JSON semantics and binary bytes)
+PASS repeated geometry is stored once; mirrored placements get corrected geometry and positive matrices
+PASS single-use parts merge per element and material without moving any triangle or normal
+PASS merged meshes keep feature edges of every part
+PASS writer refuses scopes over the reader's 100,000-part limit before collecting further
+PASS names with quotes, controls, Hebrew, emoji and a lone surrogate produce valid glTF JSON
+PASS model text cleaning never splits a surrogate pair and replaces unpaired halves
+PASS links: stacks stay balanced, host elements after a link use host coordinates and document (v0.5.2 defect)
+PASS Skip at element level still balances (outside crop, not model, tiny parts)
+PASS repeated sockets: reuse skips Revit traversal yet produces the same world geometry as full traversal
+PASS one element with many instances (CAD import / railing): outside ones culled without traversal, crossing ones traversed and filtered
+PASS separate elements far outside the crop are skipped before any traversal
+PASS same symbol key with different geometry is detected by verification and never reused
+PASS a first instance crossing the crop does not poison reuse; a later complete capture is used
+PASS rotated crop: reuse classification follows the oriented crop, not its bounding box
+PASS huge single elements are written in several placements instead of failing at 64 MiB
+  stress: reuse 190 ms (1440 facets from Revit), full traversal 378 ms (72000 facets); nodes 6000/6000, unique meshes 62
+PASS stress: 3,000 sockets in 30 symbol variants, mirrored and rotated, reuse on vs off
+PASS statistics report is produced for diagnostics
+PASS helper path: GLB, identities and registration from the new exporter package into a PDF and reopen exactly (PDFium registration excluded)
+  large scene: geometry built and GLB written in 1835 ms
+  large scene: 79735320 bytes written, packaged and reopened in 4630 ms
+PASS over 64 MiB of distinct geometry from the new writer validates, packages and reopens byte-identical
+23 exporter core checks passed in 9558 ms. Linux .NET, simulated Revit callbacks; native Revit execution remains untested.

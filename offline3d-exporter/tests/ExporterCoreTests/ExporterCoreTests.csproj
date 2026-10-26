@@ -4,6 +4,7 @@
  <!-- "exporter" = new exporter code; global = unchanged reader Core (validator and the v0.5.2 writer for comparison). -->
  <ProjectReference Include="../ExporterCoreFixture/ExporterCoreFixture.csproj" Aliases="exporter"/>
  <ProjectReference Include="../../src/Core/Core.csproj"/>
+ <ProjectReference Include="../../src/Packaging/Packaging.csproj"/>
  <Compile Include="../../src/Core/FeatureEdges.cs" Link="Reference/FeatureEdges.cs"/>
 </ItemGroup>
 </Project>

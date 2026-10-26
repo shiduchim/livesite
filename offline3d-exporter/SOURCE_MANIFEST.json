@@ -1,865 +1,943 @@
 {
-  "baseline": "0.5.2",
-  "purpose": "Source handoff; not an installer",
-  "application_source_unchanged": true,
+  "baseline": "0.5.3",
+  "previous": "0.5.2 (shiduchim/files cac9209)",
+  "purpose": "Source handoff with a drop-in exporter update; not a full installer",
+  "reader_source_changed": false,
   "files": [
+    {
+      "path": "ACCEPTANCE-TEST.md",
+      "bytes": 3821,
+      "sha256": "35a4d72389a089f882f8de6b9996aa7a19917174880ddf59e61d84a5a53fa2d2"
+    },
+    {
+      "path": "CHANGES-0.5.3.md",
+      "bytes": 10178,
+      "sha256": "3fbbc13a71656a4d7f842298ad83cf7c2990f7cb58c4367c636a74d488bfb533"
+    },
     {
       "path": "CLAUDE_PROMPT.txt",
       "bytes": 8713,
-      "sha256": "03160dffe85511339f2d4b529b1be981d595e05de8b02d23684938bfbdb36833",
-      "original_path": null
+      "sha256": "03160dffe85511339f2d4b529b1be981d595e05de8b02d23684938bfbdb36833"
     },
     {
       "path": "CLAUDE_SETUP.txt",
       "bytes": 1246,
-      "sha256": "0429c9f98e3f58cb6a7b0ee2050034419e8e6244df76c290b7d14eaacfcc92c0",
-      "original_path": null
+      "sha256": "0429c9f98e3f58cb6a7b0ee2050034419e8e6244df76c290b7d14eaacfcc92c0"
     },
     {
       "path": "CURRENT_CONTRACT.md",
-      "bytes": 4483,
-      "sha256": "816ac0b42432da56e4d3ef07e2cc9852779603d74354882018ba7aaa98f0c739",
-      "original_path": null
+      "bytes": 4946,
+      "sha256": "75d932b791e48e9cdc146e6ac148bb2c4e8c1c2e82ad3cc45a07e94e88cf7a56"
     },
     {
       "path": "Directory.Build.props",
       "bytes": 248,
-      "sha256": "926a3f2df6c2f1c80be8d85a569d13679f8a71d14c0cc515c92796cec3fad01f",
-      "original_path": "Directory.Build.props"
+      "sha256": "926a3f2df6c2f1c80be8d85a569d13679f8a71d14c0cc515c92796cec3fad01f"
+    },
+    {
+      "path": "EXPORTER_CODE_FOR_CHAT.txt",
+      "bytes": 423639,
+      "sha256": "ca03c7ac590428ca7f586fc637d475011f6cab9b48e5ed7494e5a7648aa471db"
     },
     {
       "path": "HANDOFF.md",
-      "bytes": 2493,
-      "sha256": "c68104369f6377a870d06202cef8e5a481986d562c711d838e6247345e97af37",
-      "original_path": null
+      "bytes": 2767,
+      "sha256": "73a7fe9149b703ad02904a5b4fc4f9e5eb728568b3fda61cf16e552c62d40778"
     },
     {
       "path": "HISTORY_AND_RESULTS.md",
-      "bytes": 10450,
-      "sha256": "8248de006f32e9e75a5876656eab4ce8a1c9491066a0a2fba07fdd9d0042d017",
-      "original_path": null
+      "bytes": 12449,
+      "sha256": "f7b171b5f835d09777c0d297e7b63d4c7baab041dfcf188091e4d336f9474410"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1811,
+      "sha256": "a3f841610cbfd5a48c593c809cf76665161e3cceb1d7a0f6590ddf7aca383a67"
+    },
+    {
+      "path": "build/build-exporters.sh",
+      "bytes": 1447,
+      "sha256": "c216a40903c67370cb150fcf640db52b1143581c35334f57fc2aaa94152492a5"
+    },
+    {
+      "path": "build/package-update.sh",
+      "bytes": 1170,
+      "sha256": "f5a0112a01817d9e02402398b500ae38bbf64f3b57cd905d0964f745db277bec"
+    },
+    {
+      "path": "build/update-package/README.txt",
+      "bytes": 1195,
+      "sha256": "be17b8037a8fd1c12c151752dd15ae278db50c66210c12f27135ada732c78a02"
+    },
+    {
+      "path": "build/update-package/ROLLBACK.cmd",
+      "bytes": 396,
+      "sha256": "3e05ddc7f317d9d25ee18c5a07eb21afa31359f83d939d0959cdd08efcd8befe"
+    },
+    {
+      "path": "build/update-package/UPDATE.cmd",
+      "bytes": 386,
+      "sha256": "18976fa89e1f52df5a463dbc63cf91f8e68aec004c60ccb00882205a71c17eff"
+    },
+    {
+      "path": "build/update-package/Update-Offline3DExporter.ps1",
+      "bytes": 4904,
+      "sha256": "33b3f99b82c4973fe0c66130571e497f7bf37819d01986bf95bde45b72b5b4d5"
     },
     {
       "path": "evidence/BUILD-DEPENDENCIES.md",
       "bytes": 3511,
-      "sha256": "be6932f1dcb3274d96e6b17093003c04f7c1bb4a064df41d9ab613ae2b254321",
-      "original_path": null
+      "sha256": "be6932f1dcb3274d96e6b17093003c04f7c1bb4a064df41d9ab613ae2b254321"
     },
     {
       "path": "evidence/ExporterAssemblyAudit-v052-results.txt",
       "bytes": 10087,
-      "sha256": "4f0651fbe0f4ab8a9cb48aa23b9806da28f95c4686501a6495a2cbbc2183205e",
-      "original_path": null
+      "sha256": "4f0651fbe0f4ab8a9cb48aa23b9806da28f95c4686501a6495a2cbbc2183205e"
     },
     {
       "path": "evidence/TEST-REPORT.md",
       "bytes": 12691,
-      "sha256": "7bec22ff887364dfc074594cbe6bedb4053428a2a1644d173e963a48fd80424f",
-      "original_path": null
+      "sha256": "7bec22ff887364dfc074594cbe6bedb4053428a2a1644d173e963a48fd80424f"
     },
     {
       "path": "evidence/core-v052-results.txt",
       "bytes": 2613,
-      "sha256": "ea252c1e9a6605ef862c39e3db61c7c69382134c53b16801f336f45b35fed866",
-      "original_path": null
+      "sha256": "ea252c1e9a6605ef862c39e3db61c7c69382134c53b16801f336f45b35fed866"
     },
     {
       "path": "evidence/crop-export-v052-results.txt",
       "bytes": 981,
-      "sha256": "19b1cf5093981e660ee6a8799d00fa2c30390a0a27efb6bb8c5ceb41a718dde3",
-      "original_path": null
+      "sha256": "19b1cf5093981e660ee6a8799d00fa2c30390a0a27efb6bb8c5ceb41a718dde3"
     },
     {
       "path": "evidence/khronos-large-resource-v051-results.json",
       "bytes": 13335,
-      "sha256": "170937153018916dcde6b59810f06dd6651fa4b256bf3e9087f2c1f989960a12",
-      "original_path": null
+      "sha256": "170937153018916dcde6b59810f06dd6651fa4b256bf3e9087f2c1f989960a12"
     },
     {
       "path": "evidence/khronos-quick-v052-results.json",
       "bytes": 222,
-      "sha256": "05fdda73bd102ce6015fd0b3b01c13b9726c750cfc91ad860c5b8b6bfff80e41",
-      "original_path": null
+      "sha256": "05fdda73bd102ce6015fd0b3b01c13b9726c750cfc91ad860c5b8b6bfff80e41"
     },
     {
       "path": "evidence/large-resource-v051-results.txt",
       "bytes": 954,
-      "sha256": "7d1e28cb19fc81ad6c0d100d36519eb63620e9a7119e9fe357eaa981e2af7f6e",
-      "original_path": null
+      "sha256": "7d1e28cb19fc81ad6c0d100d36519eb63620e9a7119e9fe357eaa981e2af7f6e"
     },
     {
       "path": "evidence/large-scene-v052-results.txt",
       "bytes": 1223,
-      "sha256": "82949feb411b02d44d99270622ffe78b78edde80ebb315c40840a86e041e23d9",
-      "original_path": null
+      "sha256": "82949feb411b02d44d99270622ffe78b78edde80ebb315c40840a86e041e23d9"
     },
     {
       "path": "evidence/revit-2024-net48-build.txt",
       "bytes": 301,
-      "sha256": "36ebb2213df7e5724f6a553d32e6ae88b0071493dc00f6e5a5a1cca4f11ede5f",
-      "original_path": null
+      "sha256": "36ebb2213df7e5724f6a553d32e6ae88b0071493dc00f6e5a5a1cca4f11ede5f"
     },
     {
       "path": "evidence/revit-2025-net10.0-windows-build.txt",
       "bytes": 311,
-      "sha256": "e690618ba897ee06540313999d74cb34a7102ea470da5af5f5fdc6a9ab88e98a",
-      "original_path": null
+      "sha256": "e690618ba897ee06540313999d74cb34a7102ea470da5af5f5fdc6a9ab88e98a"
     },
     {
       "path": "evidence/revit-2025-net8.0-windows-build.txt",
       "bytes": 310,
-      "sha256": "191ff11e8b932ad1b52bbd5c8d603f9e2539fa94bbfd1676b8609126cc151c56",
-      "original_path": null
+      "sha256": "191ff11e8b932ad1b52bbd5c8d603f9e2539fa94bbfd1676b8609126cc151c56"
     },
     {
       "path": "evidence/revit-2026-net10.0-windows-build.txt",
       "bytes": 311,
-      "sha256": "4f704e4b733a7f6f6815e50603750e555ca7a654765cc5bd12b56398c3e25199",
-      "original_path": null
+      "sha256": "4f704e4b733a7f6f6815e50603750e555ca7a654765cc5bd12b56398c3e25199"
     },
     {
       "path": "evidence/revit-2026-net8.0-windows-build.txt",
       "bytes": 310,
-      "sha256": "1d8016f8e15aeb09b544e4abfff6c0db1ab50dda6cafa8fefa836eb980b75edf",
-      "original_path": null
+      "sha256": "1d8016f8e15aeb09b544e4abfff6c0db1ab50dda6cafa8fefa836eb980b75edf"
     },
     {
       "path": "evidence/revit-2027-net10.0-windows-build.txt",
       "bytes": 311,
-      "sha256": "1823b1930b6dfe3691ab0d9b87b0939991fd049664ba8a9bb82e555014b08669",
-      "original_path": null
+      "sha256": "1823b1930b6dfe3691ab0d9b87b0939991fd049664ba8a9bb82e555014b08669"
+    },
+    {
+      "path": "evidence/v053-assembly-audit-results.txt",
+      "bytes": 13464,
+      "sha256": "458e9727b78c20cb1c57b9f2f75552288cfd7d1bb7ad947bb32e79344c908868"
+    },
+    {
+      "path": "evidence/v053-core-results.txt",
+      "bytes": 2675,
+      "sha256": "127c414303779301e65e2b1b85dd456f3b06a16de1a10f5482482c0a587fe78c"
+    },
+    {
+      "path": "evidence/v053-cross-build-results.txt",
+      "bytes": 726,
+      "sha256": "0c4a3f206536e0d72b924d369f11b272953de0a4124b7b0bdad360d659d7ca08"
+    },
+    {
+      "path": "evidence/v053-dialog-100pct-initial.png",
+      "bytes": 21913,
+      "sha256": "1731388224d037941cc9a86940dbcafc325e8be8443ebfae75986103925fabf3"
+    },
+    {
+      "path": "evidence/v053-dialog-100pct-narrow.png",
+      "bytes": 23887,
+      "sha256": "3efca0f62e064f8077b52d670bb84e62ccb38c194c6cb1e2cf6e15cf3a767cbd"
+    },
+    {
+      "path": "evidence/v053-dialog-100pct-preview.png",
+      "bytes": 49899,
+      "sha256": "26b746257d696060f17e8c8b1582fdcd44aca29cd62077c9a3c7fd2f20376a62"
+    },
+    {
+      "path": "evidence/v053-dialog-100pct-rendering.png",
+      "bytes": 22156,
+      "sha256": "846206f43085a804f865e568455f5fcf62ceb6377fa6ec80a61aabcf0639c054"
+    },
+    {
+      "path": "evidence/v053-dialog-150pct-options-changed.png",
+      "bytes": 113442,
+      "sha256": "7371c2b1d9ad828fb2df105cd6e5097567918fd7f8e78e2daabab3e1c4003a23"
+    },
+    {
+      "path": "evidence/v053-dialog-200pct-initial.png",
+      "bytes": 71323,
+      "sha256": "7d1c07850bc32fa9b0ae9575a99457dda445c1c124cf9cf1e6ec173f9c244e18"
+    },
+    {
+      "path": "evidence/v053-dialog-layout-results.txt",
+      "bytes": 3143,
+      "sha256": "8111ace89453cf8c7b83cc3fa72673f50bf131b3d8f71f725dd5aae107547932"
+    },
+    {
+      "path": "evidence/v053-original-suites-results.txt",
+      "bytes": 7656,
+      "sha256": "ecdc7668c1cbf1715a675f579118514a29ea4d410d6273a0e113581923ebc80c"
+    },
+    {
+      "path": "evidence/v053-progress-100pct.png",
+      "bytes": 4633,
+      "sha256": "5f659af3be0c03d3330ff69f45f3b15529786c0a889cfa3e5d5c04ff9f8f18c5"
     },
     {
       "path": "global.json",
       "bytes": 61,
-      "sha256": "7fd1f7f4ffa8b0dac6a02355cdc371c1623638cfbe10559759b87403d807bf78",
-      "original_path": "global.json"
+      "sha256": "7fd1f7f4ffa8b0dac6a02355cdc371c1623638cfbe10559759b87403d807bf78"
     },
     {
       "path": "licenses/Babylon-studio-LICENSE.md",
       "bytes": 9226,
-      "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6",
-      "original_path": "licenses/Babylon-studio-LICENSE.md"
+      "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6"
     },
     {
       "path": "licenses/DejaVu-copyright.txt",
       "bytes": 3859,
-      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9",
-      "original_path": "licenses/DejaVu-copyright.txt"
+      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9"
     },
     {
       "path": "licenses/Filament-LICENSE.txt",
       "bytes": 11362,
-      "sha256": "02d70b593dd8e9355dd8e1ca8d13c303bee5bcaf3065b66ff6e4f534e1e6a2c1",
-      "original_path": "licenses/Filament-LICENSE.txt"
+      "sha256": "02d70b593dd8e9355dd8e1ca8d13c303bee5bcaf3065b66ff6e4f534e1e6a2c1"
     },
     {
       "path": "licenses/PDFium/BUILD-LICENSE.txt",
       "bytes": 1068,
-      "sha256": "493abc10084b58f97dce3fac1654624e1a25788f17180fe8925786c266cd2416",
-      "original_path": "licenses/PDFium/BUILD-LICENSE.txt"
+      "sha256": "493abc10084b58f97dce3fac1654624e1a25788f17180fe8925786c266cd2416"
     },
     {
       "path": "licenses/PDFium/LICENSE",
       "bytes": 1184,
-      "sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b",
-      "original_path": "licenses/PDFium/LICENSE"
+      "sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b"
     },
     {
       "path": "licenses/PDFium/VERSION",
       "bytes": 37,
-      "sha256": "5a2cb59a16acd68c5792edfe8b01a2e813dce45626e1e2c6ef898b574737d293",
-      "original_path": "licenses/PDFium/VERSION"
+      "sha256": "5a2cb59a16acd68c5792edfe8b01a2e813dce45626e1e2c6ef898b574737d293"
     },
     {
       "path": "licenses/PDFium/licenses/abseil.txt",
       "bytes": 11564,
-      "sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603",
-      "original_path": "licenses/PDFium/licenses/abseil.txt"
+      "sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603"
     },
     {
       "path": "licenses/PDFium/licenses/agg23.txt",
       "bytes": 725,
-      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
-      "original_path": "licenses/PDFium/licenses/agg23.txt"
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5"
     },
     {
       "path": "licenses/PDFium/licenses/dragonbox-Apache2-LLVM.txt",
       "bytes": 12480,
-      "sha256": "4964a7aaf2801a42d2342d2f5bbccd2126be7a5d8d46150e1338a43ea70da5de",
-      "original_path": "licenses/PDFium/licenses/dragonbox-Apache2-LLVM.txt"
+      "sha256": "4964a7aaf2801a42d2342d2f5bbccd2126be7a5d8d46150e1338a43ea70da5de"
     },
     {
       "path": "licenses/PDFium/licenses/dragonbox-Boost.txt",
       "bytes": 1361,
-      "sha256": "beb8e42e9d6b4284e03304d05a81a0755200a965fc8d0a5e0aea1e84cf805d6e",
-      "original_path": "licenses/PDFium/licenses/dragonbox-Boost.txt"
+      "sha256": "beb8e42e9d6b4284e03304d05a81a0755200a965fc8d0a5e0aea1e84cf805d6e"
     },
     {
       "path": "licenses/PDFium/licenses/fast_float.txt",
       "bytes": 1106,
-      "sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b",
-      "original_path": "licenses/PDFium/licenses/fast_float.txt"
+      "sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b"
     },
     {
       "path": "licenses/PDFium/licenses/freetype.txt",
       "bytes": 6741,
-      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
-      "original_path": "licenses/PDFium/licenses/freetype.txt"
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8"
     },
     {
       "path": "licenses/PDFium/licenses/harfbuzz.txt",
       "bytes": 2013,
-      "sha256": "bd836c0ddca8ea0bab54a03cd32b6ff7256cbb3840fca2edc1249a4ed92c5b02",
-      "original_path": "licenses/PDFium/licenses/harfbuzz.txt"
+      "sha256": "bd836c0ddca8ea0bab54a03cd32b6ff7256cbb3840fca2edc1249a4ed92c5b02"
     },
     {
       "path": "licenses/PDFium/licenses/icu.txt",
       "bytes": 28286,
-      "sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a",
-      "original_path": "licenses/PDFium/licenses/icu.txt"
+      "sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a"
     },
     {
       "path": "licenses/PDFium/licenses/lcms.txt",
       "bytes": 1353,
-      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
-      "original_path": "licenses/PDFium/licenses/lcms.txt"
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a"
     },
     {
       "path": "licenses/PDFium/licenses/libjpeg_turbo.ijg",
       "bytes": 13059,
-      "sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704",
-      "original_path": "licenses/PDFium/licenses/libjpeg_turbo.ijg"
+      "sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704"
     },
     {
       "path": "licenses/PDFium/licenses/libjpeg_turbo.md",
       "bytes": 5755,
-      "sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95",
-      "original_path": "licenses/PDFium/licenses/libjpeg_turbo.md"
+      "sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95"
     },
     {
       "path": "licenses/PDFium/licenses/libopenjpeg.txt",
       "bytes": 1794,
-      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
-      "original_path": "licenses/PDFium/licenses/libopenjpeg.txt"
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2"
     },
     {
       "path": "licenses/PDFium/licenses/libpng.txt",
       "bytes": 5479,
-      "sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511",
-      "original_path": "licenses/PDFium/licenses/libpng.txt"
+      "sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511"
     },
     {
       "path": "licenses/PDFium/licenses/llvm-libc.txt",
       "bytes": 15418,
-      "sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383",
-      "original_path": "licenses/PDFium/licenses/llvm-libc.txt"
+      "sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383"
     },
     {
       "path": "licenses/PDFium/licenses/pdfium.txt",
       "bytes": 12818,
-      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
-      "original_path": "licenses/PDFium/licenses/pdfium.txt"
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e"
     },
     {
       "path": "licenses/PDFium/licenses/simdutf.txt",
       "bytes": 1077,
-      "sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719",
-      "original_path": "licenses/PDFium/licenses/simdutf.txt"
+      "sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719"
     },
     {
       "path": "licenses/PDFium/licenses/zlib.txt",
       "bytes": 1332,
-      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
-      "original_path": "licenses/PDFium/licenses/zlib.txt"
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe"
     },
     {
       "path": "licenses/PDFsharp-LICENSE.txt",
       "bytes": 1147,
-      "sha256": "f82f46a068823bf3a33202058a6ef9b0bfc0d4203418c09873161a34e34198cf",
-      "original_path": "licenses/PDFsharp-LICENSE.txt"
+      "sha256": "f82f46a068823bf3a33202058a6ef9b0bfc0d4203418c09873161a34e34198cf"
     },
     {
       "path": "licenses/PlayCanvas-LICENSE.txt",
       "bytes": 1064,
-      "sha256": "42fa51ddd556be151a29f381fb97ee975825dcc454e805ea3ea9c079cca04d34",
-      "original_path": "licenses/PlayCanvas-LICENSE.txt"
+      "sha256": "42fa51ddd556be151a29f381fb97ee975825dcc454e805ea3ea9c079cca04d34"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2024.0.0-license.md",
       "bytes": 1087,
-      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2024.0.0-license.md"
+      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2025.0.2-license.md",
       "bytes": 1087,
-      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2025.0.2-license.md"
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2026.0.4-license.md",
       "bytes": 1087,
-      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2026.0.4-license.md"
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2027.0.0-license.md",
       "bytes": 1087,
-      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2027.0.0-license.md"
+      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2024.0.0-license.md",
       "bytes": 1087,
-      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2024.0.0-license.md"
+      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2025.0.2-license.md",
       "bytes": 1087,
-      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2025.0.2-license.md"
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2026.0.4-license.md",
       "bytes": 1087,
-      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2026.0.4-license.md"
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d"
     },
     {
       "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2027.0.0-license.md",
       "bytes": 1087,
-      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26",
-      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2027.0.0-license.md"
+      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26"
     },
     {
       "path": "licenses/Three-LICENSE.txt",
       "bytes": 1081,
-      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
-      "original_path": "licenses/Three-LICENSE.txt"
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc"
     },
     {
       "path": "licenses/Tint-Dawn-LICENSE.txt",
       "bytes": 11829,
-      "sha256": "0493f897193af1796d5054659f45ec7d4c5af648fa67a99f01d30e55cc805abc",
-      "original_path": "licenses/Tint-Dawn-LICENSE.txt"
+      "sha256": "0493f897193af1796d5054659f45ec7d4c5af648fa67a99f01d30e55cc805abc"
     },
     {
       "path": "licenses/WebView2-SDK-LICENSE.txt",
       "bytes": 1487,
-      "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55",
-      "original_path": "licenses/WebView2-SDK-LICENSE.txt"
+      "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55"
     },
     {
       "path": "licenses/WebView2-SDK-NOTICE.txt",
       "bytes": 3894,
-      "sha256": "106423785c5b7eba0a8e61d1837f2132e9c828e20ad530f565d981c1df60dd90",
-      "original_path": "licenses/WebView2-SDK-NOTICE.txt"
+      "sha256": "106423785c5b7eba0a8e61d1837f2132e9c828e20ad530f565d981c1df60dd90"
     },
     {
       "path": "licenses/dotnet-LICENSE.txt",
       "bytes": 1139,
-      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
-      "original_path": "licenses/dotnet-LICENSE.txt"
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b"
     },
     {
       "path": "licenses/dotnet-THIRD-PARTY-NOTICES.txt",
       "bytes": 68910,
-      "sha256": "b60b2912da28eaa6518593c9e2efb5334ee062d3c42e80d8fdfa806b3dc52977",
-      "original_path": "licenses/dotnet-THIRD-PARTY-NOTICES.txt"
+      "sha256": "b60b2912da28eaa6518593c9e2efb5334ee062d3c42e80d8fdfa806b3dc52977"
     },
     {
       "path": "licenses/earcut-LICENSE.txt",
       "bytes": 738,
-      "sha256": "cd661c432ea8243974e6fde6fc433ebee3e96525ca8b66321b9d9971674ede60",
-      "original_path": "licenses/earcut-LICENSE.txt"
+      "sha256": "cd661c432ea8243974e6fde6fc433ebee3e96525ca8b66321b9d9971674ede60"
     },
     {
       "path": "licenses/glslang-LICENSE.txt",
       "bytes": 54705,
-      "sha256": "adb783e734e906d1f46db5df29991dbde84bdb0ceab502ac2febb44fe3c2b5f4",
-      "original_path": "licenses/glslang-LICENSE.txt"
+      "sha256": "adb783e734e906d1f46db5df29991dbde84bdb0ceab502ac2febb44fe3c2b5f4"
     },
     {
       "path": "licenses/three-gpu-pathtracer-LICENSE.txt",
       "bytes": 1072,
-      "sha256": "2df239f3787d174fbd6ead7bc4c748bee526564aa2e67315afcae47e15552e00",
-      "original_path": "licenses/three-gpu-pathtracer-LICENSE.txt"
+      "sha256": "2df239f3787d174fbd6ead7bc4c748bee526564aa2e67315afcae47e15552e00"
     },
     {
       "path": "licenses/three-mesh-bvh-LICENSE.txt",
       "bytes": 1072,
-      "sha256": "b106ef6198a9862ed2b5b873e944ecf3583c631a84a7462d400ecc1910ce7fee",
-      "original_path": "licenses/three-mesh-bvh-LICENSE.txt"
+      "sha256": "b106ef6198a9862ed2b5b873e944ecf3583c631a84a7462d400ecc1910ce7fee"
     },
     {
       "path": "licenses/xatlas-web-LICENSE.txt",
       "bytes": 1075,
-      "sha256": "2c16d5b1c2808277fe975b4f70f0fd9afc9b3bcf04e6c676665a82cb2d5579e3",
-      "original_path": "licenses/xatlas-web-LICENSE.txt"
+      "sha256": "2c16d5b1c2808277fe975b4f70f0fd9afc9b3bcf04e6c676665a82cb2d5579e3"
     },
     {
       "path": "reference-only/combined-installation/BUILD_AND_INSTALL.cmd",
       "bytes": 395,
-      "sha256": "79712f8f709c7af42d9ff1cef2b00f1e4f1c69752d3979f96310fd8e3bef704c",
-      "original_path": null
+      "sha256": "79712f8f709c7af42d9ff1cef2b00f1e4f1c69752d3979f96310fd8e3bef704c"
     },
     {
       "path": "reference-only/combined-installation/INSTALL.cmd",
       "bytes": 390,
-      "sha256": "6a1c845b1342ced0be668240301a10aff09cb60265a14662a16e44af8420bac5",
-      "original_path": null
+      "sha256": "6a1c845b1342ced0be668240301a10aff09cb60265a14662a16e44af8420bac5"
     },
     {
       "path": "reference-only/combined-installation/README.txt",
       "bytes": 288,
-      "sha256": "d70d228582a67ebd6be27438892025247aa8dca2ccdb54191b86fc11f5404dd9",
-      "original_path": null
+      "sha256": "d70d228582a67ebd6be27438892025247aa8dca2ccdb54191b86fc11f5404dd9"
     },
     {
       "path": "reference-only/combined-installation/UNINSTALL.cmd",
       "bytes": 392,
-      "sha256": "13c5bcc1e811adc5e3991095a005557f9c69a06b7200921382b901952da048c9",
-      "original_path": null
+      "sha256": "13c5bcc1e811adc5e3991095a005557f9c69a06b7200921382b901952da048c9"
     },
     {
       "path": "reference-only/combined-installation/scripts/Build-Windows.ps1",
       "bytes": 141,
-      "sha256": "ad2543a7c36bb5e0c5061c975ed925fbbb9b76f59a5cf112e397aff0e9de213d",
-      "original_path": null
+      "sha256": "ad2543a7c36bb5e0c5061c975ed925fbbb9b76f59a5cf112e397aff0e9de213d"
     },
     {
       "path": "reference-only/combined-installation/scripts/Setup.Library.ps1",
       "bytes": 12030,
-      "sha256": "c95df7e0cb9fc2d57ff1e864a1502a6498ea2318acfa799bad5e5147a63595ea",
-      "original_path": null
+      "sha256": "c95df7e0cb9fc2d57ff1e864a1502a6498ea2318acfa799bad5e5147a63595ea"
     },
     {
       "path": "reference-only/combined-installation/scripts/Setup.ps1",
       "bytes": 15030,
-      "sha256": "984f301b9d31f1eae18eb14b5e295fa40e8b88b0ef0b4b1020c122ac3afd5828",
-      "original_path": null
+      "sha256": "984f301b9d31f1eae18eb14b5e295fa40e8b88b0ef0b4b1020c122ac3afd5828"
     },
     {
       "path": "reference-only/combined-installation/scripts/dependencies.json",
       "bytes": 418,
-      "sha256": "4af23237742ddca0fcfb8fad748ef65899223775c64a672f184a79b33a7df028",
-      "original_path": null
+      "sha256": "4af23237742ddca0fcfb8fad748ef65899223775c64a672f184a79b33a7df028"
+    },
+    {
+      "path": "release/0.5.3/DLL-SHA256SUMS.txt",
+      "bytes": 768,
+      "sha256": "e377e849cebfcbab70778998b985d58457381e1edb16800e4da065eb366c6778"
+    },
+    {
+      "path": "release/0.5.3/Offline3D-RevitExporter-0.5.3-update.zip",
+      "bytes": 827803,
+      "sha256": "1a9612254d111d5bf99a5c68017afac4dd56f0b6ea1a83870121df8683bdc007"
+    },
+    {
+      "path": "release/0.5.3/Offline3D-RevitExporter-0.5.3-update.zip.sha256",
+      "bytes": 107,
+      "sha256": "06219db46e4c8ca3a6327c29dc48cfa379bb7dd6aac1458a06eb34394c26aa75"
     },
     {
       "path": "src/AutomaticRegistration/AutomaticRegistration.csproj",
       "bytes": 241,
-      "sha256": "d1e3214b440aa64305c6915e4aa920bf2d3cfe63c9c0a17075bab6ac0c190386",
-      "original_path": "src/AutomaticRegistration/AutomaticRegistration.csproj"
+      "sha256": "d1e3214b440aa64305c6915e4aa920bf2d3cfe63c9c0a17075bab6ac0c190386"
     },
     {
       "path": "src/AutomaticRegistration/AutomaticRegistrationService.cs",
       "bytes": 8206,
-      "sha256": "6135ab923a8fbb249803c7d9501871b6949b138baaef25c93e8ff65c519c6056",
-      "original_path": "src/AutomaticRegistration/AutomaticRegistrationService.cs"
+      "sha256": "6135ab923a8fbb249803c7d9501871b6949b138baaef25c93e8ff65c519c6056"
     },
     {
       "path": "src/AutomaticRegistration/ExportFinalizer.cs",
       "bytes": 3579,
-      "sha256": "7661ebbd1d406350626204e776cc2b2691ab264244a0995fa9f35a23b238c821",
-      "original_path": "src/AutomaticRegistration/ExportFinalizer.cs"
+      "sha256": "7661ebbd1d406350626204e776cc2b2691ab264244a0995fa9f35a23b238c821"
     },
     {
       "path": "src/AutomaticRegistration/Native.cs",
       "bytes": 4889,
-      "sha256": "58c3e07b54ee538d802af5ed6bffb92be7033c7aee381386328d8c315ca3349b",
-      "original_path": "src/AutomaticRegistration/Native.cs"
+      "sha256": "58c3e07b54ee538d802af5ed6bffb92be7033c7aee381386328d8c315ca3349b"
     },
     {
       "path": "src/AutomaticRegistration/packages.lock.json",
       "bytes": 3380,
-      "sha256": "12d86427d28d1c5e567bdaa10116994f6dad6f017b251bac23ffbf7157c90ba8",
-      "original_path": "src/AutomaticRegistration/packages.lock.json"
+      "sha256": "12d86427d28d1c5e567bdaa10116994f6dad6f017b251bac23ffbf7157c90ba8"
     },
     {
       "path": "src/Core/AutomaticExport.cs",
       "bytes": 865,
-      "sha256": "765e0fc9fb6dfffa2c4f15d05c348b0a0eeb4e94287ab1fa2a80a2ea1a3789aa",
-      "original_path": "src/Core/AutomaticExport.cs"
+      "sha256": "765e0fc9fb6dfffa2c4f15d05c348b0a0eeb4e94287ab1fa2a80a2ea1a3789aa"
     },
     {
       "path": "src/Core/BoxVolume.cs",
       "bytes": 1576,
-      "sha256": "34ac55ac792f824b4ed1a13df5604335e4d4804952cd60d4308342161a62b54d",
-      "original_path": "src/Core/BoxVolume.cs"
+      "sha256": "34ac55ac792f824b4ed1a13df5604335e4d4804952cd60d4308342161a62b54d"
     },
     {
       "path": "src/Core/Contract.cs",
       "bytes": 19045,
-      "sha256": "b007d6242bcc2367906e691282a7ec3549643cd473c36b598765ea6abc94cb34",
-      "original_path": "src/Core/Contract.cs"
+      "sha256": "b007d6242bcc2367906e691282a7ec3549643cd473c36b598765ea6abc94cb34"
     },
     {
       "path": "src/Core/ContractModels.cs",
       "bytes": 3965,
-      "sha256": "b5c913a2d182e1fd918c1b6106d34733dafdf981c0797ead41a9241c8406e6a2",
-      "original_path": "src/Core/ContractModels.cs"
+      "sha256": "b5c913a2d182e1fd918c1b6106d34733dafdf981c0797ead41a9241c8406e6a2"
     },
     {
       "path": "src/Core/Core.csproj",
       "bytes": 210,
-      "sha256": "f64c5a8cd1c1637618ec5e8c41b09b9ecf8407e945b996b52007bbdf56ea4e93",
-      "original_path": "src/Core/Core.csproj"
+      "sha256": "f64c5a8cd1c1637618ec5e8c41b09b9ecf8407e945b996b52007bbdf56ea4e93"
     },
     {
       "path": "src/Core/CreaseNormals.cs",
       "bytes": 1345,
-      "sha256": "6451fa38fcbc07aa37e9277b1eac4009c3db5b6b90a16d3793b15ae27b698273",
-      "original_path": "src/Core/CreaseNormals.cs"
+      "sha256": "6451fa38fcbc07aa37e9277b1eac4009c3db5b6b90a16d3793b15ae27b698273"
     },
     {
       "path": "src/Core/ExportVolume.cs",
       "bytes": 4639,
-      "sha256": "90b2a7b5fbc58bc0f9d60d7e4963b5530bdd664bc0fb2478644f537d71ccfc96",
-      "original_path": "src/Core/ExportVolume.cs"
+      "sha256": "90b2a7b5fbc58bc0f9d60d7e4963b5530bdd664bc0fb2478644f537d71ccfc96"
     },
     {
       "path": "src/Core/FeatureEdges.cs",
       "bytes": 1485,
-      "sha256": "3a811696f476bc475fd0df18a6d5b4b393ee274cfc5f5a367a9dff11e16bedc3",
-      "original_path": "src/Core/FeatureEdges.cs"
+      "sha256": "3a811696f476bc475fd0df18a6d5b4b393ee274cfc5f5a367a9dff11e16bedc3"
     },
     {
       "path": "src/Core/Geometry.cs",
       "bytes": 7488,
-      "sha256": "880042628904f5d8201bf277ca3f661ac52c6040ae88a2157e64a9ef34135f9f",
-      "original_path": "src/Core/Geometry.cs"
+      "sha256": "880042628904f5d8201bf277ca3f661ac52c6040ae88a2157e64a9ef34135f9f"
     },
     {
       "path": "src/Core/GlbBuilder.cs",
       "bytes": 11327,
-      "sha256": "c349ede6b4a9260ffd4ea9fcabfb5249795cb51469a6c79f04e4760567ebae77",
-      "original_path": "src/Core/GlbBuilder.cs"
+      "sha256": "c349ede6b4a9260ffd4ea9fcabfb5249795cb51469a6c79f04e4760567ebae77"
     },
     {
       "path": "src/Core/IndexedGeometry.cs",
       "bytes": 4446,
-      "sha256": "1e3358a3cd09c6810ddc16d36e79e8cb8986bdfb54f49a02e53ff28c16a1df22",
-      "original_path": "src/Core/IndexedGeometry.cs"
+      "sha256": "1e3358a3cd09c6810ddc16d36e79e8cb8986bdfb54f49a02e53ff28c16a1df22"
     },
     {
       "path": "src/Core/SceneLimits.cs",
       "bytes": 567,
-      "sha256": "9f723999436a934365b95c67362936384ab5d9755d0c296478c7b33528051979",
-      "original_path": "src/Core/SceneLimits.cs"
+      "sha256": "9f723999436a934365b95c67362936384ab5d9755d0c296478c7b33528051979"
     },
     {
       "path": "src/Core/SectionBoxDefaults.cs",
       "bytes": 1743,
-      "sha256": "057bcbcf123553da8f4e1cdb399f1297b73b0469a71f5c7a1be262a634b54bd5",
-      "original_path": "src/Core/SectionBoxDefaults.cs"
+      "sha256": "057bcbcf123553da8f4e1cdb399f1297b73b0469a71f5c7a1be262a634b54bd5"
     },
     {
       "path": "src/Core/SpoolSceneWriter.cs",
       "bytes": 10946,
-      "sha256": "9e89238bcd7a8efa805e595519989ea82eeba30278530ece5697db3700b21513",
-      "original_path": "src/Core/SpoolSceneWriter.cs"
+      "sha256": "9e89238bcd7a8efa805e595519989ea82eeba30278530ece5697db3700b21513"
     },
     {
       "path": "src/Core/packages.lock.json",
       "bytes": 3316,
-      "sha256": "c2fde38292ed0b59cf7bc0e00bbeff9e0cc930b7c4a19cd3212d2f3b280b63a5",
-      "original_path": "src/Core/packages.lock.json"
+      "sha256": "c2fde38292ed0b59cf7bc0e00bbeff9e0cc930b7c4a19cd3212d2f3b280b63a5"
     },
     {
       "path": "src/Packaging/Packaging.csproj",
       "bytes": 243,
-      "sha256": "583b0f42196a1f349484f045879dc95d3cf65687a4ccdb8735d39cdf953f0ebd",
-      "original_path": "src/Packaging/Packaging.csproj"
+      "sha256": "583b0f42196a1f349484f045879dc95d3cf65687a4ccdb8735d39cdf953f0ebd"
     },
     {
       "path": "src/Packaging/PdfPackage.cs",
       "bytes": 10045,
-      "sha256": "184b501e9d1f1a7213c9bf5eb8ed2c48984727e2f12fd88de5402f898341d7b4",
-      "original_path": "src/Packaging/PdfPackage.cs"
+      "sha256": "184b501e9d1f1a7213c9bf5eb8ed2c48984727e2f12fd88de5402f898341d7b4"
     },
     {
       "path": "src/Packaging/packages.lock.json",
       "bytes": 3252,
-      "sha256": "b9abc171591332e1a6d0f8d5e10bb701286e166ae06bc10f74ac94bab3c3ab3b",
-      "original_path": "src/Packaging/packages.lock.json"
+      "sha256": "b9abc171591332e1a6d0f8d5e10bb701286e166ae06bc10f74ac94bab3c3ab3b"
     },
     {
       "path": "src/RevitExporter/AutomaticPlanChoice.cs",
       "bytes": 487,
-      "sha256": "fc2c242ec6dc6127ea2f6dffe5dac2d8d06ba959439d96ff5714f7c1d37632ae",
-      "original_path": "src/RevitExporter/AutomaticPlanChoice.cs"
+      "sha256": "fc2c242ec6dc6127ea2f6dffe5dac2d8d06ba959439d96ff5714f7c1d37632ae"
+    },
+    {
+      "path": "src/RevitExporter/Collection/ExportStatistics.cs",
+      "bytes": 4966,
+      "sha256": "dc9f05ce7563fc4a1d146cd224ffecd8b9ce3736d5ce5b29195be1aaaba06d7a"
+    },
+    {
+      "path": "src/RevitExporter/Collection/ExportText.cs",
+      "bytes": 1336,
+      "sha256": "141b9ccb4fad14fa644c2ea35be1b54cef8e6bb5cf42444a63225cb4b7012fc4"
+    },
+    {
+      "path": "src/RevitExporter/Collection/FeatureEdgeBuilder.cs",
+      "bytes": 3407,
+      "sha256": "18f6fd76499a76ec05b9c0513191e11229716efb76a530da0b6a6b3b9832f9d8"
+    },
+    {
+      "path": "src/RevitExporter/Collection/GeometryStream.cs",
+      "bytes": 21586,
+      "sha256": "022ac8d02b717a4de850e5e6704cca70e06039df8a85f2c18b77f0e6e03c6e24"
+    },
+    {
+      "path": "src/RevitExporter/Collection/KeyHashing.cs",
+      "bytes": 903,
+      "sha256": "c9e905ca49f6e64acab959325e5bb824e375cc5f38751ad1910df056e2670e4d"
+    },
+    {
+      "path": "src/RevitExporter/Collection/MeshBuilder.cs",
+      "bytes": 6870,
+      "sha256": "99edfd2491a83928488885de4b93c31794e0f40b0211b5fcc3b9a72b912f3138"
+    },
+    {
+      "path": "src/RevitExporter/Collection/SceneWriter.cs",
+      "bytes": 34811,
+      "sha256": "2065d6dacee2b40791597ad52e8668ed2805935aaef9b00deaaf01ace318c999"
     },
     {
       "path": "src/RevitExporter/CropClipper.cs",
       "bytes": 9279,
-      "sha256": "8e7b58c906ad7ac9b5f67b14b6ad43e7a37f71144449d4bc9935b2e581fafdb8",
-      "original_path": "src/RevitExporter/CropClipper.cs"
+      "sha256": "8e7b58c906ad7ac9b5f67b14b6ad43e7a37f71144449d4bc9935b2e581fafdb8"
     },
     {
       "path": "src/RevitExporter/ExportCommand.cs",
-      "bytes": 21640,
-      "sha256": "f7e1d48544e491c0c50f659ffdef570abe06859e8ca78ddb211a622992bf012c",
-      "original_path": "src/RevitExporter/ExportCommand.cs"
+      "bytes": 31610,
+      "sha256": "c65c9b507cab56536d996be3808beb704e7f34e53f01d2c78692cbbeb47c36b6"
     },
     {
-      "path": "src/RevitExporter/ExportPreviewDialog.cs",
-      "bytes": 13543,
-      "sha256": "b56674aca8e4c70632f83602c19d1acf25ee11669e4c61727db7bb7be2c1b88e",
-      "original_path": "src/RevitExporter/ExportPreviewDialog.cs"
+      "path": "src/RevitExporter/ExportOptionsDialog.cs",
+      "bytes": 28823,
+      "sha256": "d404bb6bad9198bd02064a31d42d5bf885ed91e8e3884b06aec29a1f554c726b"
     },
     {
       "path": "src/RevitExporter/ExportProgressDialog.cs",
-      "bytes": 6220,
-      "sha256": "bd04a65beb9a58973b8fed5926b850d7077ebeff793e915ad77239ee5d604b4d",
-      "original_path": "src/RevitExporter/ExportProgressDialog.cs"
+      "bytes": 7700,
+      "sha256": "86735b219afae0d4f9ba53033a3847694d8259091ce2a2b996b8c003760a2768"
     },
     {
       "path": "src/RevitExporter/ExportRegions.cs",
       "bytes": 6776,
-      "sha256": "f1c33587c39469edb6dc03833dedfa736398adb5c94e6f0e51419b1147ffc38a",
-      "original_path": "src/RevitExporter/ExportRegions.cs"
+      "sha256": "f1c33587c39469edb6dc03833dedfa736398adb5c94e6f0e51419b1147ffc38a"
     },
     {
       "path": "src/RevitExporter/ExportScope.cs",
       "bytes": 2297,
-      "sha256": "06af1efe0ca2e377f04733f12ff152cbc2905e35b776e38a3ff060573bd8eb9f",
-      "original_path": "src/RevitExporter/ExportScope.cs"
+      "sha256": "06af1efe0ca2e377f04733f12ff152cbc2905e35b776e38a3ff060573bd8eb9f"
     },
     {
       "path": "src/RevitExporter/ExportTarget.cs",
       "bytes": 7202,
-      "sha256": "5263d90a2f8e9dd1bc751a7f4208f9d2b55c11b3c400b2a444e0f744439d7d60",
-      "original_path": "src/RevitExporter/ExportTarget.cs"
+      "sha256": "5263d90a2f8e9dd1bc751a7f4208f9d2b55c11b3c400b2a444e0f744439d7d60"
+    },
+    {
+      "path": "src/RevitExporter/ExportTrace.cs",
+      "bytes": 4210,
+      "sha256": "72278d8de8fe968dc45644e49e2957c6b3f8f0e7cec34a60e7fcaf735865ec5b"
     },
     {
       "path": "src/RevitExporter/ExportWireJson.cs",
       "bytes": 8559,
-      "sha256": "37f716601d19fc1537fe8ae4e470d3362e43dbe8c7cee81da852547299f8c5f6",
-      "original_path": "src/RevitExporter/ExportWireJson.cs"
+      "sha256": "37f716601d19fc1537fe8ae4e470d3362e43dbe8c7cee81da852547299f8c5f6"
     },
     {
       "path": "src/RevitExporter/LinkOverrideTransfer.cs",
       "bytes": 3325,
-      "sha256": "9145cbd618045b75e8594dfe705d97ae08685718287df4aaf3396e87a0899368",
-      "original_path": "src/RevitExporter/LinkOverrideTransfer.cs"
+      "sha256": "9145cbd618045b75e8594dfe705d97ae08685718287df4aaf3396e87a0899368"
     },
     {
-      "path": "src/RevitExporter/MeshContext.cs",
-      "bytes": 12381,
-      "sha256": "270b288b517442c3aa9bf8a4d816d154651af5416312e9511f199c9503eb195d",
-      "original_path": "src/RevitExporter/MeshContext.cs"
+      "path": "src/RevitExporter/NativeWindows.cs",
+      "bytes": 1434,
+      "sha256": "860bb77524db44e7745c3f7fc3eb6c4c661dcefea4259c969724acab4b3fd8a2"
     },
     {
       "path": "src/RevitExporter/PreviewFraming.cs",
       "bytes": 4138,
-      "sha256": "9d4723c9f189298d6cc86e42599c94045d271f41143c7eacaf9282497e38ef1d",
-      "original_path": "src/RevitExporter/PreviewFraming.cs"
+      "sha256": "9d4723c9f189298d6cc86e42599c94045d271f41143c7eacaf9282497e38ef1d"
     },
     {
       "path": "src/RevitExporter/PreviewImageFiles.cs",
       "bytes": 749,
-      "sha256": "8acbb48800c1b94963638a73449d763f00bb2a6a946e3b0e0b5e199eb43e0d7c",
-      "original_path": "src/RevitExporter/PreviewImageFiles.cs"
+      "sha256": "8acbb48800c1b94963638a73449d763f00bb2a6a946e3b0e0b5e199eb43e0d7c"
     },
     {
       "path": "src/RevitExporter/RevitExporter.csproj",
-      "bytes": 3344,
-      "sha256": "2e7f78eedd8b175b334993e8c4bec601fc10f2c6a1b1e5597e4fccf0ad332e13",
-      "original_path": "src/RevitExporter/RevitExporter.csproj"
+      "bytes": 3235,
+      "sha256": "d754842f182471e05e40ef2cfb363c6868b64a51e5cd651b6ba208146c3b812c"
+    },
+    {
+      "path": "src/RevitExporter/RevitGeometryContext.cs",
+      "bytes": 13766,
+      "sha256": "3338002dafef50a60e61b7f92c678ba430f3f652063460ac7c0ca7c755c7fedc"
     },
     {
       "path": "src/RevitExporter/RibbonApplication.cs",
-      "bytes": 1201,
-      "sha256": "51614bd7e5f7c0a1921de02522dcb10dbe088c859fddccd4a4cfe2aa1aa1f2ae",
-      "original_path": "src/RevitExporter/RibbonApplication.cs"
+      "bytes": 1253,
+      "sha256": "960e17dc3280047d341748bb5393d2b97fce73abb76396e2fe1c269d651c931a"
     },
     {
       "path": "src/RevitExporter/SheetBounds.cs",
       "bytes": 860,
-      "sha256": "7cc501d90d6a38a8691d178ecf59320cc2c1682e0bb3486349e7040a7e2b323e",
-      "original_path": "src/RevitExporter/SheetBounds.cs"
+      "sha256": "7cc501d90d6a38a8691d178ecf59320cc2c1682e0bb3486349e7040a7e2b323e"
     },
     {
       "path": "tests/CropExportTests/CropExportTests.csproj",
       "bytes": 304,
-      "sha256": "c58302adc460029c61ddba329c68bde1ea952fb9eb0e20bc43824d7daca36eff",
-      "original_path": "tests/CropExportTests/CropExportTests.csproj"
+      "sha256": "c58302adc460029c61ddba329c68bde1ea952fb9eb0e20bc43824d7daca36eff"
     },
     {
       "path": "tests/CropExportTests/Program.cs",
       "bytes": 5373,
-      "sha256": "ab52be47848ca0644acc4a096391ce3759b1873779c9a71e183b7bc0af3b1197",
-      "original_path": "tests/CropExportTests/Program.cs"
+      "sha256": "ab52be47848ca0644acc4a096391ce3759b1873779c9a71e183b7bc0af3b1197"
     },
     {
       "path": "tests/CropExportTests/packages.lock.json",
       "bytes": 404,
-      "sha256": "92177bd0521252e8bb5ecab006b6e77801fc4fdcbfcc26d6e8af3d742e44830f",
-      "original_path": "tests/CropExportTests/packages.lock.json"
+      "sha256": "92177bd0521252e8bb5ecab006b6e77801fc4fdcbfcc26d6e8af3d742e44830f"
+    },
+    {
+      "path": "tests/DialogHarness/DialogHarness.csproj",
+      "bytes": 769,
+      "sha256": "c359d9f0ebd6d3131b1c5fdd4e3e93549b36c57e9869b56ecef506921b54502d"
+    },
+    {
+      "path": "tests/DialogHarness/Program.cs",
+      "bytes": 4617,
+      "sha256": "c872edfb14b96059795f4da458f15af154590707bd75d8a741ff1a149d0da404"
     },
     {
       "path": "tests/ExportScopeTests/ExportScopeTests.csproj",
       "bytes": 392,
-      "sha256": "14bf645a80e7de9f7a06c100bb968e8003d49bb6080c0d1b6c4aeff3edeec80a",
-      "original_path": "tests/ExportScopeTests/ExportScopeTests.csproj"
+      "sha256": "14bf645a80e7de9f7a06c100bb968e8003d49bb6080c0d1b6c4aeff3edeec80a"
     },
     {
       "path": "tests/ExportScopeTests/Program.cs",
       "bytes": 5860,
-      "sha256": "bb10894b07fd127f502dec5a29faa99d5240c4aa4f08bd9a9dc6c98161d04d89",
-      "original_path": "tests/ExportScopeTests/Program.cs"
+      "sha256": "bb10894b07fd127f502dec5a29faa99d5240c4aa4f08bd9a9dc6c98161d04d89"
     },
     {
       "path": "tests/ExportScopeTests/build-results.txt",
       "bytes": 706,
-      "sha256": "004c263c7dfb4d0777d7234fc8cbbebf53596453918bc6cc5b1ccc5cb4914afa",
-      "original_path": "tests/ExportScopeTests/build-results.txt"
+      "sha256": "004c263c7dfb4d0777d7234fc8cbbebf53596453918bc6cc5b1ccc5cb4914afa"
     },
     {
       "path": "tests/ExportScopeTests/packages.lock.json",
       "bytes": 60,
-      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c",
-      "original_path": "tests/ExportScopeTests/packages.lock.json"
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
     },
     {
       "path": "tests/ExportScopeTests/test-results.txt",
       "bytes": 603,
-      "sha256": "f086240305e5add89fc08f9bb2e29c15c1218c139bd9a651f748c73207683982",
-      "original_path": "tests/ExportScopeTests/test-results.txt"
+      "sha256": "f086240305e5add89fc08f9bb2e29c15c1218c139bd9a651f748c73207683982"
     },
     {
       "path": "tests/ExportWireFixture/ExportWireFixture.csproj",
       "bytes": 986,
-      "sha256": "15016f230131501ec93063efe232eb0e3c8dd60ac375ad1720ca6ec1d53d187b",
-      "original_path": "tests/ExportWireFixture/ExportWireFixture.csproj"
+      "sha256": "15016f230131501ec93063efe232eb0e3c8dd60ac375ad1720ca6ec1d53d187b"
     },
     {
       "path": "tests/ExportWireFixture/packages.lock.json",
       "bytes": 60,
-      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c",
-      "original_path": "tests/ExportWireFixture/packages.lock.json"
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
     },
     {
       "path": "tests/ExportWireInterop/ExportWireInterop.csproj",
       "bytes": 323,
-      "sha256": "2b6710c07dfffd6829b817418d0535965812c6ccae29bbaaf291b043c54dcc2f",
-      "original_path": "tests/ExportWireInterop/ExportWireInterop.csproj"
+      "sha256": "2b6710c07dfffd6829b817418d0535965812c6ccae29bbaaf291b043c54dcc2f"
     },
     {
       "path": "tests/ExportWireInterop/Program.cs",
       "bytes": 6102,
-      "sha256": "5e951fee860893fd4336524a50c427b7ecc37ad099ca41e794caa0973d2746d4",
-      "original_path": "tests/ExportWireInterop/Program.cs"
+      "sha256": "5e951fee860893fd4336524a50c427b7ecc37ad099ca41e794caa0973d2746d4"
     },
     {
       "path": "tests/ExportWireInterop/packages.lock.json",
       "bytes": 3187,
-      "sha256": "494c90de3f278f0e0f746eba97ca2d726f625d9cb58a3d721d11a843f0a8dabd",
-      "original_path": "tests/ExportWireInterop/packages.lock.json"
+      "sha256": "494c90de3f278f0e0f746eba97ca2d726f625d9cb58a3d721d11a843f0a8dabd"
     },
     {
       "path": "tests/ExportWireWriterTests/ExportWireWriterTests.csproj",
       "bytes": 254,
-      "sha256": "208f02dc2b5ca9513c038bd70a8b1365230d66843857850d383d8a9a63bd60c5",
-      "original_path": "tests/ExportWireWriterTests/ExportWireWriterTests.csproj"
+      "sha256": "208f02dc2b5ca9513c038bd70a8b1365230d66843857850d383d8a9a63bd60c5"
     },
     {
       "path": "tests/ExportWireWriterTests/Program.cs",
       "bytes": 5147,
-      "sha256": "08a25db6eebd7c1fa7b66c6884a500e8aad6c10e1ed1dd06bf794c6483892276",
-      "original_path": "tests/ExportWireWriterTests/Program.cs"
+      "sha256": "08a25db6eebd7c1fa7b66c6884a500e8aad6c10e1ed1dd06bf794c6483892276"
     },
     {
       "path": "tests/ExportWireWriterTests/packages.lock.json",
       "bytes": 60,
-      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c",
-      "original_path": "tests/ExportWireWriterTests/packages.lock.json"
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
+    },
+    {
+      "path": "tests/ExporterAssemblyAudit/ExporterAssemblyAudit.csproj",
+      "bytes": 144,
+      "sha256": "9087472c99918ef9c0d32dbe1d3db870d6f454293e00d4d6735c18a02fbe6d4c"
+    },
+    {
+      "path": "tests/ExporterAssemblyAudit/Program.cs",
+      "bytes": 5295,
+      "sha256": "a8e6ee72717b74e427c0c84aa1ce8e6b29d7a3d6456aed85ee08c3e67e9fcc02"
+    },
+    {
+      "path": "tests/ExporterAssemblyAudit/packages.lock.json",
+      "bytes": 60,
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
+    },
+    {
+      "path": "tests/ExporterCoreFixture/ExporterCoreFixture.csproj",
+      "bytes": 1239,
+      "sha256": "ffc85fc2f4c4a04f45d84c58abc5d85d730ea32b219ae64f1a7e4b2a1a90c81d"
+    },
+    {
+      "path": "tests/ExporterCoreFixture/packages.lock.json",
+      "bytes": 60,
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
+    },
+    {
+      "path": "tests/ExporterCoreTests/ExporterCoreTests.csproj",
+      "bytes": 639,
+      "sha256": "5131b26383ebe7d4f489893e7f940445e165379f26a69234264c42580463f3e2"
+    },
+    {
+      "path": "tests/ExporterCoreTests/Program.cs",
+      "bytes": 37670,
+      "sha256": "5effe5b91695283c945454d312f775876a99817b4c016896cb1a8443b79604a0"
+    },
+    {
+      "path": "tests/ExporterCoreTests/Sim.cs",
+      "bytes": 3459,
+      "sha256": "3d496426684a00b9c84d740c1cac368ac89ec1dc0afa3eb712d86da774a21bfb"
+    },
+    {
+      "path": "tests/ExporterCoreTests/packages.lock.json",
+      "bytes": 3189,
+      "sha256": "3f6523b6413c59133855fe55abea0cf273969e3398be3bc049cf3bc4f52525b7"
     },
     {
       "path": "tests/ExporterRegression/ExporterRegression.csproj",
       "bytes": 264,
-      "sha256": "1c1ffe6d6ed4d31e25cb860ce59a9407484cf131cd568dc10f00c6fce895adf8",
-      "original_path": "tests/ExporterRegression/ExporterRegression.csproj"
+      "sha256": "1c1ffe6d6ed4d31e25cb860ce59a9407484cf131cd568dc10f00c6fce895adf8"
     },
     {
       "path": "tests/ExporterRegression/Program.cs",
       "bytes": 1276,
-      "sha256": "14d9da3ecb42984ee60b8b1596d4cef67a639203caae203e7b61a5ef71562ebe",
-      "original_path": "tests/ExporterRegression/Program.cs"
+      "sha256": "14d9da3ecb42984ee60b8b1596d4cef67a639203caae203e7b61a5ef71562ebe"
     },
     {
       "path": "tests/ExporterRegression/packages.lock.json",
       "bytes": 60,
-      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c",
-      "original_path": "tests/ExporterRegression/packages.lock.json"
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
     },
     {
       "path": "tests/LargeResourceTests/LargeResourceTests.csproj",
       "bytes": 416,
-      "sha256": "5920f2b4bfac26c1a10c9fed08b5198fae4470ad68cc6af559128ff14fce5902",
-      "original_path": "tests/LargeResourceTests/LargeResourceTests.csproj"
+      "sha256": "5920f2b4bfac26c1a10c9fed08b5198fae4470ad68cc6af559128ff14fce5902"
     },
     {
       "path": "tests/LargeResourceTests/Program.cs",
       "bytes": 7220,
-      "sha256": "e7f522bc3395b0bfe3201febe768547b98b8311c12b5bd0264a66251b6425c84",
-      "original_path": "tests/LargeResourceTests/Program.cs"
+      "sha256": "e7f522bc3395b0bfe3201febe768547b98b8311c12b5bd0264a66251b6425c84"
     },
     {
       "path": "tests/LargeResourceTests/packages.lock.json",
       "bytes": 3187,
-      "sha256": "494c90de3f278f0e0f746eba97ca2d726f625d9cb58a3d721d11a843f0a8dabd",
-      "original_path": "tests/LargeResourceTests/packages.lock.json"
+      "sha256": "494c90de3f278f0e0f746eba97ca2d726f625d9cb58a3d721d11a843f0a8dabd"
     },
     {
       "path": "tests/LargeSceneTests/LargeSceneTests.csproj",
       "bytes": 223,
-      "sha256": "ea862644c1135c9117f37f62bdbc6af1167b364157a3a86fe18d30e1f452a1c3",
-      "original_path": "tests/LargeSceneTests/LargeSceneTests.csproj"
+      "sha256": "ea862644c1135c9117f37f62bdbc6af1167b364157a3a86fe18d30e1f452a1c3"
     },
     {
       "path": "tests/LargeSceneTests/Program.cs",
       "bytes": 10951,
-      "sha256": "567af33d3fecd71c9747eeda36522d410e491120a5b475e7ea167867023a68a8",
-      "original_path": "tests/LargeSceneTests/Program.cs"
+      "sha256": "567af33d3fecd71c9747eeda36522d410e491120a5b475e7ea167867023a68a8"
     },
     {
       "path": "tests/LargeSceneTests/packages.lock.json",
       "bytes": 404,
-      "sha256": "92177bd0521252e8bb5ecab006b6e77801fc4fdcbfcc26d6e8af3d742e44830f",
-      "original_path": "tests/LargeSceneTests/packages.lock.json"
+      "sha256": "92177bd0521252e8bb5ecab006b6e77801fc4fdcbfcc26d6e8af3d742e44830f"
     },
     {
       "path": "tests/LinkOverrideTests/LinkOverrideTests.csproj",
       "bytes": 266,
-      "sha256": "dedf7583666b71ff2aa5123474b44c2f76c4e7892507f1e7fc722e815990b671",
-      "original_path": "tests/LinkOverrideTests/LinkOverrideTests.csproj"
+      "sha256": "dedf7583666b71ff2aa5123474b44c2f76c4e7892507f1e7fc722e815990b671"
     },
     {
       "path": "tests/LinkOverrideTests/Program.cs",
       "bytes": 3585,
-      "sha256": "4afcfdd9a9f67ccbc76791822a5cac392a23b44cb93cf7c50dc17e8f5ed46fa5",
-      "original_path": "tests/LinkOverrideTests/Program.cs"
+      "sha256": "4afcfdd9a9f67ccbc76791822a5cac392a23b44cb93cf7c50dc17e8f5ed46fa5"
     },
     {
       "path": "tests/LinkOverrideTests/Stubs.cs",
       "bytes": 1581,
-      "sha256": "53a43c4e04bf37743170b04e08a831115f7cad9f8ce15cef62ee892a20f43909",
-      "original_path": "tests/LinkOverrideTests/Stubs.cs"
+      "sha256": "53a43c4e04bf37743170b04e08a831115f7cad9f8ce15cef62ee892a20f43909"
     },
     {
       "path": "tests/LinkOverrideTests/packages.lock.json",
       "bytes": 60,
-      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c",
-      "original_path": "tests/LinkOverrideTests/packages.lock.json"
-    },
-    {
-      "path": "EXPORTER_CODE_FOR_CHAT.txt",
-      "bytes": 200911,
-      "sha256": "e50c5904335444feeaafc8240be2eb12b4e6120e65815d9a5a094f0006949a29",
-      "original_path": null
+      "sha256": "22308ad23ccd417b5d96020fb92e203b85fad8c3788b3feadb2ca403d8ad596c"
     }
   ]
 }

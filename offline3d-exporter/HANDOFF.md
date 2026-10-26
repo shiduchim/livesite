@@ -1,24 +1,39 @@
-# Revit exporter source — v0.5.2
+# Revit exporter source: 0.5.3
 
-Give this archive to Claude for focused exporter work. Start with CLAUDE_PROMPT.txt, HISTORY_AND_RESULTS.md and CURRENT_CONTRACT.md. Latest feedback: preview now works; its separate build popup and oversized scrolling options need improvement.
+Start with [CHANGES-0.5.3.md](CHANGES-0.5.3.md), which has the diagnosis, the changes and the measurements. Then read [ACCEPTANCE-TEST.md](ACCEPTANCE-TEST.md), the steps that only Revit can confirm. Background is in HISTORY_AND_RESULTS.md, CURRENT_CONTRACT.md and the original CLAUDE_PROMPT.txt.
 
-The original application source is copied without edits. The reader UI is excluded. Shared geometry/contract and PDF finalizer libraries are included so Claude can review the compatibility boundary and run portable tests. These duplicate the matching files in the reader archive intentionally.
+**Status.** 0.5.3 is cross-built for all six variants and covered by automated tests. It has not run inside Revit yet. The reader (PDFReader_Source_v0.5.2) is unchanged and remains the reference. The exporter still needs the installed viewer helper (`Viewer/Offline3D.FastPDF.Dev.exe`) to finalise PDFs.
 
-The exporter still needs the installed viewer helper to finalize PDFs. This source archive is not an installer or a standalone replacement application. Keep the two extracted archives in separate sibling folders; do not flatten their paths.
+## Where things are
 
-Entry project: src/RevitExporter/RevitExporter.csproj. Main flow: ExportCommand.cs, MeshContext.cs, ExportRegions.cs, ExportPreviewDialog.cs, ExportProgressDialog.cs, PreviewFraming.cs, ExportTarget.cs and ExportScope.cs. Shared writer: src/Core/SpoolSceneWriter.cs.
+- **Entry project:** `src/RevitExporter/RevitExporter.csproj`.
+- **Main flow:** `ExportCommand.cs`.
+- **Revit callbacks:** `RevitGeometryContext.cs`, which feeds `Collection/GeometryStream.cs`.
+- **Revit-independent core in `Collection/`:**
+  - geometry stream (links, instances, crop selection, instance reuse);
+  - mesh builder;
+  - scene writer (GLB, sharing, merging, reader limits);
+  - feature edges;
+  - statistics.
+- **UI:**
+  - `ExportOptionsDialog.cs` (options plus the in-dialog preview);
+  - `ExportProgressDialog.cs`.
+- **Unchanged from 0.5.2:**
+  - region and registration math in `ExportRegions.cs`, `ExportScope.cs` and `CropClipper.cs`;
+  - `ExportTarget.cs` and `PreviewFraming.cs`;
+  - `LinkOverrideTransfer.cs` and the wire JSON writer.
+- **Shared libraries:** `src/Core`, `src/Packaging` and `src/AutomaticRegistration` are unchanged copies of the reader's files. The Revit DLL links only pure files from `src/Core`, with no Core.dll or JSON package.
 
-## Developer verification for Claude
+## Build and test (developer machine; .NET 10 SDK plus the .NET 8 runtime; no Revit needed)
 
-.NET 10 SDK with NuGet access is sufficient for cross-compilation; licensed Revit is needed to execute the plugin. Build examples (for Claude, not end-user installation):
+    build/build-exporters.sh out/exporters                  # six variants
+    build/package-update.sh out                             # drop-in update ZIP for a 0.5.2 install
+    dotnet run --project tests/ExporterCoreTests -c Release  # 23 core checks (simulated Revit callbacks)
+    dotnet run --project tests/ExporterAssemblyAudit -c Release -- out/exporters   # 150 metadata checks
+    dotnet run --project tests/CropExportTests -c Release    # plus the other original suites
 
-    dotnet build src/RevitExporter/RevitExporter.csproj -c Release -p:RevitYear=2024 -p:RestoreLockedMode=false
-    dotnet build src/RevitExporter/RevitExporter.csproj -c Release -p:RevitYear=2026 -p:RestoreLockedMode=false
-    dotnet build src/RevitExporter/RevitExporter.csproj -c Release -p:RevitYear=2026 -p:RevitHostFramework=net10.0-windows -p:RestoreLockedMode=false
-    dotnet run --project tests/CropExportTests -c Release
-    dotnet run --project tests/LargeSceneTests -c Release
-    dotnet run --project tests/ExportWireInterop -c Release
+- **Dialog screenshots without Revit:** publish `tests/DialogHarness` for win-x64 and run it on Windows, or under Wine.
+- **Local Revit API:** `-p:RevitApiDir=…` builds against a locally installed Revit API instead of the pinned reference packages.
+- **Not included:** Autodesk runtime DLLs, user RVT files.
 
-Portable tests target .NET 8 and need its runtime as well. Other target years are 2025 and 2027. RevitApiDir may select a locally installed API instead of pinned build references. No Autodesk runtime DLLs, credentials, user RVT files or generated application binaries are included.
-
-SOURCE_MANIFEST.json records original paths and hashes. Original test results are in evidence/. Installer scripts in reference-only/ are combined-package examples, not usable split installers. EXPORTER_CODE_FOR_CHAT.txt concatenates the exporter and shared boundary source for a chat interface that cannot unpack archives; actual project files are authoritative.
+SOURCE_MANIFEST.json lists the 0.5.3 files and their hashes. `evidence/` holds the original v0.5.2 results together with the new `v053-*` results and dialog screenshots. Installer scripts in `reference-only/` are the original combined-package examples.

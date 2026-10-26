@@ -1,0 +1,27 @@
+== DPI 96 (Wine 9, .NET 8 WinForms, substitute fonts)
+01-initial: size {Width=1080, Height=700}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+02-rendering: size {Width=1080, Height=700}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+03-preview-ready: size {Width=1080, Height=700}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+04-options-changed: size {Width=1080, Height=700}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+05-narrow: size {Width=640, Height=760}, DPI 96, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+06-short: size {Width=980, Height=470}, DPI 96, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+Outcome: Cancel
+07-progress: size {Width=526, Height=252}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+== DPI 144 (Wine 9, .NET 8 WinForms, substitute fonts)
+01-initial: size {Width=1620, Height=1032}, DPI 144, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+02-rendering: size {Width=1620, Height=1032}, DPI 144, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+03-preview-ready: size {Width=1620, Height=1032}, DPI 144, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+04-options-changed: size {Width=1620, Height=1032}, DPI 144, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+05-narrow: size {Width=960, Height=1094}, DPI 144, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+06-short: size {Width=1470, Height=705}, DPI 144, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+Outcome: Cancel
+07-progress: size {Width=786, Height=375}, DPI 144, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+== DPI 192 (Wine 9, .NET 8 WinForms, substitute fonts)
+01-initial: size {Width=1856, Height=1016}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+02-rendering: size {Width=1856, Height=1016}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+03-preview-ready: size {Width=1856, Height=1016}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+04-options-changed: size {Width=1856, Height=1016}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+05-narrow: size {Width=1280, Height=1094}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+06-short: size {Width=1934, Height=940}, DPI 192, horizontal scrollbar False, vertical scrollbar True, buttons outside the window: []
+Outcome: Cancel
+07-progress: size {Width=1046, Height=497}, DPI 192, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []

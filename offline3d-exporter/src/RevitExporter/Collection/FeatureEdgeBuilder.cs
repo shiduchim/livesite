@@ -16,7 +16,7 @@ internal static class FeatureEdgeBuilder
         public PositionKey(float px, float py, float pz) { x = BitConverter.DoubleToInt64Bits(px); y = BitConverter.DoubleToInt64Bits(py); z = BitConverter.DoubleToInt64Bits(pz); }
         public bool Equals(PositionKey o) => x == o.x && y == o.y && z == o.z;
         public override bool Equals(object? o) => o is PositionKey k && Equals(k);
-        public override int GetHashCode() { unchecked { return ((x.GetHashCode() * 397) ^ y.GetHashCode()) * 397 ^ z.GetHashCode(); } }
+        public override int GetHashCode() => PackedKeyComparer.Mix(PackedKeyComparer.Mix(PackedKeyComparer.Mix(0, (ulong)x), (ulong)y), (ulong)z);
     }
 
     public static uint[] Build(float[] positions, uint[] indices)
@@ -30,7 +30,8 @@ internal static class FeatureEdgeBuilder
             if (!canonical.TryGetValue(key, out ids[i])) { ids[i] = (uint)canonical.Count; canonical.Add(key, ids[i]); }
         }
         var edges = new List<Edge>();
-        var lookup = new Dictionary<ulong, int>();
+        // Edge keys pack two vertex numbers; see PackedKeyComparer (v0.5.2 was quadratic here).
+        var lookup = new Dictionary<ulong, int>(indices.Length, PackedKeyComparer.Instance);
         double cosine = Math.Cos(Math.PI / 6);
         for (int i = 0; i < indices.Length; i += 3)
         {

@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Autodesk.Revit.DB;
 
 namespace Offline3D.RevitExporter;
@@ -9,6 +10,11 @@ namespace Offline3D.RevitExporter;
 /// stacks, crop selection, instance reuse, batching) lives there and is tested
 /// without Revit. Runs only on Revit's API thread; progress is pumped between
 /// callbacks, never from another thread.
+///
+/// No exception is allowed to cross back into Revit's native export loop
+/// (Revit may rewrap it and lose the message). A failure or cancel is stored,
+/// Revit is asked to stop through <see cref="IsCanceled"/>, and
+/// <see cref="ThrowIfStopped"/> rethrows the original after Export returns.
 /// </summary>
 internal sealed class RevitGeometryContext : IExportContext
 {
@@ -22,6 +28,7 @@ internal sealed class RevitGeometryContext : IExportContext
     private string? pendingLinkKey;
     private long elementCallbacks;
 
+    public Exception? Failure { get; private set; }
     public int SymbolIdFailures { get; private set; }
     public int MaterialFailures { get; private set; }
     public ExportStatistics Stats => stream.Stats;
@@ -33,14 +40,33 @@ internal sealed class RevitGeometryContext : IExportContext
 
     private Document CurrentDocument => (Document)stream.CurrentDocument!;
 
-    public bool Start() => !progress.CancelRequested;
+    private bool Stopped => Failure != null || progress.CancelRequested;
+
+    /// <summary>Call after CustomExporter.Export: rethrows a stored failure, or
+    /// reports a cancel that stopped the export early.</summary>
+    public void ThrowIfStopped()
+    {
+        if (Failure != null) ExceptionDispatchInfo.Capture(Failure).Throw();
+        if (progress.CancelRequested) throw new OperationCanceledException("Export cancelled");
+    }
+
+    private void Fail(Exception ex) { if (Failure == null) { Failure = ex; trace.Line("Stopping the Revit export: " + ex.GetType().Name + ": " + ex.Message); } }
+
+    public bool Start() => !Stopped;
     public void Finish() { }
-    public bool IsCanceled() => progress.CancelRequested;
+    public bool IsCanceled() => Stopped;
 
     public RenderNodeAction OnViewBegin(ViewNode node) { node.LevelOfDetail = levelOfDetail; return RenderNodeAction.Proceed; }
     public void OnViewEnd(ElementId elementId) { }
 
     public RenderNodeAction OnElementBegin(ElementId elementId)
+    {
+        if (Stopped) return RenderNodeAction.Skip;
+        try { return BeginElement(elementId); }
+        catch (Exception ex) { Fail(ex); return RenderNodeAction.Skip; }
+    }
+
+    private RenderNodeAction BeginElement(ElementId elementId)
     {
         var doc = CurrentDocument;
         var element = doc.GetElement(elementId);
@@ -75,31 +101,41 @@ internal sealed class RevitGeometryContext : IExportContext
         return proceed ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
     }
 
-    public void OnElementEnd(ElementId elementId) => stream.EndElement();
+    public void OnElementEnd(ElementId elementId) { if (Stopped) return; try { stream.EndElement(); } catch (Exception ex) { Fail(ex); } }
 
     public RenderNodeAction OnInstanceBegin(InstanceNode node)
     {
-        string? symbol = null;
-        try { symbol = node.GetSymbolGeometryId()?.AsUniqueIdentifier(); }
-        catch (Autodesk.Revit.Exceptions.ApplicationException) { SymbolIdFailures++; }
-        return stream.BeginInstance(Adapter.Matrix(node.GetTransform()), symbol) ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
+        if (Stopped) return RenderNodeAction.Skip;
+        try
+        {
+            string? symbol = null;
+            try { symbol = node.GetSymbolGeometryId()?.AsUniqueIdentifier(); }
+            catch (Autodesk.Revit.Exceptions.ApplicationException) { SymbolIdFailures++; }
+            return stream.BeginInstance(Adapter.Matrix(node.GetTransform()), symbol) ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
+        }
+        catch (Exception ex) { Fail(ex); return RenderNodeAction.Skip; }
     }
 
-    public void OnInstanceEnd(InstanceNode node) => stream.EndInstance();
+    public void OnInstanceEnd(InstanceNode node) { if (Stopped) return; try { stream.EndInstance(); } catch (Exception ex) { Fail(ex); } }
 
     public RenderNodeAction OnLinkBegin(LinkNode node)
     {
-        // Documents are compared by the stream's own push/pop balance, never by
-        // reference: Revit can return a new Document wrapper on every call.
-        var doc = node.GetDocument();
-        string key = pendingLinkKey ?? node.SymbolId.ToString();
-        pendingLinkKey = null;
-        bool proceed = stream.BeginLink(Adapter.Matrix(node.GetTransform()), doc, key);
-        if (proceed) trace.Line("Entering link " + ExportText.Clean(doc?.Title, 200) + " (" + key + ")");
-        return proceed ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
+        if (Stopped) return RenderNodeAction.Skip;
+        try
+        {
+            // Documents are compared by the stream's own push/pop balance, never by
+            // reference: Revit can return a new Document wrapper on every call.
+            var doc = node.GetDocument();
+            string key = pendingLinkKey ?? node.SymbolId.ToString();
+            pendingLinkKey = null;
+            bool proceed = stream.BeginLink(Adapter.Matrix(node.GetTransform()), doc, key);
+            if (proceed) trace.Line("Entering link " + ExportText.Clean(doc?.Title, 200) + " (" + key + ")");
+            return proceed ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
+        }
+        catch (Exception ex) { Fail(ex); return RenderNodeAction.Skip; }
     }
 
-    public void OnLinkEnd(LinkNode node) => stream.EndLink();
+    public void OnLinkEnd(LinkNode node) { if (Stopped) return; try { stream.EndLink(); } catch (Exception ex) { Fail(ex); } }
 
     public RenderNodeAction OnFaceBegin(FaceNode node) => RenderNodeAction.Proceed;
     public void OnFaceEnd(FaceNode node) { }
@@ -107,6 +143,12 @@ internal sealed class RevitGeometryContext : IExportContext
     public void OnLight(LightNode node) { }
 
     public void OnMaterial(MaterialNode node)
+    {
+        if (Stopped) return;
+        try { SetMaterial(node); } catch (Exception ex) { Fail(ex); }
+    }
+
+    private void SetMaterial(MaterialNode node)
     {
         var doc = CurrentDocument;
         var native = node.Color;
@@ -156,7 +198,12 @@ internal sealed class RevitGeometryContext : IExportContext
 
     public void OnPolymesh(PolymeshTopology mesh)
     {
-        if (!stream.WantsGeometry || progress.CancelRequested) return;
+        if (Stopped || !stream.WantsGeometry) return;
+        try { AddMesh(mesh); } catch (Exception ex) { Fail(ex); }
+    }
+
+    private void AddMesh(PolymeshTopology mesh)
+    {
         var nativePoints = mesh.GetPoints();
         var points = new Point3[nativePoints.Count];
         for (int i = 0; i < points.Length; i++) { var p = nativePoints[i]; points[i] = new Point3(p.X, p.Y, p.Z); }
@@ -171,11 +218,11 @@ internal sealed class RevitGeometryContext : IExportContext
         Pump();
     }
 
+    /// <summary>Keeps the window responsive. A cancel is seen by IsCanceled at the next element.</summary>
     private void Pump()
     {
         var s = stream.Stats;
-        if (!progress.Pump("Collecting model geometry", new ExportProgressCounts { Elements = s.ElementsBegun, PlacedTriangles = s.FacetsKept + s.TrianglesReused, Reused = s.InstancesReused, Current = stream.CurrentElementLabel }))
-            throw new OperationCanceledException("Export cancelled");
+        progress.Pump("Collecting model geometry", new ExportProgressCounts { Elements = s.ElementsBegun, PlacedTriangles = s.FacetsKept + s.TrianglesReused, Reused = s.InstancesReused, Current = stream.CurrentElementLabel });
         trace.Heartbeat(() => "elements " + s.ElementsBegun + " (exported " + s.ElementsExported + ", outside crop " + s.SkippedOutsideCrop + "), facets received " + s.FacetsReceived + ", kept " + s.FacetsKept + ", reused instances " + s.InstancesReused + ", culled " + s.InstancesCulled + ", current: " + (stream.CurrentElementLabel ?? "-"));
     }
 

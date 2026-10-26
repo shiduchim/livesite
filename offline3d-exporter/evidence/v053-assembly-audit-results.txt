@@ -1,0 +1,157 @@
+PASS 2024-net48 exporter DLL exists
+PASS 2024-net48 folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2024-net48 is a managed x64 DLL
+PASS 2024-net48 assembly identity Offline3DPrototype.Revit2024 0.5.3.0
+REFERENCES 2024-net48: mscorlib/4.0.0.0, System.Core/4.0.0.0, System/4.0.0.0, RevitAPI/24.0.0.0, RevitAPIUI/24.0.0.0, System.Windows.Forms/4.0.0.0, System.Drawing/4.0.0.0
+PASS 2024-net48 has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2024-net48 references only Revit APIs and framework assemblies
+PASS 2024-net48 RevitAPI reference matches Revit 2024
+PASS 2024-net48 targets .NETFramework,Version=v4.8 (found .NETFramework,Version=v4.8)
+PASS 2024-net48 contains Offline3D.RevitExporter.ExportCommand
+PASS 2024-net48 contains Offline3D.RevitExporter.RibbonApplication
+PASS 2024-net48 contains Offline3D.RevitExporter.ExportAvailability
+PASS 2024-net48 contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2024-net48 contains Offline3D.RevitExporter.GeometryStream
+PASS 2024-net48 contains Offline3D.RevitExporter.SceneWriter
+PASS 2024-net48 contains Offline3D.RevitExporter.MeshBuilder
+PASS 2024-net48 contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2024-net48 contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2024-net48 contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2024-net48 contains Offline3D.RevitExporter.ExportTrace
+PASS 2024-net48 contains Offline3D.Contract
+PASS 2024-net48 contains Offline3D.Registration
+PASS 2024-net48 contains Offline3D.ElementIdentity
+PASS 2024-net48 contains Offline3D.ExportVolume
+PASS 2024-net48 contains Offline3D.CropMeshSelection
+PASS 2024-net48 no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+PASS 2025-net8.0-windows exporter DLL exists
+PASS 2025-net8.0-windows folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2025-net8.0-windows is a managed x64 DLL
+PASS 2025-net8.0-windows assembly identity Offline3DPrototype.Revit2025 0.5.3.0
+REFERENCES 2025-net8.0-windows: System.Runtime/8.0.0.0, System.Collections/8.0.0.0, System.Security.Cryptography/8.0.0.0, RevitAPI/25.0.0.0, RevitAPIUI/25.0.0.0, System.Windows.Forms/8.0.0.0, System.Diagnostics.Process/8.0.0.0, System.Drawing.Primitives/8.0.0.0, System.Drawing.Common/8.0.0.0, System.Text.Encoding.Extensions/8.0.0.0, System.Threading/8.0.0.0, System.Linq/8.0.0.0, System.ComponentModel.Primitives/8.0.0.0, System.Windows.Forms.Primitives/8.0.0.0, System.ComponentModel/8.0.0.0, System.Memory/8.0.0.0
+PASS 2025-net8.0-windows has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2025-net8.0-windows references only Revit APIs and framework assemblies
+PASS 2025-net8.0-windows RevitAPI reference matches Revit 2025
+PASS 2025-net8.0-windows targets .NETCoreApp,Version=v8.0 (found .NETCoreApp,Version=v8.0)
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.ExportCommand
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.RibbonApplication
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.ExportAvailability
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.GeometryStream
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.SceneWriter
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.MeshBuilder
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2025-net8.0-windows contains Offline3D.RevitExporter.ExportTrace
+PASS 2025-net8.0-windows contains Offline3D.Contract
+PASS 2025-net8.0-windows contains Offline3D.Registration
+PASS 2025-net8.0-windows contains Offline3D.ElementIdentity
+PASS 2025-net8.0-windows contains Offline3D.ExportVolume
+PASS 2025-net8.0-windows contains Offline3D.CropMeshSelection
+PASS 2025-net8.0-windows no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+PASS 2025-net10.0-windows exporter DLL exists
+PASS 2025-net10.0-windows folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2025-net10.0-windows is a managed x64 DLL
+PASS 2025-net10.0-windows assembly identity Offline3DPrototype.Revit2025 0.5.3.0
+REFERENCES 2025-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/25.0.0.0, RevitAPIUI/25.0.0.0, System.Windows.Forms/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.ComponentModel/10.0.0.0, System.Memory/10.0.0.0
+PASS 2025-net10.0-windows has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2025-net10.0-windows references only Revit APIs and framework assemblies
+PASS 2025-net10.0-windows RevitAPI reference matches Revit 2025
+PASS 2025-net10.0-windows targets .NETCoreApp,Version=v10.0 (found .NETCoreApp,Version=v10.0)
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.ExportCommand
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.RibbonApplication
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.ExportAvailability
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.GeometryStream
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.SceneWriter
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.MeshBuilder
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2025-net10.0-windows contains Offline3D.RevitExporter.ExportTrace
+PASS 2025-net10.0-windows contains Offline3D.Contract
+PASS 2025-net10.0-windows contains Offline3D.Registration
+PASS 2025-net10.0-windows contains Offline3D.ElementIdentity
+PASS 2025-net10.0-windows contains Offline3D.ExportVolume
+PASS 2025-net10.0-windows contains Offline3D.CropMeshSelection
+PASS 2025-net10.0-windows no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+PASS 2026-net8.0-windows exporter DLL exists
+PASS 2026-net8.0-windows folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2026-net8.0-windows is a managed x64 DLL
+PASS 2026-net8.0-windows assembly identity Offline3DPrototype.Revit2026 0.5.3.0
+REFERENCES 2026-net8.0-windows: System.Runtime/8.0.0.0, System.Collections/8.0.0.0, System.Security.Cryptography/8.0.0.0, RevitAPI/26.0.4.0, RevitAPIUI/26.0.4.0, System.Windows.Forms/8.0.0.0, System.Diagnostics.Process/8.0.0.0, System.Drawing.Primitives/8.0.0.0, System.Drawing.Common/8.0.0.0, System.Text.Encoding.Extensions/8.0.0.0, System.Threading/8.0.0.0, System.Linq/8.0.0.0, System.ComponentModel.Primitives/8.0.0.0, System.Windows.Forms.Primitives/8.0.0.0, System.ComponentModel/8.0.0.0, System.Memory/8.0.0.0
+PASS 2026-net8.0-windows has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2026-net8.0-windows references only Revit APIs and framework assemblies
+PASS 2026-net8.0-windows RevitAPI reference matches Revit 2026
+PASS 2026-net8.0-windows targets .NETCoreApp,Version=v8.0 (found .NETCoreApp,Version=v8.0)
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.ExportCommand
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.RibbonApplication
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.ExportAvailability
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.GeometryStream
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.SceneWriter
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.MeshBuilder
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2026-net8.0-windows contains Offline3D.RevitExporter.ExportTrace
+PASS 2026-net8.0-windows contains Offline3D.Contract
+PASS 2026-net8.0-windows contains Offline3D.Registration
+PASS 2026-net8.0-windows contains Offline3D.ElementIdentity
+PASS 2026-net8.0-windows contains Offline3D.ExportVolume
+PASS 2026-net8.0-windows contains Offline3D.CropMeshSelection
+PASS 2026-net8.0-windows no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+PASS 2026-net10.0-windows exporter DLL exists
+PASS 2026-net10.0-windows folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2026-net10.0-windows is a managed x64 DLL
+PASS 2026-net10.0-windows assembly identity Offline3DPrototype.Revit2026 0.5.3.0
+REFERENCES 2026-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/26.0.4.0, RevitAPIUI/26.0.4.0, System.Windows.Forms/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.ComponentModel/10.0.0.0, System.Memory/10.0.0.0
+PASS 2026-net10.0-windows has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2026-net10.0-windows references only Revit APIs and framework assemblies
+PASS 2026-net10.0-windows RevitAPI reference matches Revit 2026
+PASS 2026-net10.0-windows targets .NETCoreApp,Version=v10.0 (found .NETCoreApp,Version=v10.0)
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.ExportCommand
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.RibbonApplication
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.ExportAvailability
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.GeometryStream
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.SceneWriter
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.MeshBuilder
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2026-net10.0-windows contains Offline3D.RevitExporter.ExportTrace
+PASS 2026-net10.0-windows contains Offline3D.Contract
+PASS 2026-net10.0-windows contains Offline3D.Registration
+PASS 2026-net10.0-windows contains Offline3D.ElementIdentity
+PASS 2026-net10.0-windows contains Offline3D.ExportVolume
+PASS 2026-net10.0-windows contains Offline3D.CropMeshSelection
+PASS 2026-net10.0-windows no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+PASS 2027-net10.0-windows exporter DLL exists
+PASS 2027-net10.0-windows folder holds only its exporter (no RevitAPI, JSON or Core DLLs): ok
+PASS 2027-net10.0-windows is a managed x64 DLL
+PASS 2027-net10.0-windows assembly identity Offline3DPrototype.Revit2027 0.5.3.0
+REFERENCES 2027-net10.0-windows: System.Runtime/10.0.0.0, System.Collections/10.0.0.0, System.Security.Cryptography/10.0.0.0, RevitAPI/27.0.0.0, RevitAPIUI/27.0.0.0, System.Windows.Forms/10.0.0.0, System.Diagnostics.Process/10.0.0.0, System.Drawing.Primitives/10.0.0.0, System.Drawing.Common/10.0.0.0, System.Text.Encoding.Extensions/10.0.0.0, System.Threading/10.0.0.0, System.Linq/10.0.0.0, System.ComponentModel.Primitives/10.0.0.0, System.Windows.Forms.Primitives/10.0.0.0, System.ComponentModel/10.0.0.0, System.Memory/10.0.0.0
+PASS 2027-net10.0-windows has no Core, System.Text.Json, PdfSharp or NuGet assembly references
+PASS 2027-net10.0-windows references only Revit APIs and framework assemblies
+PASS 2027-net10.0-windows RevitAPI reference matches Revit 2027
+PASS 2027-net10.0-windows targets .NETCoreApp,Version=v10.0 (found .NETCoreApp,Version=v10.0)
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.ExportCommand
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.RibbonApplication
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.ExportAvailability
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.RevitGeometryContext
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.GeometryStream
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.SceneWriter
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.MeshBuilder
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.FeatureEdgeBuilder
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.ExportOptionsDialog
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.ExportProgressDialog
+PASS 2027-net10.0-windows contains Offline3D.RevitExporter.ExportTrace
+PASS 2027-net10.0-windows contains Offline3D.Contract
+PASS 2027-net10.0-windows contains Offline3D.Registration
+PASS 2027-net10.0-windows contains Offline3D.ElementIdentity
+PASS 2027-net10.0-windows contains Offline3D.ExportVolume
+PASS 2027-net10.0-windows contains Offline3D.CropMeshSelection
+PASS 2027-net10.0-windows no longer contains the v0.5.2 MeshContext or SpoolSceneWriter
+150 assembly audit checks passed, 0 failed. Metadata only; not a Revit load test.

@@ -72,7 +72,7 @@ internal sealed class SceneWriter : IDisposable
     private readonly Matrix4 localGraphicsInverse = Matrix4.Graphics(new Point3()).Inverse();
     private readonly bool includeFeatureEdges;
     private readonly List<Entry> entries = new List<Entry>();
-    private readonly Dictionary<ulong, List<int>> byHash = new Dictionary<ulong, List<int>>();
+    private readonly Dictionary<ulong, List<int>> byHash = new Dictionary<ulong, List<int>>(PackedKeyComparer.Instance);
     private readonly List<Placement> placements = new List<Placement>();
     private readonly List<PlainMaterial> materials = new List<PlainMaterial>();
     private readonly Dictionary<string, int> materialIds = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -82,7 +82,7 @@ internal sealed class SceneWriter : IDisposable
     private readonly double[] bounds = { double.PositiveInfinity, double.PositiveInfinity, double.PositiveInfinity, double.NegativeInfinity, double.NegativeInfinity, double.NegativeInfinity };
     // Projection of the node count after merging, kept up to date so a scope
     // that cannot fit fails early instead of after the full collection.
-    private readonly Dictionary<long, int> singleUseGroups = new Dictionary<long, int>();
+    private readonly Dictionary<long, int> singleUseGroups = new Dictionary<long, int>(PackedKeyComparer.Instance);
     private int sharedPlacements;
 
     public long PlacedTriangles { get; private set; }
@@ -331,7 +331,7 @@ internal sealed class SceneWriter : IDisposable
 
     private void MergeSingleUse(SceneWriteResult result)
     {
-        var groups = new Dictionary<long, List<int>>();
+        var groups = new Dictionary<long, List<int>>(PackedKeyComparer.Instance);
         var order = new List<long>();
         for (int i = 0; i < placements.Count; i++)
         {

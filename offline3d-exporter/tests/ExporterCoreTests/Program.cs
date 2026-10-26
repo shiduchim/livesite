@@ -74,6 +74,29 @@ Check("feature edges are identical to Core/FeatureEdges.cs, in the same order", 
     }
 });
 
+Check("feature edges stay fast on large tessellated grids (v0.5.2 hashing was quadratic) and match the original", () =>
+{
+    // A 60 x 60 shared-vertex grid with a ridge: typical of a tessellated slab or topography patch.
+    int n = 60; var pts = new List<E.Point3>(); var corners = new List<int>();
+    for (int y = 0; y <= n; y++) for (int x = 0; x <= n; x++) pts.Add(P(x * .5, y * .5, x == n / 2 ? .4 : 0));
+    for (int y = 0; y < n; y++) for (int x = 0; x < n; x++) { int a = y * (n + 1) + x, b = a + 1, c = a + n + 1, d = c + 1; corners.AddRange(new[] { a, b, d, a, d, c }); }
+    var builder = new X.MeshBuilder(); builder.Append(pts.ToArray(), Array.Empty<E.Point3>(), corners.ToArray(), corners.Count, X.NormalLayout.PerFace);
+    var mesh = builder.Finish();
+    var points = Enumerable.Range(0, mesh.VertexCount).Select(i => new Point3(mesh.Positions[i * 3], mesh.Positions[i * 3 + 1], mesh.Positions[i * 3 + 2])).ToArray();
+    var watch = Stopwatch.StartNew(); var old = FeatureEdges.Build(points, mesh.Indices); long oldMs = watch.ElapsedMilliseconds;
+    watch.Restart(); var fresh = X.FeatureEdgeBuilder.Build(mesh.Positions, mesh.Indices); long newMs = watch.ElapsedMilliseconds;
+    Assert(old.SequenceEqual(fresh), "Edges differ");
+    Console.WriteLine("  feature edges for " + mesh.TriangleCount + " triangles: v0.5.2 " + oldMs + " ms, v0.5.3 " + newMs + " ms");
+    // Larger mesh: new builder only (the old one takes minutes here).
+    int big = 400; pts.Clear(); corners.Clear();
+    for (int y = 0; y <= big; y++) for (int x = 0; x <= big; x++) pts.Add(P(x * .1, y * .1, (x * 7 + y * 3) % 11 == 0 ? .05 : 0));
+    for (int y = 0; y < big; y++) for (int x = 0; x < big; x++) { int a = y * (big + 1) + x, b = a + 1, c = a + big + 1, d = c + 1; corners.AddRange(new[] { a, b, d, a, d, c }); }
+    builder = new X.MeshBuilder(); builder.Append(pts.ToArray(), Array.Empty<E.Point3>(), corners.ToArray(), corners.Count, X.NormalLayout.PerFace); mesh = builder.Finish();
+    watch.Restart(); X.FeatureEdgeBuilder.Build(mesh.Positions, mesh.Indices); long bigMs = watch.ElapsedMilliseconds;
+    Console.WriteLine("  feature edges for " + mesh.TriangleCount + " triangles: v0.5.3 " + bigMs + " ms");
+    Assert(bigMs < 10000, "Feature edges too slow: " + bigMs + " ms");
+});
+
 // ---------------------------------------------------------------- GLB reading helpers
 (JsonDocument json, byte[] bin) ReadGlb(string path)
 {
@@ -439,6 +462,63 @@ Check("statistics report is produced for diagnostics", () =>
     var (s, _, _) = Run(Sockets(5, i => Move(5 + i * 4, 5, 1)), Path.Combine(root, "report.glb"), reuse: true);
     var lines = s.Stats.Report().ToList();
     Assert(lines.Any(l => l.StartsWith("Instances begun")) && lines.Any(l => l.StartsWith("Callback balance: unmatched ends 0")));
+});
+
+Check("helper path: GLB, identities and registration from the new exporter package into a PDF and reopen exactly (PDFium registration excluded)", () =>
+{
+    string dir = Path.Combine(root, "package"); Directory.CreateDirectory(dir);
+    string glbPath = Path.Combine(dir, "scene.glb");
+    var (s, _, _) = Run(Sockets(200, i => Turn(i * 11, 3 + (i % 20) * 4.5, 3 + (i / 20) * 9, 1, mirror: i % 9 == 0)), glbPath, reuse: true);
+    var glb = File.ReadAllBytes(glbPath);
+    var identities = E.Contract.Encode(s.Identities.ToArray());            // exporter wire writer
+    var decoded = Contract.Decode<ElementIdentity[]>(identities);          // reader decoder
+    Assert(decoded.Length == 200 && decoded.All(x => x.MeshName.Contains('/') && x.DocumentId == "host"), "identities");
+    // Every identity's mesh name is a node of the GLB, as the viewer's lookup expects.
+    var names = new HashSet<string>(ReadGlb(glbPath).json.RootElement.GetProperty("nodes").EnumerateArray().Select(n => n.GetProperty("name").GetString()!));
+    Assert(decoded.All(x => names.Contains(x.MeshName)), "Identity MeshName must name a GLB node");
+    var reg = new Registration { ViewId = "v", LevelId = "l", DocumentId = "host", MediaBox = new[] { 0d, 0, 612, 792 }, PageCropBox = new[] { 0d, 0, 612, 792 }, CropPdf = new[] { 0d, 0, 100, 0, 100, 100, 0, 100 }, PreciseClicks = true, FitPointCount = 3, CheckPointCount = 3 };
+    var files = new Dictionary<string, byte[]> { { "registration.json", Contract.Encode(reg) }, { "identities.json", identities }, { "scene.glb", glb } };
+    var manifest = PdfPackageService.Describe(false, "View crop only; test", "0.5.3-test", files);
+    manifest.RequiredCapabilities = manifest.RequiredCapabilities.Concat(new[] { "glb-affine-instances-v1" }).ToArray(); // as ExportFinalizer adds for matrix nodes
+    Contract.Validate(manifest);
+    string plain = Path.Combine(dir, "drawing.pdf"), pdf = Path.Combine(dir, "export.pdf");
+    using (var d = new PdfSharp.Pdf.PdfDocument()) { var page = d.AddPage(); page.Width = PdfSharp.Drawing.XUnit.FromPoint(612); page.Height = PdfSharp.Drawing.XUnit.FromPoint(792); d.Save(plain); }
+    var service = new PdfPackageService();
+    service.Write(plain, pdf, manifest, files);
+    var opened = service.Read(pdf);
+    Assert(opened.Glb.SequenceEqual(glb) && opened.Elements.Length == 200, "Reopened package differs");
+});
+
+Check("over 64 MiB of distinct geometry from the new writer validates, packages and reopens byte-identical", () =>
+{
+    string dir = Path.Combine(root, "large"); Directory.CreateDirectory(dir);
+    string glbPath = Path.Combine(dir, "scene.glb");
+    var watch = Stopwatch.StartNew();
+    using (var w = new X.SceneWriter(dir, E.Matrix4.Graphics(P(0, 0))))
+    {
+        for (int mesh = 0; mesh < 90; mesh++)
+        {
+            const int triangles = 8192;
+            var builder = new X.MeshBuilder(); var pts = new E.Point3[triangles * 3]; var corners = new int[triangles * 3];
+            var noise = new Random(mesh); // distinct shapes: identical parts would rightly be stored once
+            for (int f = 0; f < triangles; f++) { double x = (f % 128) * .5, y = (f / 128) * .5, z = noise.NextDouble() * .2; pts[f * 3] = P(x, y, z); pts[f * 3 + 1] = P(x + .3, y, z + noise.NextDouble() * .1); pts[f * 3 + 2] = P(x, y + .3, z); corners[f * 3] = f * 3; corners[f * 3 + 1] = f * 3 + 1; corners[f * 3 + 2] = f * 3 + 2; }
+            builder.Append(pts, Array.Empty<E.Point3>(), corners, corners.Length, X.NormalLayout.PerFace);
+            w.Add("part-" + mesh + "/" + w.PlacementCount, builder.Finish(), Move(mesh * 80, 0), grey, "grey", Id("part-" + mesh));
+        }
+        var r = w.Write(glbPath);
+        Assert(r.Bytes > 64L * 1024 * 1024 && r.UniqueMeshes == 90, "bytes " + r.Bytes);
+        Console.WriteLine("  large scene: geometry built and GLB written in " + watch.ElapsedMilliseconds + " ms");
+    }
+    var glb = File.ReadAllBytes(glbPath); Contract.ValidateGlb(glb);
+    var files = new Dictionary<string, byte[]> { { "registration.json", Contract.Encode(new Registration { ViewId = "v", LevelId = "l", DocumentId = "host", MediaBox = new[] { 0d, 0, 612, 792 }, PageCropBox = new[] { 0d, 0, 612, 792 }, CropPdf = new[] { 0d, 0, 100, 0, 100, 100, 0, 100 }, PreciseClicks = true, FitPointCount = 3, CheckPointCount = 3 }) }, { "identities.json", Contract.Encode(Array.Empty<ElementIdentity>()) }, { "scene.glb", glb } };
+    var manifest = PdfPackageService.Describe(false, "Large distinct geometry", "0.5.3-test", files);
+    manifest.RequiredCapabilities = manifest.RequiredCapabilities.Concat(new[] { "glb-affine-instances-v1" }).ToArray();
+    Assert(manifest.RequiredCapabilities.Contains(SceneLimits.LargeSceneCapability)); Contract.Validate(manifest);
+    string plain = Path.Combine(dir, "drawing.pdf"), pdf = Path.Combine(dir, "large.pdf");
+    using (var d = new PdfSharp.Pdf.PdfDocument()) { var page = d.AddPage(); page.Width = PdfSharp.Drawing.XUnit.FromPoint(612); page.Height = PdfSharp.Drawing.XUnit.FromPoint(792); d.Save(plain); }
+    var service = new PdfPackageService(); service.Write(plain, pdf, manifest, files);
+    Assert(Contract.Hash(service.Read(pdf).Glb) == Contract.Hash(glb));
+    Console.WriteLine("  large scene: " + glb.Length + " bytes written, packaged and reopened in " + watch.ElapsedMilliseconds + " ms");
 });
 
 Console.WriteLine(passed + " exporter core checks passed in " + timer.ElapsedMilliseconds + " ms. Linux .NET, simulated Revit callbacks; native Revit execution remains untested.");

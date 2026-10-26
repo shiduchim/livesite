@@ -69,3 +69,16 @@ Cross-build and browser checks are useful evidence, but cannot replace Revit.
 7. Verify cancel/rollback and unsupported link warnings. Do not claim native calls are instantly interruptible.
 
 No real RVT model, native debug trace, or complete draft output from the failing export was supplied for this handoff. The reported logs and screenshots are summarized above; do not invent unseen trace results.
+
+## 0.5.3 (this revision; not yet run in Revit)
+
+The user reported "the exporter is not working" without a new log, so 0.5.3 addresses every defect the source review confirmed. It also adds a live trace, so the next native run explains any remaining failure. See CHANGES-0.5.3.md for the full diagnosis.
+
+| Observation / defect | Change | Evidence and its limits |
+|---|---|---|
+| `OnLinkEnd` compared Document wrappers by reference; the stacks could stay in the link | Balanced push markers inside a Revit-free `GeometryStream` | Simulated link traversal test: host elements after a link keep host coordinates and document. Native wrapper behaviour not observed. |
+| Every repeated instance was tessellated and fully re-processed | Verified reuse through `InstanceNode.GetSymbolGeometryId()`: first instance captured, second traversed and compared, later ones placed from the capture (inside the crop) or culled (outside) | Reuse on vs off gives identical world triangles on mirrored, rotated and nested sockets, rotated crops and crossing instances. 3,000 sockets: Revit facets requested 72,000 → 1,440. Native speed not measured. |
+| Quadratic feature-edge hashing; per-placement material JSON hashing | Exporter-owned `SceneWriter` and `FeatureEdgeBuilder` with mixed hashing | 79.7 MB synthetic scene: 64.3 s → 1.9 s, byte-identical binary. |
+| 64 MiB per-element failure; 100,000-placement abort; no reader accessor/mesh check | Oversized batches split; single-use parts merged per element and material; reader limits checked early | Tests, including a 76 MiB package round trip through the unchanged packager and validator. |
+| A parameter value cut inside a surrogate pair failed the whole export | Model text cleaned | Test. |
+| Preview popup; options layout scrolled sideways | Dialog rebuilt: preview generated in place, compact, DPI-aware | Wine screenshots at 96, 144 and 192 DPI: no horizontal scrollbar, buttons visible. Real Windows and Revit rendering is still to be checked. |

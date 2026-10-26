@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+<!-- Opens the real options/progress dialogs without Revit and screenshots each
+ state. Run on Windows, or under Wine for a layout check (fonts differ). -->
+<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><Nullable>enable</Nullable></PropertyGroup>
+<ItemGroup>
+ <Compile Include="../../src/RevitExporter/ExportOptionsDialog.cs" Link="Dialogs/ExportOptionsDialog.cs"/>
+ <Compile Include="../../src/RevitExporter/ExportProgressDialog.cs" Link="Dialogs/ExportProgressDialog.cs"/>
+ <Compile Include="../../src/RevitExporter/NativeWindows.cs" Link="Dialogs/NativeWindows.cs"/>
+</ItemGroup>
+</Project>

@@ -59,7 +59,7 @@ internal sealed class ExportOptionsDialog : Form
     private readonly Label overlayTitle = new Label(), overlayText = new Label();
     private readonly ProgressBar overlayBar = new ProgressBar { Style = ProgressBarStyle.Marquee, MarqueeAnimationSpeed = 30 };
     private readonly Button overlayButton = new Button();
-    private readonly LinkLabel staleBanner = new LinkLabel();
+    private readonly Panel staleBanner = new Panel();
     private readonly Button previewButton = new Button();
 
     // Frame
@@ -157,11 +157,12 @@ internal sealed class ExportOptionsDialog : Form
         overlayButton.Click += (_, __) => RequestPreview();
         overlay.Controls.Add(overlayTitle, 0, 0); overlay.Controls.Add(overlayText, 0, 1); overlay.Controls.Add(overlayBar, 0, 2); overlay.Controls.Add(overlayButton, 0, 3);
 
-        staleBanner.Dock = DockStyle.Top; staleBanner.AutoSize = false; staleBanner.Height = S(28); staleBanner.TextAlign = ContentAlignment.MiddleCenter;
+        staleBanner.Dock = DockStyle.Top; staleBanner.Height = S(36); staleBanner.Padding = new Padding(S(10), S(4), S(4), S(4));
         staleBanner.BackColor = Color.FromArgb(255, 244, 214); staleBanner.Visible = false;
-        staleBanner.Text = "Options changed since this preview. Update preview";
-        staleBanner.LinkArea = new LinkArea(staleBanner.Text.Length - "Update preview".Length, "Update preview".Length);
-        staleBanner.LinkClicked += (_, __) => RequestPreview();
+        var staleText = new Label { Text = "Options changed since this preview.", AutoSize = false, AutoEllipsis = true, Dock = DockStyle.Fill, TextAlign = ContentAlignment.MiddleLeft };
+        var staleButton = new Button { Text = "Update preview", AutoSize = true, Dock = DockStyle.Right, UseVisualStyleBackColor = true };
+        staleButton.Click += (_, __) => RequestPreview();
+        staleBanner.Controls.Add(staleText); staleBanner.Controls.Add(staleButton);
 
         previewHost.Controls.Add(picture); previewHost.Controls.Add(staleBanner); previewHost.Controls.Add(overlay);
         overlay.BringToFront(); staleBanner.BringToFront();
@@ -209,7 +210,7 @@ internal sealed class ExportOptionsDialog : Form
         detailHint.AutoSize = true; detailHint.Anchor = AnchorStyles.Left | AnchorStyles.Right; detailHint.ForeColor = Color.FromArgb(96, 96, 96); detailHint.Margin = new Padding(0, 0, 0, S(6)); Add(detailHint);
         var tiny = new TableLayoutPanel { ColumnCount = 3, AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, 0, 0, S(2)) };
         tiny.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize)); tiny.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, S(64))); tiny.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
-        skipTiny.Margin = new Padding(0, S(3), S(4), 0); tinySize.Dock = DockStyle.Fill; tinySize.Margin = new Padding(0);
+        skipTiny.Margin = new Padding(0, S(3), S(8), 0); tinySize.Dock = DockStyle.Fill; tinySize.Margin = new Padding(0);
         tiny.Controls.Add(skipTiny, 0, 0); tiny.Controls.Add(tinySize, 1, 0); tiny.Controls.Add(new Label { Text = "cm", AutoSize = true, Margin = new Padding(S(4), S(4), 0, 0) }, 2, 0);
         Add(tiny);
         Add(SmallLabel("Off by default; nothing is skipped unless you turn it on."));

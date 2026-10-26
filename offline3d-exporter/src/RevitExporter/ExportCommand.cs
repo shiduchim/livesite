@@ -223,6 +223,7 @@ public sealed class ExportCommand : IExternalCommand
                             }
                             Check(bar, "Collecting model geometry");
                             using (var exporter = new CustomExporter(doc, context)) { exporter.IncludeGeometricObjects = false; exporter.ShouldStopOnError = true; exporter.Export(view); }
+                            context.ThrowIfStopped();
                         }
                         stream.Finish();
                     }

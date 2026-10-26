@@ -16,7 +16,8 @@ The plugin launching the helper successfully does not itself prove final PDF cre
 ## Source boundaries
 
 - Revit executable code: `src/RevitExporter/`.
-- Ten pure data/geometry/writer files from `src/Core/` are explicitly linked by the Revit csproj. `ExportWireJson.cs` supplies the standalone serialization path.
+- Pure data/geometry files from `src/Core/` are explicitly linked by the Revit csproj. `ExportWireJson.cs` supplies the standalone serialization path.
+- Since 0.5.3 the GLB writer, mesh builder and edge builder are exporter-owned (`src/RevitExporter/Collection/`). `src/Core/SpoolSceneWriter.cs` and `IndexedGeometry.cs` are no longer linked into Revit. The output still follows this contract and is checked by the unchanged `Contract.ValidateGlb`. With merging off it is identical to the v0.5.2 writer; with merging on, an element's single-use parts with the same material share one node, under the same element key prefix.
 - Full `src/Core/`, `src/Packaging/`, `src/AutomaticRegistration/` are included as shared boundary/test context. They compile separately for the reader/helper; Core.dll and System.Text.Json are not deployed into Revit.
 - Active reader entry: `fastpdf/src/EKFastPDF/EKFastPDF.csproj`, plus `EKFastPDF.Core` and `src/Viewer/web/`. The older standalone Viewer C#/XAML project and legacy FastPDF v1.1 are excluded.
 - The exporter archive excludes reader UI/rendering source. The reader archive excludes Revit plugin source.
