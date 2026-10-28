@@ -3,7 +3,7 @@
 "CHECK_STATUS.cmd","CMD entry point: invokes ordinary Windows PowerShell","705","882EAC89BBD459435FB0B210BD3D42B3989BE316633457B3F9B442F22D1FEDE9"
 "CHECK_STATUS.ps1","Readable Windows PowerShell 5.1 installer/status script","768","E0482B3661C94738EEB0E498F32620C46FC1F7964474E0AE339435F205EC10C6"
 "COMMON.ps1","Readable Windows PowerShell 5.1 installer/status script","16207","5DBAA33B0A56FA8152C0E76D875AF8CD4868E0DCCCDBA4C4B2D28C6BFE35DDD4"
-"engine/EKTriangle.Core.dll","Existing .NET Framework 4.8 compatibility, installation and restoration library; loaded directly by PowerShell","54272","A128DC6D829821BDFCB8F5ED928D23607703E95B879693ED0F860375A2225BC2"
+"engine/EKTriangle.Core.dll","Existing .NET Framework 4.8 compatibility, installation and restoration library; loaded directly by PowerShell","54272","44C1A68A7ACF94B84E2278E4006500F3CC0AD5D9D639BC3CA155EE86494DFEBE"
 "INSTALL.cmd","CMD entry point: invokes ordinary Windows PowerShell","690","20FE71AE6160BC9010523236D84E70826F64B61D781E8777DD72F6EFFCD78B64"
 "INSTALL.ps1","Readable Windows PowerShell 5.1 installer/status script","3382","4B4A29B0CEA64C4505D726A66AA0A92CF0D55D2AA98EC5112DD61D7B72DF3A8F"
 "payload/Revit2024/EKTriangle.dll","Existing compiled Revit loader: Revit2024","8192","6C5F1865ED073E67FFF1C227172DF9BC30B036FACCB75B3F228CF9BEBFE4E19E"
