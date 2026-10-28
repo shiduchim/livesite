@@ -1,0 +1,135 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box}body{margin:0;padding:22px;background:#cfd2d6;font:12px 'Segoe UI',Arial,sans-serif;color:#1b1b1b;display:flex;flex-direction:column;gap:26px}
+.cap{font:600 13px Arial;color:#333;margin-bottom:8px}
+.win{width:1000px;border:1px solid #bdbdbd;background:#f0f0f0;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.bar{height:36px;display:flex;align-items:center;gap:2px;padding:0 0 0 8px;border-bottom:1px solid #e1e1e1;background:#f0f0f0}
+.logo{width:18px;height:20px;margin:0 8px 0 2px}
+.tab{height:26px;display:flex;align-items:center;padding:0 10px;border-radius:4px;color:#5f6368}.tab.on{background:#fff;border:1px solid #dcdcdc;color:#1b1b1b}
+.btn{height:24px;border:1px solid #d0d0d0;border-bottom-color:#bababa;border-radius:4px;background:#fdfdfd;display:inline-flex;align-items:center;padding:0 9px;gap:6px;white-space:nowrap}
+.btn.accent{border-color:#9db0d8;border-bottom-color:#8a9eca;color:#2f4a86}
+.sec{color:#5f6368}.win-btns{margin-left:auto;display:flex}.win-btns span{height:32px;display:flex;align-items:center;justify-content:center;color:#5f6368;padding:0 13px}
+.body{display:flex;height:640px}
+.side{width:200px;background:#f0f0f0;border-right:1px solid #e1e1e1;padding:10px 0;display:flex;flex-direction:column}
+.side .h{color:#5f6368;font-size:11px;padding:6px 14px 4px}
+.side .f{height:28px;display:flex;align-items:center;gap:8px;padding:0 14px;color:#1b1b1b}.side .f .n{margin-left:auto;color:#5f6368;font-size:11px}.side .f.on{background:#e3e7ee;box-shadow:inset 3px 0 0 #5d75a5}
+.side .f svg{width:15px;height:15px;stroke:#5f6368;fill:none;stroke-width:1.4;flex:0 0 auto}
+.side .auto{font-size:10.5px;color:#5d75a5;margin-left:4px}
+.side .add{margin:8px 14px 0;color:#5f6368}
+.main{flex:1;background:#e3e5e8;display:flex;flex-direction:column;min-width:0}
+.top{height:40px;display:flex;align-items:center;gap:10px;padding:0 14px;background:#f7f7f7;border-bottom:1px solid #e1e1e1}
+.top .title{font-weight:600}
+.slider{display:flex;align-items:center;gap:6px;color:#5f6368}.slider .t{width:110px;height:4px;background:#d0d3d8;border-radius:2px;position:relative}.slider .t i{position:absolute;left:0;top:0;height:4px;border-radius:2px;background:#5d75a5}.slider .t b{position:absolute;top:-5px;width:14px;height:14px;border-radius:50%;background:#fff;border:1px solid #9aa0a6}
+.list{flex:1;overflow:hidden;padding:12px 14px}
+.batch{margin-bottom:14px}.batch .bh{display:flex;align-items:center;gap:8px;margin-bottom:8px;color:#5f6368}.batch .bh b{color:#1b1b1b;font-weight:600}.batch .bh .new{color:#2f4a86;background:#e8edf7;border-radius:3px;padding:0 5px;font-size:10.5px}
+.batch.new{background:#eef1f6;border:1px solid #d7deea;border-radius:6px;padding:10px 10px 4px;margin-left:-11px;margin-right:-11px}
+.grid{display:flex;flex-wrap:wrap;gap:12px}
+.card{width:150px}.thumb{height:106px;background:#fff;box-shadow:0 0 0 1px #d4d6da;display:flex;align-items:center;justify-content:center;position:relative}
+.card .name{margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.card .meta{color:#5f6368;font-size:11px}
+.badge{position:absolute;right:4px;bottom:4px;width:16px;height:16px}
+.card.sel .thumb{box-shadow:0 0 0 2px #5d75a5}
+.drag{position:absolute;opacity:.85;transform:rotate(-2deg)}
+.pages{color:#2f4a86;cursor:pointer}.strip{width:100%;background:#f7f8fa;border:1px solid #d7deea;border-radius:6px;padding:8px 10px;display:flex;gap:8px;align-items:flex-start;overflow:hidden;margin-top:-2px}.pg{width:74px}.pg .thumb{height:52px}.pg .meta{text-align:center}.pg.cur .thumb{box-shadow:0 0 0 2px #5d75a5}
+.foot{height:26px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;color:#5f6368;font-size:11px;background:#f7f7f7;border-top:1px solid #e1e1e1}
+.link{color:#5f6368;text-decoration:underline}
+/* settings window */
+.sw{width:470px;border:1px solid #bdbdbd;background:#f0f0f0}
+.st{height:30px;background:#f9f9f9;display:flex;align-items:center;justify-content:space-between;padding-left:12px}.st span:last-child{padding:0 12px;color:#5f6368;font-size:11.5px}
+.sc{padding:14px 20px 10px 18px}
+.row{display:flex;align-items:center;min-height:30px;gap:8px}.row .grow{flex:1}
+.box{width:13px;height:13px;border:1px solid #8d939b;border-radius:2px;background:#fff;flex:0 0 auto}.box.on{background:#5d75a5;border-color:#5d75a5;position:relative}.box.on:after{content:'';position:absolute;left:3.5px;top:.5px;width:3.5px;height:7px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+.num{width:46px;height:23px;border:1px solid #c3c8cf;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:flex-end;padding:0 6px}
+.dd{height:23px;border:1px solid #c3c8cf;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 7px;width:150px}
+.hr{border-top:1px solid #e1e1e1;margin:8px 0}
+.h2{color:#5f6368;font-size:11px;margin:6px 0 4px}
+.folder{display:flex;align-items:center;gap:8px;height:30px}.folder .p{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf{border-top:1px solid #e1e1e1;padding:12px 26px 12px 30px;display:flex;justify-content:space-between;align-items:center}
+.dlg{position:absolute;left:330px;top:190px;width:340px;background:#f0f0f0;border:1px solid #bdbdbd}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="fold" viewBox="0 0 16 16"><path d="M2 4.5h4l1.5 1.5H14v6.5H2z"/></symbol>
+<symbol id="clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3.2l2 1.3"/></symbol>
+<symbol id="dl" viewBox="0 0 16 16"><path d="M8 2.5v7M5 7l3 3 3-3M3 12.5h10"/></symbol>
+<symbol id="plan" viewBox="0 0 150 106"><rect x="6" y="6" width="138" height="94" fill="none" stroke="#444" stroke-width="1"/><path d="M18 18h70v48H18zM18 38h28M46 18v48M64 38h24" fill="none" stroke="#666" stroke-width=".8"/><rect x="104" y="72" width="34" height="22" fill="none" stroke="#666" stroke-width=".7"/></symbol>
+<symbol id="doc" viewBox="0 0 150 106"><rect x="45" y="6" width="60" height="94" fill="#fff" stroke="#bbb"/><path d="M52 18h30M52 26h46M52 32h46M52 38h40M52 50h46M52 56h46M52 62h30" stroke="#999" stroke-width="1.5"/></symbol>
+<symbol id="sec" viewBox="0 0 150 106"><rect x="6" y="6" width="138" height="94" fill="none" stroke="#444"/><path d="M14 80h100M20 80V40h80v40M20 60h80M60 40V20h20v20" fill="none" stroke="#666" stroke-width=".8"/></symbol>
+</defs></svg>
+
+<div><div class="cap">1 · Library (start screen and "Library" tab): folders, batches newest first, Open latest, size slider; "8 pages ▴" expanded to show every page</div>
+<div class="win">
+ <div class="bar"><svg class="logo" viewBox="0 0 18 20"><path d="M2 1h10l4 4v14H2z" fill="#6585c4"/><rect x="4" y="6.5" width="10" height="3.5" fill="#fff"/><path d="M9 11.5l3 1.7v3.4L9 18.3 6 16.6v-3.4z" fill="#fff"/></svg>
+  <div class="tab on">Library</div><div class="tab">A-101 Level 1 Floor Plan</div><div class="btn" style="margin-left:4px">Open</div>
+  <div class="win-btns"><span>—</span><span>☐</span><span style="font-size:11.5px">Close</span></div></div>
+ <div class="body">
+  <div class="side">
+   <div class="f"><svg><use href="#clock"/></svg>Recent<span class="n">48</span></div>
+   <div class="h">Folders</div>
+   <div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="auto">auto-open</span><span class="n">12</span></div>
+   <div class="f"><svg><use href="#fold"/></svg>Teams – Project 2417<span class="n">31</span></div>
+   <div class="f"><svg><use href="#fold"/></svg>Shop drawings<span class="n">7</span></div>
+   <div class="f"><svg><use href="#fold"/></svg>Invoices<span class="n">22</span></div>
+   <div class="add">Add folder…</div>
+  </div>
+  <div class="main">
+   <div class="top"><span class="title">Downloads</span><span class="sec">12 PDFs</span><div style="flex:1"></div>
+    <div class="btn accent">Open latest</div>
+    <div class="slider">Size<div class="t"><i style="width:30%"></i><b style="left:27%"></b></div></div>
+   </div>
+   <div class="list">
+    <div class="batch new"><div class="bh"><b>Today 10:42</b><span>3 PDFs, downloaded together</span><span class="new">New</span><div style="flex:1"></div><span class="link">Open all 3</span></div>
+     <div class="grid">
+      <div class="card sel"><div class="thumb"><svg width="150" height="106"><use href="#plan"/></svg><img class="badge" src="clickto3d-256.png"></div><div class="name">A-101 Level 1 Floor Plan</div><div class="meta">10:42 · 4.2 MB · 3D · <span class="pages">2 pages ▾</span></div></div>
+      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#sec"/></svg></div><div class="name">A-301 Sections</div><div class="meta">10:42 · 2.8 MB · <span class="pages">8 pages ▴</span></div></div>
+      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#plan"/></svg><img class="badge" src="clickto3d-256.png"></div><div class="name">A-102 Level 2 Floor Plan</div><div class="meta">10:41 · 3.9 MB · 3D</div></div>
+      <div class="strip"><span class="sec" style="width:70px;flex:0 0 auto;line-height:1.4">A-301<br>Sections<br>8 pages</span><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">1</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">2</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">3</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">4</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">5</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">6</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">7</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">8</div></div></div>
+     </div></div>
+    <div class="batch"><div class="bh"><b>Yesterday 16:05</b><span>2 PDFs</span></div>
+     <div class="grid">
+      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#doc"/></svg></div><div class="name">Invoice 2026-114</div><div class="meta">16:05 · 0.3 MB</div></div>
+      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#doc"/></svg></div><div class="name">Quote revision B</div><div class="meta">16:04 · 0.2 MB</div></div>
+     </div></div>
+    <div class="batch"><div class="bh"><b>Monday 09:12</b><span>1 PDF</span></div>
+     <div class="grid"><div class="card"><div class="thumb"><svg width="150" height="106"><use href="#sec"/></svg></div><div class="name">S-201 Framing</div><div class="meta">09:12 · 5.1 MB</div></div></div></div>
+   </div>
+   <div class="foot"><span>Drag a PDF into Revit, Explorer or an email, as from any folder · Double-click to open</span><span class="link">Delete all PDFs in Downloads…</span></div>
+  </div>
+ </div>
+</div></div>
+
+<div><div class="cap">2 · Size slider at the right end: fit width, one PDF per row (the newest batch is still on top)</div>
+<div class="win">
+ <div class="body" style="height:330px">
+  <div class="side"><div class="f"><svg><use href="#clock"/></svg>Recent<span class="n">48</span></div><div class="h">Folders</div><div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="n">12</span></div><div class="f"><svg><use href="#fold"/></svg>Teams – Project 2417<span class="n">31</span></div></div>
+  <div class="main"><div class="top"><span class="title">Downloads</span><div style="flex:1"></div><div class="btn accent">Open latest</div><div class="slider">Size<div class="t"><i style="width:100%"></i><b style="left:88%"></b></div></div></div>
+   <div class="list"><div class="bh" style="display:flex;gap:8px;color:#5f6368;margin-bottom:8px"><b style="color:#1b1b1b">Today 10:42</b>3 PDFs</div>
+    <div class="thumb" style="height:236px"><svg width="330" height="232"><use href="#plan"/></svg></div></div></div>
+ </div></div></div>
+
+<div style="display:flex;gap:26px;align-items:flex-start">
+<div><div class="cap">3 · Settings › New PDFs (everything can be off)</div>
+<div class="sw">
+ <div class="st"><span>EKPDF Settings</span><span>Close</span></div>
+ <div class="sc">
+  <div class="row"><span class="box on"></span><span class="grow">Show the Open latest button</span></div>
+  <div class="hr"></div>
+  <div class="row"><span class="grow">Recent means arrived in the last</span><span class="num">1</span><span class="sec">minute(s)</span></div>
+  <div class="row"><span class="box on"></span><span class="grow">When EKPDF starts, open recent PDFs</span></div>
+  <div class="row"><span class="box"></span><span class="grow">When the EKPDF window comes forward, open recent PDFs not yet opened</span></div>
+  <div class="hr"></div>
+  <div class="h2">Folders</div>
+  <div class="folder"><span class="p">Downloads</span><span class="dd">Open automatically<span class="sec">▾</span></span></div>
+  <div class="folder"><span class="p">Teams – Project 2417</span><span class="dd">Nothing<span class="sec">▾</span></span></div>
+  <div class="folder"><span class="p">Shop drawings</span><span class="dd">Nothing<span class="sec">▾</span></span></div>
+  <div class="folder"><span class="p">Invoices</span><span class="dd">Nothing<span class="sec">▾</span></span></div>
+  <div class="row" style="justify-content:space-between"><span class="link">Add folder…</span><span class="link">Remove</span></div>
+ </div>
+ <div class="sf"><span class="link">Reset</span><span style="display:flex;gap:16px"><span class="btn">Cancel</span><span class="btn accent">Save</span></span></div>
+</div></div>
+
+<div><div class="cap">4 · Delete all PDFs in a folder (asks first; to the Recycle Bin)</div>
+<div class="sw" style="width:360px">
+ <div class="st"><span>Delete PDFs</span><span>Close</span></div>
+ <div class="sc"><div style="line-height:1.55">Move all <b>12 PDFs</b> in <b>Downloads</b> to the Recycle Bin?<br><span class="sec">Other files and subfolders are not touched. You can restore them from the Recycle Bin.</span></div></div>
+ <div class="sf"><span></span><span style="display:flex;gap:16px"><span class="btn">Cancel</span><span class="btn accent">Move to Recycle Bin</span></span></div>
+</div></div>
+</div>
+</body></html>
