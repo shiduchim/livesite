@@ -6,9 +6,9 @@
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Offline3D.FastPDF.Dev</AssemblyName>
-    <Version>0.5.2</Version>
-    <FileVersion>0.5.2.0</FileVersion>
-    <InformationalVersion>0.5.2-experimental</InformationalVersion>
+    <Version>0.5.3</Version>
+    <FileVersion>0.5.3.0</FileVersion>
+    <InformationalVersion>0.5.3-experimental</InformationalVersion>
     <RootNamespace>EKFastPDF</RootNamespace>
     <ApplicationIcon>Assets\FastPDF.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
@@ -34,7 +34,7 @@
 <ItemGroup>
     <ProjectReference Include="../../../src/Packaging/Packaging.csproj" /><ProjectReference Include="../../../src/AutomaticRegistration/AutomaticRegistration.csproj" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2903.40" />
-    <Content Include="../../../src/Viewer/web/renderer.mjs;../../../src/Viewer/web/sections.mjs;../../../src/Viewer/web/section-worker.mjs;../../../src/Viewer/web/comparison-base.mjs;../../../src/Viewer/web/navigation.mjs;../../../src/Viewer/web/section-grips.mjs;../../../src/Viewer/web/precomputed.mjs;../../../src/Viewer/web/scene-data.mjs;../../../src/Viewer/web/three.mjs;../../../src/Viewer/web/three.html;../../../src/Viewer/web/three.css" Link="offline3d/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="../../../src/Viewer/web/renderer.mjs;../../../src/Viewer/web/sections.mjs;../../../src/Viewer/web/section-worker.mjs;../../../src/Viewer/web/comparison-base.mjs;../../../src/Viewer/web/comparison-worker.mjs;../../../src/Viewer/web/navigation.mjs;../../../src/Viewer/web/section-grips.mjs;../../../src/Viewer/web/precomputed.mjs;../../../src/Viewer/web/scene-data.mjs;../../../src/Viewer/web/three.mjs;../../../src/Viewer/web/three.html;../../../src/Viewer/web/three.css;../../../src/Viewer/web/outlines.mjs" Link="offline3d/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="../../../src/Viewer/web/vendor/babylon.js;../../../src/Viewer/web/vendor/loaders.js;../../../src/Viewer/web/vendor/earcut.js;../../../src/Viewer/web/vendor/studio.env;../../../src/Viewer/web/vendor/studio.ktx;../../../src/Viewer/web/vendor/three-adapter.mjs;../../../src/Viewer/web/vendor/glslang.js;../../../src/Viewer/web/vendor/glslang.wasm;../../../src/Viewer/web/vendor/twgsl.js;../../../src/Viewer/web/vendor/twgsl.wasm" Link="offline3d/vendor/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

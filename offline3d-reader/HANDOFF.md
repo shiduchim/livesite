@@ -1,4 +1,10 @@
-# Working PDF reader source — v0.5.2 reference
+# Working PDF reader source — v0.5.3
+
+**0.5.3 changes this reader:**
+- It fixes the 3D view stuck on "Loading 3D model…".
+- It adds the Revit-like display, faster large models and exact zoom to fit.
+
+See [CHANGES-0.5.3.md](CHANGES-0.5.3.md). The paragraphs below describe the v0.5.2 baseline this was imported from (commit ba54c9f).
 
 This is the user's working FastPDF-based 2D/3D reader baseline, provided separately from the Revit exporter. Keep this folder read-only during exporter fixes. All copied application files retain their original bytes; no new reader behavior is introduced by the handoff.
 

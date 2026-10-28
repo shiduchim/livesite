@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Cross-builds the six Revit exporter variants (needs the .NET 10 SDK and NuGet
-# access; no Revit). Output: <out>/<year>-<framework>/Offline3DPrototype.Revit<year>.dll (+ .pdb)
+# access; no Revit). Output: <out>/<year>-<framework>/Offline3DPrototype.Revit<year>.dll (+ .pdb, .deps.json)
 # Usage: build/build-exporters.sh [out-dir]
 set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -16,6 +16,8 @@ for variant in 2024:net48 2025:net8.0-windows 2025:net10.0-windows 2026:net8.0-w
     || { cat "$OUT/build-$year-$fw.txt"; exit 1; }
   mkdir -p "$OUT/$year-$fw"
   cp "$stage/Offline3DPrototype.Revit$year.dll" "$stage/Offline3DPrototype.Revit$year.pdb" "$OUT/$year-$fw/"
+  # .NET 8/10 builds also describe themselves in a deps.json, as the 0.5.2 payload did.
+  [ ! -e "$stage/Offline3DPrototype.Revit$year.deps.json" ] || cp "$stage/Offline3DPrototype.Revit$year.deps.json" "$OUT/$year-$fw/"
   for f in RevitAPI.dll RevitAPIUI.dll; do [ ! -e "$OUT/$year-$fw/$f" ] || { echo "Autodesk references must not be redistributed"; exit 1; }; done
   rm -rf "$stage"
   echo "$year $fw: $(grep -E 'Warn|Error' "$OUT/build-$year-$fw.txt" | tr '\n' ' ')"
