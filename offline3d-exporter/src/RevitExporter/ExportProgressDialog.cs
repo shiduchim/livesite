@@ -27,6 +27,7 @@ internal sealed class ExportProgressDialog : Form
     private readonly Label counts = new Label();
     private readonly Label current = new Label();
     private readonly Label elapsedLabel = new Label();
+    private readonly ProgressBar bar = new ProgressBar { Style = ProgressBarStyle.Continuous, Minimum = 0, Maximum = 1000 };
     private readonly Button cancel = new Button();
     private readonly Stopwatch total = Stopwatch.StartNew();
     private readonly List<string> timing = new List<string>();
@@ -36,6 +37,9 @@ internal sealed class ExportProgressDialog : Form
     private IntPtr disabledOwner;
     private bool completed, ownerRestored;
     public bool CancelRequested { get; private set; }
+    /// <summary>Overall progress shown by the bar and the time-left line; null shows only the stage.</summary>
+    [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
+    public ExportProgressModel? Model { get; set; }
     public TimeSpan Elapsed => total.Elapsed;
     public IReadOnlyList<string> TimingLog => timing.Concat(new[] { Stamp(phase, total.ElapsedMilliseconds - phaseStart) }).ToArray();
 
@@ -55,7 +59,7 @@ internal sealed class ExportProgressDialog : Form
         current.ForeColor = Color.FromArgb(90, 90, 90); current.AutoEllipsis = true; current.AutoSize = false; current.Height = S(20);
         elapsedLabel.ForeColor = Color.FromArgb(90, 90, 90);
         layout.Controls.Add(phaseLabel, 0, 0); layout.Controls.Add(counts, 0, 1); layout.Controls.Add(current, 0, 2);
-        var bar = new ProgressBar { Anchor = AnchorStyles.Left | AnchorStyles.Right, Height = S(10), Margin = new Padding(0, S(4), 0, S(8)), Style = ProgressBarStyle.Marquee, MarqueeAnimationSpeed = 30 };
+        bar.Anchor = AnchorStyles.Left | AnchorStyles.Right; bar.Height = S(10); bar.Margin = new Padding(0, S(4), 0, S(8));
         layout.Controls.Add(bar, 0, 3); layout.Controls.Add(elapsedLabel, 0, 4);
         var footer = new TableLayoutPanel { Anchor = AnchorStyles.Left | AnchorStyles.Right, AutoSize = true, ColumnCount = 2, Margin = new Padding(0, S(8), 0, 0) };
         footer.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100)); footer.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -66,7 +70,7 @@ internal sealed class ExportProgressDialog : Form
         Controls.Add(layout);
         ClientSize = new Size(S(520), S(220));
         ResumeLayout(true);
-        timer.Tick += (_, __) => UpdateElapsed(); timer.Start(); UpdateElapsed();
+        timer.Tick += (_, __) => { Model?.Update(); UpdateElapsed(); }; timer.Start(); UpdateElapsed();
     }
 
     public new void Show(IWin32Window owner)
@@ -97,7 +101,7 @@ internal sealed class ExportProgressDialog : Form
             if (!CancelRequested) phaseLabel.Text = phase;
             counts.Text = values == null ? "" : values.Elements.ToString("N0", CultureInfo.CurrentCulture) + " elements · " + values.PlacedTriangles.ToString("N0", CultureInfo.CurrentCulture) + " triangles" + (values.Reused > 0 ? " · " + values.Reused.ToString("N0", CultureInfo.CurrentCulture) + " repeated items reused" : "");
             current.Text = values?.Current ?? "";
-            UpdateElapsed(); lastPump = now;
+            Model?.Update(); UpdateElapsed(); lastPump = now;
             if (Visible) { Refresh(); Application.DoEvents(); }
         }
         return !CancelRequested && !IsDisposed;
@@ -106,7 +110,15 @@ internal sealed class ExportProgressDialog : Form
     public void Complete() { completed = true; RestoreOwner(); Close(); }
     public new void Hide() { RestoreOwner(); base.Hide(); }
     private void RequestCancel() { CancelRequested = true; cancel.Enabled = false; cancel.Text = "Cancelling…"; phaseLabel.Text = "Cancelling at the next safe point…"; }
-    private void UpdateElapsed() { elapsedLabel.Text = "Elapsed " + total.Elapsed.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture); }
+    private void UpdateElapsed()
+    {
+        string elapsed = "Elapsed " + total.Elapsed.ToString(@"hh\:mm\:ss", CultureInfo.InvariantCulture);
+        if (Model == null) { elapsedLabel.Text = elapsed; return; }
+        bar.Value = Math.Max(0, Math.Min(1000, (int)Math.Round(Model.Fraction * 1000)));
+        string left = ExportProgressModel.FormatTimeLeft(Model.SecondsLeft);
+        string size = Model.ProjectedPdfBytes is long bytes ? "PDF about " + ExportProgressModel.FormatBytes(bytes) : "";
+        elapsedLabel.Text = string.Join(" · ", new[] { (int)Math.Round(Model.Fraction * 100) + " %", left == "" ? "Estimating time left…" : left, size, elapsed }.Where(t => t.Length > 0));
+    }
     private static string Stamp(string phase, long milliseconds) => phase + " | " + milliseconds + " ms";
     private void RestoreOwner()
     {

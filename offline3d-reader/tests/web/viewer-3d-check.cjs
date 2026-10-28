@@ -42,6 +42,10 @@ const results=[];const check=(name,ok,detail='')=>{results.push({name,ok,detail}
  check('loading overlay hidden after load',await page.isHidden('#loading'));
  check('no Babylon.js loading logo',await page.evaluate(()=>!document.getElementById('babylonjsLoadingDiv')));
  await page.screenshot({path:path.join(out,'viewer-3d-babylon-shaded.png')});
+ // Cut patterns (only when the model's materials carry them, e.g. add-cut-pattern.py).
+ const patterned=glb.includes(Buffer.from('cutPattern'));
+ if(patterned){await page.waitForTimeout(800);const hatch=await page.evaluate(async()=>{const r=(await import('./three.mjs')).testing.renderer;return r.scene.meshes.filter(m=>m.name==='Cut pattern').map(m=>m.getTotalVertices());});
+  check('cut patterns drawn on section caps',hatch.length>0&&hatch.every(n=>n>=2),JSON.stringify(hatch));await page.screenshot({path:path.join(out,'viewer-3d-cut-patterns.png')});}
  // Grips are smaller than 0.5.3 (39 x 18).
  const grip=await page.evaluate(()=>{const b=[...document.querySelectorAll('.section-grip')].find(b=>!b.hidden);const st=getComputedStyle(b.querySelector('svg'));const g=b.getBoundingClientRect();return{w:parseFloat(st.width),h:parseFloat(st.height),x:g.x+g.width/2,y:g.y+g.height/2};});
  check('resize arrows are smaller',grip.w<=30&&grip.h<=14,`${grip.w}×${grip.h}`);

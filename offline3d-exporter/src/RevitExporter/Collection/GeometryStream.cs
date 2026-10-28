@@ -10,8 +10,11 @@ internal sealed class ElementInfo
     public bool IsModel { get; set; }
     public bool IsLinkInstance { get; set; }
     public string Category { get; set; } = "Unknown";
-    /// <summary>Short human description for diagnostics only.</summary>
-    public string Label { get; set; } = "";
+    private string? label;
+    /// <summary>Short human description for diagnostics only. Built on first use from
+    /// <see cref="LabelFactory"/>: most elements are skipped and never need one.</summary>
+    public string Label { get => label ??= LabelFactory?.Invoke() ?? ""; set => label = value; }
+    public Func<string>? LabelFactory { get; set; }
     /// <summary>Bounding box in the element's own document coordinates, if known.</summary>
     public Point3? Min { get; set; }
     public Point3? Max { get; set; }

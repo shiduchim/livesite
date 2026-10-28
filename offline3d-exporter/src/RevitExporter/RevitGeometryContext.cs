@@ -27,15 +27,19 @@ internal sealed class RevitGeometryContext : IExportContext
     private readonly Dictionary<string, (PlainMaterial Material, string Key)> materials = new Dictionary<string, (PlainMaterial, string)>(StringComparer.Ordinal);
     private string? pendingLinkKey;
     private long elementCallbacks;
+    // One entry per OnLinkBegin: whether the progress model was told about it (Revit ends skipped links too).
+    private readonly Stack<bool> linkProgress = new Stack<bool>();
+    private readonly ExportProgressModel? overall;
+    private readonly Func<long> modelBytes;
 
     public Exception? Failure { get; private set; }
     public int SymbolIdFailures { get; private set; }
     public int MaterialFailures { get; private set; }
     public ExportStatistics Stats => stream.Stats;
 
-    public RevitGeometryContext(GeometryStream stream, ExportProgressDialog progress, ExportTrace trace, int levelOfDetail, string[] parameters)
+    public RevitGeometryContext(GeometryStream stream, ExportProgressDialog progress, ExportTrace trace, int levelOfDetail, string[] parameters, ExportProgressModel? overall = null, Func<long>? modelBytes = null)
     {
-        this.stream = stream; this.progress = progress; this.trace = trace; this.levelOfDetail = levelOfDetail; this.parameters = parameters;
+        this.stream = stream; this.progress = progress; this.trace = trace; this.levelOfDetail = levelOfDetail; this.parameters = parameters; this.overall = overall; this.modelBytes = modelBytes ?? (() => 0);
     }
 
     private Document CurrentDocument => (Document)stream.CurrentDocument!;
@@ -72,30 +76,34 @@ internal sealed class RevitGeometryContext : IExportContext
         var element = doc.GetElement(elementId);
         bool isLink = element is RevitLinkInstance;
         if (isLink) pendingLinkKey = element!.UniqueId;
-        string category = ExportText.Clean(element?.Category?.Name ?? "Unknown", 256);
+        var elementCategory = element?.Category;
+        string category = ExportText.Clean(elementCategory?.Name ?? "Unknown", 256);
         string key = stream.LinkChain + "::" + (element?.UniqueId ?? elementId.ToString());
+        bool inLink = stream.InLink;
         var info = new ElementInfo
         {
             Key = key,
             // RVT link instances are always entered; their own elements are
             // tested against the crop one by one inside the link.
-            IsModel = element?.Category?.CategoryType == CategoryType.Model,
+            IsModel = elementCategory?.CategoryType == CategoryType.Model,
             IsLinkInstance = isLink,
             Category = category,
-            Label = category + " | " + ExportText.Clean(element?.Name, 120) + " | id " + elementId + (stream.InLink ? " | linked" : ""),
+            LabelFactory = () => category + " | " + ExportText.Clean(element?.Name, 120) + " | id " + elementId + (inLink ? " | linked" : ""),
         };
-        if (!isLink && element != null)
+        // Bounds only matter for model elements: the stream skips everything else.
+        if (!isLink && info.IsModel && element != null)
         {
             var box = element.get_BoundingBox(null);
             if (box != null)
             {
-                var corners = ExportRegion.BoxPoints(box).ToArray();
-                info.Min = new Point3(corners.Min(p => p.X), corners.Min(p => p.Y), corners.Min(p => p.Z));
-                info.Max = new Point3(corners.Max(p => p.X), corners.Max(p => p.Y), corners.Max(p => p.Z));
+                double x0 = double.MaxValue, y0 = double.MaxValue, z0 = double.MaxValue, x1 = double.MinValue, y1 = double.MinValue, z1 = double.MinValue;
+                foreach (var p in ExportRegion.BoxPoints(box)) { x0 = Math.Min(x0, p.X); y0 = Math.Min(y0, p.Y); z0 = Math.Min(z0, p.Z); x1 = Math.Max(x1, p.X); y1 = Math.Max(y1, p.Y); z1 = Math.Max(z1, p.Z); }
+                info.Min = new Point3(x0, y0, z0); info.Max = new Point3(x1, y1, z1);
             }
         }
         string linkChain = stream.LinkChain;
         info.Identity = surface => Identity(doc, element, key, linkChain, surface);
+        overall?.ElementBegun(stream.InLink);
         bool proceed = stream.BeginElement(info);
         if (++elementCallbacks % 50 == 0) Pump();
         return proceed ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
@@ -129,13 +137,14 @@ internal sealed class RevitGeometryContext : IExportContext
             string key = pendingLinkKey ?? node.SymbolId.ToString();
             pendingLinkKey = null;
             bool proceed = stream.BeginLink(Adapter.Matrix(node.GetTransform()), doc, key);
+            linkProgress.Push(proceed); if (proceed) overall?.LinkEntered(key);
             if (proceed) trace.Line("Entering link " + ExportText.Clean(doc?.Title, 200) + " (" + key + ")");
             return proceed ? RenderNodeAction.Proceed : RenderNodeAction.Skip;
         }
         catch (Exception ex) { Fail(ex); return RenderNodeAction.Skip; }
     }
 
-    public void OnLinkEnd(LinkNode node) { if (Stopped) return; try { stream.EndLink(); } catch (Exception ex) { Fail(ex); } }
+    public void OnLinkEnd(LinkNode node) { if (Stopped) return; try { stream.EndLink(); if (linkProgress.Count > 0 && linkProgress.Pop()) overall?.LinkExited(); } catch (Exception ex) { Fail(ex); } }
 
     public RenderNodeAction OnFaceBegin(FaceNode node) => RenderNodeAction.Proceed;
     public void OnFaceEnd(FaceNode node) { }
@@ -222,6 +231,7 @@ internal sealed class RevitGeometryContext : IExportContext
     private void Pump()
     {
         var s = stream.Stats;
+        overall?.SetModelBytes(modelBytes());
         progress.Pump("Collecting model geometry", new ExportProgressCounts { Elements = s.ElementsBegun, PlacedTriangles = s.FacetsKept + s.TrianglesReused, Reused = s.InstancesReused, Current = stream.CurrentElementLabel });
         trace.Heartbeat(() => "elements " + s.ElementsBegun + " (exported " + s.ElementsExported + ", outside crop " + s.SkippedOutsideCrop + "), facets received " + s.FacetsReceived + ", kept " + s.FacetsKept + ", reused instances " + s.InstancesReused + ", culled " + s.InstancesCulled + ", current: " + (stream.CurrentElementLabel ?? "-"));
     }

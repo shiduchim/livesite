@@ -521,4 +521,52 @@ Check("over 64 MiB of distinct geometry from the new writer validates, packages 
     Console.WriteLine("  large scene: " + glb.Length + " bytes written, packaged and reopened in " + watch.ElapsedMilliseconds + " ms");
 });
 
+// ---------------------------------------------------------------- overall progress (0.5.4)
+Check("overall progress: weighted stages, links, regions, monotonic, finishes at 1", () =>
+{
+    double now = 0; var m = new X.ExportProgressModel(() => now);
+    m.AddRegion(1000, new Dictionary<string, long> { { "linkA", 500 } });
+    m.AddRegion(500, new Dictionary<string, long>());
+    m.Enter(X.ExportStage.Preparing); now = 3; m.Update(); Assert(m.Fraction > 0 && m.Fraction < .05 && m.SecondsLeft == null, "preparing");
+    m.BeginRegion(); double last = m.Fraction;
+    for (int i = 0; i < 1000; i++) { m.ElementBegun(false); now += .01; if (i % 50 == 0) { m.Update(); Assert(m.Fraction >= last); last = m.Fraction; } }
+    Assert(Math.Abs(m.GeometryFraction - 1000.0 / 2000) < 1e-9, "host share " + m.GeometryFraction);
+    m.LinkEntered("linkA"); m.LinkEntered("nested"); for (int i = 0; i < 900; i++) m.ElementBegun(true); m.LinkExited();
+    Assert(m.GeometryFraction <= (1000 + 490) / 2000.0 + 1e-9, "a link never counts past its estimate before it ends");
+    m.LinkExited(); Assert(Math.Abs(m.GeometryFraction - 1500.0 / 2000) < 1e-9, "finished link adds its estimate");
+    m.BeginRegion(); for (int i = 0; i < 250; i++) m.ElementBegun(false);
+    Assert(Math.Abs(m.GeometryFraction - 1750.0 / 2000) < 1e-9, "second region continues");
+    m.Enter(X.ExportStage.Writing); m.Enter(X.ExportStage.PdfPages); m.PdfPageDone(); m.PdfPageDone(); m.Enter(X.ExportStage.Finishing); m.Update();
+    Assert(m.Fraction > .98 && m.Fraction <= 1, "end " + m.Fraction);
+});
+
+Check("time left follows the measured rate and counts down smoothly; size is projected from bytes so far", () =>
+{
+    double now = 0; var m = new X.ExportProgressModel(() => now);
+    m.AddRegion(10000, new Dictionary<string, long>()); m.BeginRegion();
+    // 100 elements per second: 100 s of geometry.
+    double? previous = null;
+    for (int second = 1; second <= 60; second++)
+    {
+        for (int i = 0; i < 100; i++) m.ElementBegun(false);
+        now = second; m.SetModelBytes(second * 1_000_000L); m.Update();
+        if (second == 1) Assert(m.SecondsLeft == null, "no estimate in the first 3 %");
+        if (second >= 10) { Assert(m.SecondsLeft != null); if (previous != null) Assert(m.SecondsLeft < previous + 1, "does not jump up"); previous = m.SecondsLeft; }
+    }
+    // 40 s of geometry left plus writing (~2.5 s for ~100 MB) and two PDF pages (7 s).
+    Assert(m.SecondsLeft > 42 && m.SecondsLeft < 56, "time left " + m.SecondsLeft);
+    Assert(m.ProjectedPdfBytes > 55_000_000 && m.ProjectedPdfBytes < 70_000_000, "size " + m.ProjectedPdfBytes);
+    Assert(X.ExportProgressModel.FormatTimeLeft(30) == "Less than a minute left" && X.ExportProgressModel.FormatTimeLeft(185) == "About 3 minutes left" && X.ExportProgressModel.FormatTimeLeft(null) == "");
+    Assert(X.ExportProgressModel.FormatTimeLeft(3 * 3600 + 20 * 60) == "About 3 h 20 min left");
+});
+
+Check("export preferences remember the phase filter (and odd text) across exports; a broken file gives defaults", () =>
+{
+    string file = Path.Combine(root, "prefs", "export-options.txt"); if (File.Exists(file)) File.Delete(file);
+    var first = new X.ExportPreferences(file); Assert(first.Get("phaseFilter") == null);
+    first.Set("phaseFilter", "Show Complete"); first.Set("odd", "a=b\\c\nline"); Assert(first.Save());
+    var again = new X.ExportPreferences(file); Assert(again.Get("phaseFilter") == "Show Complete" && again.Get("odd") == "a=b\\c\nline", again.Get("odd") ?? "null");
+    File.WriteAllBytes(file, new byte[] { 0xff, 0xfe, 0x00 }); var broken = new X.ExportPreferences(file); Assert(broken.Get("phaseFilter") == null);
+});
+
 Console.WriteLine(passed + " exporter core checks passed in " + timer.ElapsedMilliseconds + " ms. Linux .NET, simulated Revit callbacks; native Revit execution remains untested.");

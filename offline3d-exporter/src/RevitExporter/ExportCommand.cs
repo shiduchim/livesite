@@ -25,7 +25,27 @@ public sealed class ExportCommand : IExternalCommand
     /// (and its cap faces) outside the crop, so boundary triangles stay whole.</summary>
     private const double SectionBoxMarginFeet = 1.0;
 
-    private readonly Dictionary<ElementId, List<ElementId>> hiddenCache = new Dictionary<ElementId, List<ElementId>>();
+    private readonly Dictionary<ElementId, HashSet<ElementId>> hiddenCache = new Dictionary<ElementId, HashSet<ElementId>>();
+    /// <summary>
+    /// Elements this command has hidden in the temporary 3D view. The view is new, so
+    /// these are the only hidden elements; tracking them replaces whole-model
+    /// <c>IsHidden</c> scans (several per export in 0.5.3). Restored if a transaction rolls back.
+    /// </summary>
+    private HashSet<ElementId> tempHidden = new HashSet<ElementId>();
+
+    private void Hide(Autodesk.Revit.DB.View view, IEnumerable<ElementId> ids)
+    {
+        var list = ids.Where(id => !tempHidden.Contains(id)).ToList();
+        if (list.Count == 0) return;
+        view.HideElements(list); tempHidden.UnionWith(list);
+    }
+
+    private void Unhide(Autodesk.Revit.DB.View view, IEnumerable<ElementId> ids)
+    {
+        var list = ids.Where(tempHidden.Contains).ToList();
+        if (list.Count == 0) return;
+        view.UnhideElements(list); tempHidden.ExceptWith(list);
+    }
 
     public Result Execute(ExternalCommandData data, ref string message, ElementSet elements)
     {
@@ -35,7 +55,7 @@ public sealed class ExportCommand : IExternalCommand
         void Warn(string warning) { if (warnings.Contains(warning)) return; warnings.Add(warning); trace?.Line("Warning: " + warning); }
         try
         {
-            hiddenCache.Clear();
+            hiddenCache.Clear(); tempHidden = new HashSet<ElementId>();
             Contract.Encode(Array.Empty<string>()); // load the writer before any Revit transaction
             var ui = data.Application.ActiveUIDocument; var doc = ui.Document;
             var owner = new RevitWindow(data.Application.MainWindowHandle);
@@ -48,6 +68,8 @@ public sealed class ExportCommand : IExternalCommand
             log.Line("Offline3D exporter " + ExporterVersion + " | " + Assembly.GetExecutingAssembly().FullName + " | " + data.Application.Application.VersionName + " " + data.Application.Application.VersionBuild);
             log.Line("Document: " + ExportText.Clean(doc.Title, 200) + " | view: " + ExportText.Clean(target.SourcePlan.Name, 200) + " (" + target.SourcePlan.ViewType + ") | from an unplaced view: " + target.FromPlan + " | viewports: " + target.Viewports.Length);
             var bar = progress = new ExportProgressDialog();
+            var clock = Stopwatch.StartNew();
+            var overall = new ExportProgressModel(() => clock.Elapsed.TotalSeconds);
 
             // ---- regions and registration draft (unchanged mapping math) ----
             log.Stage("Reading view regions");
@@ -72,7 +94,8 @@ public sealed class ExportCommand : IExternalCommand
                 if (scanned) return;
                 report("Scanning model elements…");
                 var model = new List<Element>(); int count = 0;
-                foreach (var element in new FilteredElementCollector(doc).WhereElementIsNotElementType())
+                // Model elements are view independent: the quick filter leaves out annotation and detail items.
+                foreach (var element in new FilteredElementCollector(doc).WhereElementIsNotElementType().WhereElementIsViewIndependent())
                 {
                     if (element.Category?.CategoryType == CategoryType.Model) model.Add(element);
                     if (++count % 2000 == 0) report("Scanning model elements… " + count.ToString("N0", CultureInfo.CurrentCulture));
@@ -99,13 +122,13 @@ public sealed class ExportCommand : IExternalCommand
                     }
 
                     BoundingBoxXYZ? fullBounds = null; bool? fullBoundsCategories = null;
-                    void PrepareScope(bool outside, bool allUp, bool allDown, bool allCategories, Action<string> report)
+                    void PrepareScope(bool outside, bool allUp, bool allDown, bool allCategories, ElementId phase, ElementId phaseFilter, Action<string> report)
                     {
                         EnsureCandidates(report);
                         view.IsSectionBoxActive = false; view.CropBoxActive = false;
-                        var revealed = candidates.Where(e => e.CanBeHidden(view) && e.IsHidden(view) && !e.IsHidden(target.SourcePlan)).Select(e => e.Id).ToList();
-                        if (revealed.Count > 0) view.UnhideElements(revealed);
-                        ConfigureVisibility(doc, target.SourcePlan, view, allCategories, Warn);
+                        var sourceHidden = HiddenIn(doc, target.SourcePlan, view);
+                        Unhide(view, tempHidden.Where(id => !sourceHidden.Contains(id)).ToArray());
+                        ConfigureVisibility(doc, target.SourcePlan, view, allCategories, Warn, phase, phaseFilter);
                         if (outside || allUp || allDown)
                         {
                             if (fullBounds == null || fullBoundsCategories != allCategories)
@@ -125,14 +148,17 @@ public sealed class ExportCommand : IExternalCommand
                         var watch = Stopwatch.StartNew();
                         try
                         {
+                            var hiddenBefore = new HashSet<ElementId>(tempHidden);
                             using (var tx = new Autodesk.Revit.DB.Transaction(doc, "Update export scope preview"))
                             {
+                                try {
                                 tx.Start();
-                                PrepareScope(request.OutsideCrop, request.AllUp, request.AllDown, request.IncludeAllCategories, report);
+                                PrepareScope(request.OutsideCrop, request.AllUp, request.AllDown, request.IncludeAllCategories, request.Phase, request.PhaseFilter, report);
                                 var box = regions.Length == 1 ? regions[0].Box : Union(regions);
                                 view.SetSectionBox(box); view.IsSectionBoxActive = true;
                                 PreviewFraming.Apply(doc, view, box, request.PixelSize, Warn);
                                 tx.Commit();
+                                } catch { tempHidden = hiddenBefore; throw; }
                             }
                             report("Revit is rendering the preview…");
                             string imageDirectory = Path.Combine(work, "preview-" + Guid.NewGuid().ToString("N"));
@@ -158,10 +184,20 @@ public sealed class ExportCommand : IExternalCommand
 
                     // ---- options (the preview runs inside this call) ----
                     log.Stage("Export options");
-                    using var options = new ExportOptionsDialog(target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan));
+                    // Phase and phase filter: the source view's, or the filter chosen last time.
+                    var preferences = new ExportPreferences(ExportPreferences.DefaultPath);
+                    var phases = doc.Phases.Cast<Phase>().Select(p => new NamedChoice { Name = ExportText.Clean(p.Name, 120), Id = p.Id }).ToArray();
+                    var filters = new[] { new NamedChoice { Name = "None", Id = ElementId.InvalidElementId } }.Concat(new FilteredElementCollector(doc).OfClass(typeof(PhaseFilter)).Cast<PhaseFilter>().OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase).Select(f => new NamedChoice { Name = ExportText.Clean(f.Name, 120), Id = f.Id })).ToArray();
+                    var viewPhase = target.SourcePlan.get_Parameter(BuiltInParameter.VIEW_PHASE)?.AsElementId() ?? ElementId.InvalidElementId;
+                    var viewFilter = target.SourcePlan.get_Parameter(BuiltInParameter.VIEW_PHASE_FILTER)?.AsElementId() ?? ElementId.InvalidElementId;
+                    int phaseIndex = Math.Max(0, Array.FindIndex(phases, p => p.Id == viewPhase));
+                    string? rememberedFilter = preferences.Get("phaseFilter");
+                    int filterIndex = rememberedFilter != null && Array.FindIndex(filters, f => f.Name == rememberedFilter) is int remembered && remembered >= 0 ? remembered : Math.Max(0, Array.FindIndex(filters, f => f.Id == viewFilter));
+                    using var options = new ExportOptionsDialog(target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan), phases, phaseIndex, filters, filterIndex);
                     if (options.RunModal(owner, Preview) != OptionsOutcome.Export) { cancelled = true; log.Line("Cancelled in the options dialog"); return Result.Cancelled; }
                     var detail = options.DetailPreset;
-                    log.Line("Options: detail " + detail + " (LOD " + options.TessellationLevel + "), outside crop " + options.OutsideCrop + ", all up " + options.AllUp + ", all down " + options.AllDown + ", hidden categories included " + options.IncludeAllCategories + ", tiny-part filter " + options.MinimumPartFeet.ToString("0.###", CultureInfo.InvariantCulture) + " ft, properties: " + string.Join(", ", options.ParameterNames));
+                    preferences.Set("phaseFilter", options.PhaseFilterName); preferences.Save();
+                    log.Line("Options: detail " + detail + " (LOD " + options.TessellationLevel + "), phase " + options.Phase + ", phase filter " + ExportText.Clean(options.PhaseFilterName, 120) + ", outside crop " + options.OutsideCrop + ", all up " + options.AllUp + ", all down " + options.AllDown + ", hidden categories included " + options.IncludeAllCategories + ", tiny-part filter " + options.MinimumPartFeet.ToString("0.###", CultureInfo.InvariantCulture) + " ft, properties: " + string.Join(", ", options.ParameterNames));
                     if (options.PreviewDiagnostics.Length > 0) File.AppendAllText(Path.Combine(work, "preview-timings.txt"), options.PreviewDiagnostics + Environment.NewLine);
 
                     string stem = string.Concat(target.FileStem.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));
@@ -173,15 +209,16 @@ public sealed class ExportCommand : IExternalCommand
                     }
 
                     // ---- export view ----
+                    clock.Restart(); overall.Enter(ExportStage.Preparing); bar.Model = overall;
                     bar.Show(owner);
                     log.Stage("Preparing the export view");
                     BoundingBoxXYZ nativeBox;
                     using (var tx = new Autodesk.Revit.DB.Transaction(doc, "Prepare full element geometry"))
                     {
                         tx.Start();
-                        PrepareScope(options.OutsideCrop, options.AllUp, options.AllDown, options.IncludeAllCategories, text => Check(bar, text));
-                        view.DetailLevel = detail == ExportDetail.Quick ? ViewDetailLevel.Coarse : detail == ExportDetail.Low || detail == ExportDetail.Medium ? ViewDetailLevel.Medium : ViewDetailLevel.Fine;
-                        view.DisplayStyle = detail == ExportDetail.Quick ? DisplayStyle.Shading : DisplayStyle.Realistic;
+                        PrepareScope(options.OutsideCrop, options.AllUp, options.AllDown, options.IncludeAllCategories, options.Phase, options.PhaseFilter, text => Check(bar, text));
+                        view.DetailLevel = detail == ExportDetail.VeryLow ? ViewDetailLevel.Coarse : detail == ExportDetail.Low || detail == ExportDetail.Medium ? ViewDetailLevel.Medium : ViewDetailLevel.Fine;
+                        view.DisplayStyle = detail == ExportDetail.VeryLow ? DisplayStyle.Shading : DisplayStyle.Realistic;
                         view.CropBoxActive = false;
                         nativeBox = Expand(regions.Length == 1 ? regions[0].Box : Union(regions), SectionBoxMarginFeet);
                         view.SetSectionBox(nativeBox); view.IsSectionBoxActive = true;
@@ -194,7 +231,7 @@ public sealed class ExportCommand : IExternalCommand
                     bool reuse = options.IncludeAllCategories && Environment.GetEnvironmentVariable("OFFLINE3D_DISABLE_INSTANCE_REUSE") != "1";
                     log.Line("Instance reuse: " + (reuse ? "on (Revit SymbolGeometryId, verified per symbol)" : "off" + (options.IncludeAllCategories ? " (OFFLINE3D_DISABLE_INSTANCE_REUSE=1)" : " (source view filters may override graphics per element)")));
                     File.WriteAllText(Path.Combine(work, "export-memory.txt"), "Before geometry: " + ExportTrace.Memory() + Environment.NewLine);
-                    using var writer = new SceneWriter(work, graphics, includeFeatureEdges: detail != ExportDetail.Quick);
+                    using var writer = new SceneWriter(work, graphics, includeFeatureEdges: detail != ExportDetail.VeryLow);
                     var stream = new GeometryStream(new GeometryStreamOptions
                     {
                         Volumes = regions.Select(r => r.Volume).ToArray(),
@@ -202,25 +239,36 @@ public sealed class ExportCommand : IExternalCommand
                         MinimumPartFeet = options.MinimumPartFeet,
                         ReuseInstances = reuse
                     }, writer, doc);
-                    var context = new RevitGeometryContext(stream, bar, trace, options.TessellationLevel, options.ParameterNames);
+                    var context = new RevitGeometryContext(stream, bar, trace, options.TessellationLevel, options.ParameterNames, overall, () => writer.UniqueBytes);
+                    // Overall progress: elements each region will traverse (host elements near
+                    // the crop, plus each loaded link's elements inside the export box).
+                    var regionAllowed = new List<HashSet<ElementId>>();
+                    foreach (var scope in regions)
+                    {
+                        var allowed = new HashSet<ElementId>(scope.Candidates(doc));
+                        regionAllowed.Add(allowed);
+                        var links = new Dictionary<string, long>(StringComparer.Ordinal);
+                        foreach (var link in candidates.OfType<RevitLinkInstance>()) { long estimate = LinkEstimate(link, nativeBox); if (estimate > 0) links[link.UniqueId] = estimate; }
+                        overall.AddRegion(candidates.Count(e => allowed.Contains(e.Id) && !(e is RevitLinkInstance)), links);
+                    }
                     try
                     {
-                        foreach (var scope in regions)
+                        foreach (var (scope, regionIndex) in regions.Select((r, i) => (r, i)))
                         {
                             Check(bar, "Hiding elements outside " + scope.Source.Name);
                             using (var tx = new Autodesk.Revit.DB.Transaction(doc, "Prepare region geometry"))
                             {
                                 tx.Start();
-                                ConfigureVisibility(doc, scope.Source, view, options.IncludeAllCategories, Warn);
-                                var allowed = new HashSet<ElementId>(scope.Candidates(doc));
-                                var outside = candidates.Where(e => !(e is RevitLinkInstance) && e.CanBeHidden(view) && !allowed.Contains(e.Id)).Select(e => e.Id).ToList();
-                                var outsideSet = new HashSet<ElementId>(outside);
-                                var reveal = candidates.Where(e => e.CanBeHidden(view) && e.IsHidden(view) && !outsideSet.Contains(e.Id) && !e.IsHidden(scope.Source)).Select(e => e.Id).ToList();
-                                if (reveal.Count > 0) view.UnhideElements(reveal);
-                                if (outside.Count > 0) view.HideElements(outside);
+                                ConfigureVisibility(doc, scope.Source, view, options.IncludeAllCategories, Warn, options.Phase, options.PhaseFilter);
+                                var allowed = regionAllowed[regionIndex];
+                                var outside = candidates.Where(e => !(e is RevitLinkInstance) && !allowed.Contains(e.Id) && !tempHidden.Contains(e.Id) && e.CanBeHidden(view)).Select(e => e.Id).ToList();
+                                var sourceHidden = HiddenIn(doc, scope.Source, view);
+                                Unhide(view, tempHidden.Where(id => allowed.Contains(id) && !sourceHidden.Contains(id)).ToArray());
+                                Hide(view, outside);
                                 tx.Commit();
                                 log.Line("Region " + ExportText.Clean(scope.Source.Name, 120) + ": " + allowed.Count + " host elements near the crop, " + outside.Count + " hidden for the traversal");
                             }
+                            overall.BeginRegion();
                             Check(bar, "Collecting model geometry");
                             using (var exporter = new CustomExporter(doc, context)) { exporter.IncludeGeometricObjects = false; exporter.ShouldStopOnError = true; exporter.Export(view); }
                             context.ThrowIfStopped();
@@ -240,10 +288,12 @@ public sealed class ExportCommand : IExternalCommand
                     if (writer.PlacementCount == 0) throw new ExportSetupException("No exportable model geometry was found in the export area. Check the preview, the view's phase and visibility, and that linked models are loaded.");
 
                     // ---- GLB and identities ----
+                    overall.SetModelBytes(writer.UniqueBytes); overall.Enter(ExportStage.Writing);
                     Check(bar, "Writing the 3D model");
                     log.Stage("Writing GLB");
                     reg.ExportBoundsGraphics = writer.BoundsGraphics;
                     var stats = writer.Write(Path.Combine(work, "scene.glb"));
+                    overall.SetModelBytes(stats.Bytes);
                     File.WriteAllBytes(Path.Combine(work, "identities.json"), Contract.Encode(stream.Identities.ToArray()));
                     var summary = "GLB " + stats.Bytes.ToString("N0", CultureInfo.InvariantCulture) + " bytes | parts " + stats.Nodes + " (before merging " + stats.NodesBeforeMerge + ", merged " + stats.MergedPlacements + " into " + stats.MergedGroups + ") | unique meshes " + stats.UniqueMeshes + " | shared placements " + stats.SharedPlacements + " | triangles " + stats.Triangles.ToString("N0", CultureInfo.InvariantCulture) + " placed, " + stats.UniqueTriangles.ToString("N0", CultureInfo.InvariantCulture) + " stored | materials " + stats.Materials + " | elements " + stats.Elements;
                     log.Line(summary);
@@ -257,8 +307,10 @@ public sealed class ExportCommand : IExternalCommand
                     log.Stage("Exporting PDF pages");
                     var pdfOptions = new PDFExportOptions { Combine = true, FileName = "drawing-clean", ColorDepth = ColorDepthType.Color };
                     if (target.FromPlan) { pdfOptions.PaperFormat = ExportPaperFormat.ISO_A3; pdfOptions.PaperOrientation = PageOrientationType.Landscape; pdfOptions.PaperPlacement = PaperPlacementType.Center; pdfOptions.ZoomType = ZoomType.FitToPage; }
+                    overall.Enter(ExportStage.PdfPages);
                     Check(bar, "Exporting the clean PDF page");
                     if (!doc.Export(work, new List<ElementId> { target.Sheet.Id }, pdfOptions)) throw new IOException("Revit could not export the PDF page.");
+                    overall.PdfPageDone();
                     var markers = AutomaticExport.Markers(reg.CropSheet);
                     using (var marks = new TransactionGroup(doc, "Offline3D temporary mapping markers"))
                     {
@@ -287,6 +339,7 @@ public sealed class ExportCommand : IExternalCommand
                             Check(bar, "Exporting the registration check page");
                             pdfOptions.FileName = "drawing-marked";
                             if (!doc.Export(work, new List<ElementId> { target.Sheet.Id }, pdfOptions)) throw new IOException("Revit could not export the registration check page.");
+                            overall.PdfPageDone();
                         }
                         finally { marks.RollBack(); }
                     }
@@ -307,6 +360,7 @@ public sealed class ExportCommand : IExternalCommand
                     foreach (var name in new[] { "export-timings.txt", "export-warnings.txt", "unloaded-links.txt", "preview-timings.txt", "preview-errors.txt", "export-memory.txt" }) log.Keep(Path.Combine(work, name));
 
                     target.Restore();
+                    overall.Enter(ExportStage.Finishing);
                     log.Stage("Starting the viewer helper");
                     Check(bar, "Checking the PDF mapping in the viewer helper");
                     string install = Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.Parent!.Parent!.FullName;
@@ -358,6 +412,20 @@ public sealed class ExportCommand : IExternalCommand
 
     private static void Check(ExportProgressDialog progress, string phase) { if (!progress.Pump(phase)) throw new OperationCanceledException("Export cancelled"); }
 
+    /// <summary>Elements of a loaded link inside the export box (in the link's coordinates), for the progress estimate.</summary>
+    private static long LinkEstimate(RevitLinkInstance link, BoundingBoxXYZ box)
+    {
+        try
+        {
+            var linked = link.GetLinkDocument(); if (linked == null) return 0;
+            var inverse = link.GetTotalTransform().Inverse;
+            var points = ExportRegion.BoxPoints(box).Select(p => inverse.OfPoint(p)).ToArray();
+            var outline = new Outline(new XYZ(points.Min(p => p.X), points.Min(p => p.Y), points.Min(p => p.Z)), new XYZ(points.Max(p => p.X), points.Max(p => p.Y), points.Max(p => p.Z)));
+            return new FilteredElementCollector(linked).WhereElementIsNotElementType().WhereElementIsViewIndependent().WherePasses(new BoundingBoxIntersectsFilter(outline)).GetElementCount();
+        }
+        catch (Autodesk.Revit.Exceptions.ApplicationException) { return 0; }
+    }
+
     private static BoundingBoxXYZ Union(ExportRegion[] regions) => new BoundingBoxXYZ { Min = new XYZ(regions.Min(r => r.Min.X), regions.Min(r => r.Min.Y), regions.Min(r => r.Min.Z)), Max = new XYZ(regions.Max(r => r.Max.X), regions.Max(r => r.Max.Y), regions.Max(r => r.Max.Z)) };
 
     private static BoundingBoxXYZ Expand(BoundingBoxXYZ box, double margin) => new BoundingBoxXYZ { Transform = box.Transform, Min = box.Min - new XYZ(margin, margin, margin), Max = box.Max + new XYZ(margin, margin, margin) };
@@ -369,12 +437,18 @@ public sealed class ExportCommand : IExternalCommand
         return ExportText.Clean(r.Source.Name, 120) + " (" + r.Source.ViewType + ") | crop " + size.X.ToString("0.##", CultureInfo.InvariantCulture) + " x " + size.Y.ToString("0.##", CultureInfo.InvariantCulture) + " ft, height " + size.Z.ToString("0.##", CultureInfo.InvariantCulture) + " ft, rotation " + angle.ToString("0.#", CultureInfo.InvariantCulture) + "° | bottom: " + ExportText.Clean(r.BottomLabel, 80) + " | top: " + ExportText.Clean(r.TopLabel, 80);
     }
 
-    private void ConfigureVisibility(Document doc, Autodesk.Revit.DB.View source, View3D target, bool allCategories, Action<string> warn)
+    /// <param name="phase">Phase chosen in the options (InvalidElementId keeps the source view's).</param>
+    /// <param name="phaseFilter">Phase filter chosen in the options; InvalidElementId means "None".</param>
+    private void ConfigureVisibility(Document doc, Autodesk.Revit.DB.View source, View3D target, bool allCategories, Action<string> warn, ElementId phase, ElementId phaseFilter)
     {
         foreach (var id in new[] { BuiltInParameter.VIEW_PHASE, BuiltInParameter.VIEW_PHASE_FILTER, BuiltInParameter.VIEWER_OPTION_VISIBILITY })
         {
             var from = source.get_Parameter(id); var to = target.get_Parameter(id);
-            if (from != null && to != null && !to.IsReadOnly && from.StorageType == StorageType.ElementId && to.StorageType == StorageType.ElementId) to.Set(from.AsElementId());
+            if (from == null || to == null || to.IsReadOnly || from.StorageType != StorageType.ElementId || to.StorageType != StorageType.ElementId) continue;
+            // The phase filter decides how demolished and existing elements appear
+            // ("Show All" draws demolished walls in red); the user's choice wins.
+            var value = id == BuiltInParameter.VIEW_PHASE && phase != ElementId.InvalidElementId ? phase : id == BuiltInParameter.VIEW_PHASE_FILTER ? phaseFilter : from.AsElementId();
+            try { to.Set(value); } catch (Autodesk.Revit.Exceptions.ArgumentException) { warn("Could not apply " + (id == BuiltInParameter.VIEW_PHASE ? "the phase" : id == BuiltInParameter.VIEW_PHASE_FILTER ? "the phase filter" : "a view setting") + "; the source view's value was kept."); to.Set(from.AsElementId()); }
         }
         foreach (Category c in doc.Settings.Categories)
             if (c.CategoryType == CategoryType.Model && source.CanCategoryBeHidden(c.Id) && target.CanCategoryBeHidden(c.Id))
@@ -385,12 +459,18 @@ public sealed class ExportCommand : IExternalCommand
         if (doc.IsWorkshared)
             foreach (var workset in new FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset)) target.SetWorksetVisibility(workset.Id, source.GetWorksetVisibility(workset.Id));
         LinkOverrideTransfer.Copy(doc, source, target, warn);
+        Hide(target, HiddenIn(doc, source, target));
+    }
+
+    /// <summary>Elements hidden in a source view (Hide in View), once per view.</summary>
+    private HashSet<ElementId> HiddenIn(Document doc, Autodesk.Revit.DB.View source, Autodesk.Revit.DB.View target)
+    {
         if (!hiddenCache.TryGetValue(source.Id, out var hidden))
         {
-            hidden = new FilteredElementCollector(doc).WhereElementIsNotElementType().Where(e => e.CanBeHidden(target) && e.IsHidden(source)).Select(e => e.Id).ToList();
+            hidden = new HashSet<ElementId>(new FilteredElementCollector(doc).WhereElementIsNotElementType().WhereElementIsViewIndependent().Where(e => e.IsHidden(source) && e.CanBeHidden(target)).Select(e => e.Id));
             hiddenCache.Add(source.Id, hidden);
         }
-        if (hidden.Count > 0) target.HideElements(hidden);
+        return hidden;
     }
 }
 

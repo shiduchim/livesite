@@ -12,7 +12,11 @@ using Timer = System.Windows.Forms.Timer;
 
 namespace Offline3D.RevitExporter;
 
-internal enum ExportDetail { Quick, Low, Medium, High, Ultra }
+/// <summary>Very low: lowest Revit tessellation, Coarse detail, no precomputed edges, parts under 2" skipped.</summary>
+internal enum ExportDetail { VeryLow, Low, Medium, High, Ultra }
+
+/// <summary>A phase or phase filter offered in the options.</summary>
+internal sealed class NamedChoice { public string Name = ""; public Autodesk.Revit.DB.ElementId Id = Autodesk.Revit.DB.ElementId.InvalidElementId; public override string ToString() => Name; }
 
 internal enum OptionsOutcome { Cancel, Export }
 
@@ -23,8 +27,10 @@ internal sealed class PreviewRequest
     public bool AllUp { get; set; }
     public bool AllDown { get; set; }
     public bool IncludeAllCategories { get; set; }
+    public Autodesk.Revit.DB.ElementId Phase { get; set; } = Autodesk.Revit.DB.ElementId.InvalidElementId;
+    public Autodesk.Revit.DB.ElementId PhaseFilter { get; set; } = Autodesk.Revit.DB.ElementId.InvalidElementId;
     public Size PixelSize { get; set; }
-    public string Key => OutsideCrop + ":" + AllUp + ":" + AllDown + ":" + IncludeAllCategories;
+    public string Key => OutsideCrop + ":" + AllUp + ":" + AllDown + ":" + IncludeAllCategories + ":" + Phase + ":" + PhaseFilter;
 }
 
 /// <summary>
@@ -46,6 +52,8 @@ internal sealed class ExportOptionsDialog : Form
     private readonly CheckBox categories = new CheckBox { Text = "Include categories hidden in the view", Checked = true, AutoSize = true };
     private readonly TextBox parameterNames = new TextBox { Text = "Mark,Comments,Type Mark" };
     private readonly ComboBox detail = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox phase = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
+    private readonly ComboBox phaseFilter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly Label detailHint = new Label();
     private readonly CheckBox skipTiny = new CheckBox { Text = "Skip parts smaller than", AutoSize = true };
     private readonly NumericUpDown tinySize = new NumericUpDown { DecimalPlaces = 1, Minimum = .1m, Maximum = 100, Value = 2, Increment = .5m, Enabled = false };
@@ -87,14 +95,21 @@ internal sealed class ExportOptionsDialog : Form
     public bool IncludeAllCategories => categories.Checked;
     public string[] ParameterNames => parameterNames.Text.Split(',').Select(x => x.Trim()).Where(x => x.Length > 0).Take(20).ToArray();
     public ExportDetail DetailPreset => (ExportDetail)Math.Max(0, detail.SelectedIndex);
-    public int TessellationLevel => new[] { 1, 4, 8, 12, 15 }[(int)DetailPreset];
-    public double MinimumPartFeet => skipTiny.Checked ? (double)tinySize.Value / 30.48 : 0;
+    public int TessellationLevel => new[] { 0, 4, 8, 12, 15 }[(int)DetailPreset];
+    /// <summary>Very low always skips parts under 2" (checked before Revit tessellates them).</summary>
+    public double MinimumPartFeet => Math.Max(skipTiny.Checked ? (double)tinySize.Value / 30.48 : 0, DetailPreset == ExportDetail.VeryLow ? 2.0 / 12 : 0);
+    public Autodesk.Revit.DB.ElementId Phase => (phase.SelectedItem as NamedChoice)?.Id ?? Autodesk.Revit.DB.ElementId.InvalidElementId;
+    public Autodesk.Revit.DB.ElementId PhaseFilter => (phaseFilter.SelectedItem as NamedChoice)?.Id ?? Autodesk.Revit.DB.ElementId.InvalidElementId;
+    public string PhaseFilterName => (phaseFilter.SelectedItem as NamedChoice)?.Name ?? "";
     public string PreviewDiagnostics { get; private set; } = "";
 
     private int S(int px) => (int)Math.Round(px * DeviceDpi / 96.0);
 
-    public ExportOptionsDialog(string viewName, string bottomLabel, string topLabel, int candidateCount, bool planHeight)
+    public ExportOptionsDialog(string viewName, string bottomLabel, string topLabel, int candidateCount, bool planHeight, NamedChoice[] phases, int phaseIndex, NamedChoice[] filters, int filterIndex)
     {
+        phase.Items.AddRange(phases); phaseFilter.Items.AddRange(filters);
+        if (phases.Length > 0) phase.SelectedIndex = Math.Max(0, Math.Min(phases.Length - 1, phaseIndex));
+        if (filters.Length > 0) phaseFilter.SelectedIndex = Math.Max(0, Math.Min(filters.Length - 1, filterIndex));
         this.viewName = viewName; this.bottomLabel = bottomLabel; this.topLabel = topLabel; this.candidateCount = Math.Max(0, candidateCount); this.planHeight = planHeight;
         SuspendLayout();
         AutoScaleMode = AutoScaleMode.None; // every size below is computed from DeviceDpi
@@ -120,6 +135,8 @@ internal sealed class ExportOptionsDialog : Form
         allUp.CheckedChanged += (_, __) => OptionsChanged();
         allDown.CheckedChanged += (_, __) => OptionsChanged();
         categories.CheckedChanged += (_, __) => OptionsChanged();
+        phase.SelectedIndexChanged += (_, __) => OptionsChanged();
+        phaseFilter.SelectedIndexChanged += (_, __) => OptionsChanged();
         detail.SelectedIndexChanged += (_, __) => { UpdateDetailHint(); UpdateEstimate(); };
         skipTiny.CheckedChanged += (_, __) => tinySize.Enabled = skipTiny.Checked;
         Resize += (_, __) => ApplyLayout();
@@ -200,12 +217,17 @@ internal sealed class ExportOptionsDialog : Form
 
         Add(SectionLabel("Content"));
         categories.Margin = new Padding(0, 0, 0, S(2)); Add(categories);
-        Add(SmallLabel("Loaded links, phases, worksets and hidden elements are respected."));
+        foreach (var (text, box) in new[] { ("Phase", phase), ("Phase filter", phaseFilter) })
+        {
+            Add(new Label { Text = text, AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, S(4), 0, S(2)) });
+            box.Anchor = AnchorStyles.Left | AnchorStyles.Right; box.Margin = new Padding(0, 0, 0, S(4)); Add(box);
+        }
+        Add(SmallLabel("\"Show Complete\" leaves out demolished elements (shown red with \"Show All\")."));
         Add(new Label { Text = "Extra properties (comma separated)", AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, S(2), 0, S(2)) });
         parameterNames.Anchor = AnchorStyles.Left | AnchorStyles.Right; parameterNames.Margin = new Padding(0, 0, 0, S(4)); Add(parameterNames);
 
         Add(SectionLabel("Detail"));
-        detail.Items.AddRange(new object[] { "Quick — lowest polygon count, fastest", "Low — smaller and faster", "Medium — balanced (recommended)", "High — more curve detail", "Ultra — highest detail" });
+        detail.Items.AddRange(new object[] { "Very low — fewest polygons, fastest", "Low — smaller and faster", "Medium — balanced (recommended)", "High — more curve detail", "Ultra — highest detail" });
         detail.SelectedIndex = (int)ExportDetail.Medium; detail.Anchor = AnchorStyles.Left | AnchorStyles.Right; detail.Margin = new Padding(0, 0, 0, S(4)); Add(detail);
         detailHint.AutoSize = true; detailHint.Anchor = AnchorStyles.Left | AnchorStyles.Right; detailHint.ForeColor = Color.FromArgb(96, 96, 96); detailHint.Margin = new Padding(0, 0, 0, S(6)); Add(detailHint);
         var tiny = new TableLayoutPanel { ColumnCount = 3, AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, 0, 0, S(2)) };
@@ -236,14 +258,14 @@ internal sealed class ExportOptionsDialog : Form
         foreach (var b in new[] { quickButton, exportButton, cancelButton }) { b.AutoSize = true; b.MinimumSize = new Size(S(104), S(32)); b.Margin = new Padding(S(8), 0, 0, 0); }
         quickButton.Text = "Quick export"; exportButton.Text = "Export…"; cancelButton.Text = "Cancel";
         exportButton.Font = new Font(Font, FontStyle.Bold);
-        quickButton.Click += (_, __) => { detail.SelectedIndex = (int)ExportDetail.Quick; Finish(OptionsOutcome.Export); };
+        quickButton.Click += (_, __) => { detail.SelectedIndex = (int)ExportDetail.VeryLow; Finish(OptionsOutcome.Export); };
         exportButton.Click += (_, __) => Finish(OptionsOutcome.Export);
         cancelButton.Click += (_, __) => Finish(OptionsOutcome.Cancel);
         AcceptButton = exportButton; CancelButton = cancelButton;
         buttons.Controls.Add(quickButton); buttons.Controls.Add(exportButton); buttons.Controls.Add(cancelButton);
         footer.Controls.Add(status, 0, 0); footer.Controls.Add(buttons, 1, 0);
         var tip = new ToolTip();
-        tip.SetToolTip(quickButton, "Export now with Quick detail: coarse geometry, colours and properties kept, no precomputed edges.");
+        tip.SetToolTip(quickButton, "Export now with Very low detail: coarse geometry, colours and properties kept, no precomputed edges, parts under 2 in skipped.");
     }
 
     /// <summary>Two columns when there is room; preview above options otherwise.</summary>
@@ -307,7 +329,7 @@ internal sealed class ExportOptionsDialog : Form
     {
         detailHint.Text = DetailPreset switch
         {
-            ExportDetail.Quick => "Coarse Revit geometry, colours and properties; no precomputed edges. Fastest.",
+            ExportDetail.VeryLow => "Coarse Revit geometry with the fewest polygons; no precomputed edges; parts under 2 in are skipped. Fastest.",
             ExportDetail.Low => "Fewer triangles on curved surfaces.",
             ExportDetail.Medium => "Standard Revit tessellation. Recommended for team review.",
             ExportDetail.High => "Fine Revit detail; larger files and longer export.",
@@ -326,7 +348,7 @@ internal sealed class ExportOptionsDialog : Form
 
     private static string FormatSize(long bytes) => bytes >= 1073741824 ? (bytes / 1073741824d).ToString("0.0", CultureInfo.CurrentCulture) + " GB" : (bytes / 1048576d).ToString("0", CultureInfo.CurrentCulture) + " MB";
 
-    private PreviewRequest CurrentRequest() => new PreviewRequest { OutsideCrop = OutsideCrop, AllUp = AllUp, AllDown = AllDown, IncludeAllCategories = IncludeAllCategories, PixelSize = picture.ClientSize };
+    private PreviewRequest CurrentRequest() => new PreviewRequest { OutsideCrop = OutsideCrop, AllUp = AllUp, AllDown = AllDown, IncludeAllCategories = IncludeAllCategories, Phase = Phase, PhaseFilter = PhaseFilter, PixelSize = picture.ClientSize };
 
     private void RequestPreview() { if (!busy) previewWanted = true; }
 
