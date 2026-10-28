@@ -30,6 +30,11 @@
             </Grid.ColumnDefinitions>
             <Image Grid.Column="0" Source="Assets/EKPDF-64.png" Width="18" Height="18" Margin="10,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" ToolTip="EKPDF"/>
             <DockPanel Grid.Column="1" LastChildFill="False" VerticalAlignment="Center">
+                <!-- My PDFs: always the first tab; it cannot be closed. -->
+                <Border x:Name="LibraryTab" DockPanel.Dock="Left" Height="26" Margin="0,0,2,0" Padding="12,0" CornerRadius="4" BorderThickness="1"
+                        Cursor="Hand" WindowChrome.IsHitTestVisibleInChrome="True" MouseLeftButtonDown="LibraryTab_Click" ToolTip="Your PDF folders">
+                    <TextBlock x:Name="LibraryTabText" Text="My PDFs" FontSize="12" VerticalAlignment="Center"/>
+                </Border>
                 <ItemsControl x:Name="TabStrip" DockPanel.Dock="Left" WindowChrome.IsHitTestVisibleInChrome="True" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -72,8 +77,6 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
-                <Button DockPanel.Dock="Left" Content="Open" Style="{StaticResource SoftButton}" Margin="6,0,0,0" VerticalAlignment="Center"
-                        WindowChrome.IsHitTestVisibleInChrome="True" Click="Open_Click" ToolTip="Open PDF files (Ctrl+O)"/>
             </DockPanel>
             <StackPanel x:Name="TitleTools" Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="8,0,4,0" WindowChrome.IsHitTestVisibleInChrome="True">
                 <ContentControl x:Name="TitleNavHost" Focusable="False"/>
@@ -203,15 +206,8 @@
                 <TextBlock x:Name="ToastText" Style="{StaticResource BarText}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
             </Border>
 
-            <Grid x:Name="Welcome" Background="{StaticResource Chrome}">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="440">
-                    <Image Source="Assets/EKPDF-256.png" Width="56" Height="56" HorizontalAlignment="Center" Margin="0,0,0,18" RenderOptions.BitmapScalingMode="HighQuality"/>
-                    <TextBlock Text="EKPDF" FontSize="22" FontWeight="SemiBold" Foreground="{StaticResource Ink}" TextAlignment="Center"/>
-                    <TextBlock Text="Open a PDF or drop files anywhere in this window." FontSize="12.5" Foreground="{StaticResource InkSoft}" Margin="0,8,0,20" TextAlignment="Center"/>
-                    <Button Content="Open PDF files…" Style="{StaticResource AccentButton}" HorizontalAlignment="Center" Click="Open_Click"/>
-                    <TextBlock x:Name="WelcomeInfo" Foreground="{StaticResource InkFaint}" FontSize="11" Margin="0,30,0,0" TextAlignment="Center" TextWrapping="Wrap"/>
-                </StackPanel>
-            </Grid>
+            <!-- My PDFs (Viewer/LibraryView.cs); shown while its tab is selected. -->
+            <ContentControl x:Name="LibraryHost" Grid.ColumnSpan="3" Focusable="False"/>
         </Grid>
 
         <!-- Regular layout only: the status bar. -->

@@ -1,6 +1,7 @@
 using System.IO;
 using System.Text.Json;
 using EKFastPDF.Core.Diagnostics;
+using EKFastPDF.Core.Library;
 
 namespace EKFastPDF.Services;
 
@@ -26,6 +27,19 @@ public sealed class AppSettings
     public double WindowWidth { get; set; } = 1320;
     public double WindowHeight { get; set; } = 840;
     public bool WindowMaximized { get; set; }
+
+    // ---- My PDFs and New PDFs (everything can be off)
+    /// <summary>Folders shown in My PDFs, in the user's order. Null until first run: Downloads.</summary>
+    public List<LibraryFolder>? Folders { get; set; }
+    /// <summary>Size slider, 0 (smallest) to 1 (fit width).</summary>
+    public double LibrarySize { get; set; } = 0.25;
+    public bool ShowNewestButton { get; set; } = true;
+    /// <summary>"Recent" means arrived in the last this many minutes (start and window-forward options).</summary>
+    public int RecentMinutes { get; set; } = 1;
+    /// <summary>When EKPDF starts without files, open PDFs that arrived recently.</summary>
+    public bool OpenRecentOnStart { get; set; } = true;
+    /// <summary>When the EKPDF window comes forward, open recent PDFs not opened yet.</summary>
+    public bool OpenRecentOnActivate { get; set; }
 
     public static string Directory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Offline3D-FastPDF-Dev");
     private static string FilePath => Path.Combine(Directory, "settings.json");

@@ -34,9 +34,10 @@ public partial class App : Application
             var runner = new BenchmarkRunner(window, _services, Program.Arguments);
             _ = runner.RunAsync();
         }
-        else if (StartupFiles.Count > 0)
+        else
         {
-            window.OpenFiles(StartupFiles);
+            if (StartupFiles.Count > 0) window.OpenFiles(StartupFiles);
+            _ = window.StartLibraryAsync(StartupFiles.Count > 0);
         }
     }
 

@@ -41,6 +41,8 @@ public sealed class DocumentSession : INotifyPropertyChanged, IDisposable
     public DocumentInfo? Info { get; private set; }
     public DocumentLayout? Layout { get; private set; }
     public Viewport View { get; } = new();
+    /// <summary>Page shown first (from My PDFs, where any page of a PDF can be clicked).</summary>
+    public int InitialPage { get; set; }
     /// <summary>False until the viewer has sized the view and applied the initial fit.</summary>
     public bool ViewInitialized { get; set; }
     public SearchController Search { get; }

@@ -234,7 +234,8 @@ public sealed class PdfViewport : FrameworkElement
         {
             s.View.SetSize(w, h, dpi.DpiScaleX);
             s.View.Fit = FitMode.Page;
-            s.View.ApplyFit(s.Layout!, 0);
+            int first = Math.Clamp(s.InitialPage, 0, s.Layout!.PageCount - 1);
+            s.View.ApplyFit(s.Layout!, first);
             s.ViewInitialized = true;
             ViewMoved(zoomed: true);
         }

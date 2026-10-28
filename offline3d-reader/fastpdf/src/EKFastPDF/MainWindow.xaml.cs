@@ -43,9 +43,7 @@ public partial class MainWindow : Window
         RestorePlacement();
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(400), DispatcherPriority.Background, (_, _) => UpdateRenderStatus(), Dispatcher);
         _statusTimer.Start();
-        WelcomeInfo.Text = $"{services.Pool.WorkerCount} render workers  ·  {services.Hardware}  ·  " +
-                           $"{(RenderCapability.Tier >> 16 == 2 ? "GPU composition" : "software composition")}" +
-                           (services.Gpu.Primary is { } g ? $"  ·  {g.Name}" : "");
+        InitLibrary();
         RefreshState();
     }
 
@@ -75,6 +73,7 @@ public partial class MainWindow : Window
         SearchToggle.Visibility = _compact ? Visibility.Visible : Visibility.Collapsed;
         SearchOverlay.Visibility = Visibility.Collapsed;
         Toast.Visibility = Visibility.Collapsed;
+        if (_library != null) ApplyLibraryState();
     }
 
     private void SetLayout(string layout)
@@ -130,7 +129,9 @@ public partial class MainWindow : Window
         OpenFiles(files);
     }
 
-    public void OpenFiles(IEnumerable<string> paths)
+    /// <summary>Opens PDFs in tabs (an already open one is brought forward). <paramref name="page"/>:
+    /// when one PDF is opened from My PDFs, the page that was clicked.</summary>
+    public void OpenFiles(IEnumerable<string> paths, int page = 0)
     {
         DocumentSession? last = null;
         foreach (var raw in paths)
@@ -140,8 +141,14 @@ public partial class MainWindow : Window
             catch (Exception e) when (e is ArgumentException or NotSupportedException or PathTooLongException) { continue; }
             if (!File.Exists(path)) { StatusText.Text = "File not found: " + path; continue; }
             var existing = Sessions.FirstOrDefault(s => string.Equals(s.FilePath, path, StringComparison.OrdinalIgnoreCase));
-            if (existing != null) { last = existing; continue; }
-            var session = new DocumentSession(_services, path);
+            _opened.Add(path);
+            if (existing != null)
+            {
+                last = existing;
+                if (page > 0 && existing.IsReady) Dispatcher.BeginInvoke(() => { if (ReferenceEquals(_active, existing)) Viewport.GoToPage(page); });
+                continue;
+            }
+            var session = new DocumentSession(_services, path) { InitialPage = page };
             session.PropertyChanged += Session_PropertyChanged;
             session.Search.PropertyChanged += Search_PropertyChanged;
             Sessions.Add(session);
@@ -156,6 +163,8 @@ public partial class MainWindow : Window
     {
         if (!ReferenceEquals(_active,session)) Discard3D();
         _active = session;
+        _libraryShown = session is null;
+        ApplyLibraryState();
         Viewport.SetSession(session);
         _syncingSearch = true;
         SearchBox.Text = session?.Search.Query ?? "";
@@ -193,7 +202,6 @@ public partial class MainWindow : Window
 
     private void RefreshState()
     {
-        Welcome.Visibility = Sessions.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         var s = _active;
         bool ready = s?.IsReady == true;
         PrintButton.IsEnabled = ready;
@@ -201,7 +209,7 @@ public partial class MainWindow : Window
         if (s is null || ready)
         {
             StatePanel.Visibility = Visibility.Collapsed;
-            _idleStatus = s is null ? "Drop PDF files here or press Ctrl+O" : $"{s.Title}  ·  {s.Status}";
+            _idleStatus = s is null ? "My PDFs" : $"{s.Title}  ·  {s.Status}";
             StatusText.Text = _idleStatus;
             return;
         }
@@ -378,6 +386,8 @@ public partial class MainWindow : Window
         menu.Items.Add(Choice("Mouse wheel scrolls (Ctrl+wheel zooms)", !Viewport.WheelZooms, () => SetWheel(false)));
         menu.Items.Add(Choice("Mouse wheel zooms (Ctrl+wheel scrolls)", Viewport.WheelZooms, () => SetWheel(true)));
         menu.Items.Add(new Separator());
+        menu.Items.Add(MenuItem("New PDFs settings…", ShowNewPdfsSettings));
+        menu.Items.Add(new Separator());
         var print = MenuItem("Print…", () => Print_Click(this, new RoutedEventArgs()), "Ctrl+P"); print.IsEnabled = _active?.IsReady == true; menu.Items.Add(print);
         if (_active != null) { var path = _active.FilePath; menu.Items.Add(MenuItem("Open file location", () => ShowInFolder(path))); }
         menu.Items.Add(new Separator());
@@ -548,6 +558,8 @@ public partial class MainWindow : Window
 
     private void Window_Drop(object sender, DragEventArgs e)
     {
+        // A PDF dragged out of My PDFs and dropped back on the window is not a request to open it twice.
+        if (e.Data.GetDataPresent("EKPDF.Library")) return;
         if (e.Data.GetData(DataFormats.FileDrop) is string[] files) OpenFiles(files);
     }
 
@@ -613,5 +625,6 @@ public partial class MainWindow : Window
         _statusTimer.Stop();
         foreach (var session in Sessions.ToList()) session.Dispose();
         Sessions.Clear();
+        DisposeLibrary();
     }
 }
