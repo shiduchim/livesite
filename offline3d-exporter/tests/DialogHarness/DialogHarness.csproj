@@ -1,10 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 <!-- Opens the real options/progress dialogs without Revit and screenshots each
- state. Run on Windows, or under Wine for a layout check (fonts differ). -->
-<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><Nullable>enable</Nullable></PropertyGroup>
+ state, in the light and dark palettes. Run on Windows, or under Wine for a layout
+ check (fonts differ). The windows use no Revit types. -->
+<PropertyGroup><OutputType>WinExe</OutputType><TargetFramework>net8.0-windows</TargetFramework><UseWindowsForms>true</UseWindowsForms><EnableWindowsTargeting>true</EnableWindowsTargeting><Nullable>enable</Nullable><PlatformTarget>x64</PlatformTarget><NoWarn>$(NoWarn);MSB3270</NoWarn></PropertyGroup>
 <ItemGroup>
  <Compile Include="../../src/RevitExporter/ExportOptionsDialog.cs" Link="Dialogs/ExportOptionsDialog.cs"/>
  <Compile Include="../../src/RevitExporter/ExportProgressDialog.cs" Link="Dialogs/ExportProgressDialog.cs"/>
+ <Compile Include="../../src/RevitExporter/EkUi.cs" Link="Dialogs/EkUi.cs"/>
+ <Compile Include="../../src/RevitExporter/Collection/ExportProgressModel.cs" Link="Dialogs/ExportProgressModel.cs"/>
  <Compile Include="../../src/RevitExporter/NativeWindows.cs" Link="Dialogs/NativeWindows.cs"/>
 </ItemGroup>
 </Project>

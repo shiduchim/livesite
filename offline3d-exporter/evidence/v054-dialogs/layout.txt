@@ -1,0 +1,14 @@
+light-01-initial: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+light-02-rendering: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+light-03-preview-ready: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+light-04-options-changed: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+light-05-dropdown: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+light outcome: Cancel
+light-07-progress: size {Width=367, Height=248}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark-01-initial: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark-02-rendering: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark-03-preview-ready: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark-04-options-changed: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark-05-dropdown: size {Width=640, Height=352}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []
+dark outcome: Cancel
+dark-07-progress: size {Width=367, Height=248}, DPI 96, horizontal scrollbar False, vertical scrollbar False, buttons outside the window: []

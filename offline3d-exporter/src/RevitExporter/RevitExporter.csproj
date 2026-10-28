@@ -16,6 +16,8 @@
  <RestorePackagesWithLockFile>false</RestorePackagesWithLockFile>
  <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
  <DefineConstants>$(DefineConstants);REVIT$(RevitYear)</DefineConstants>
+ <!-- WFO1000 asks for designer attributes on control properties; the EK controls are built in code, never in a designer. -->
+ <NoWarn>$(NoWarn);WFO1000</NoWarn>
 </PropertyGroup>
 <!-- Link only pure data/math/geometry. The GLB writer, mesh builder and
  geometry stream are exporter-owned (Collection/). No Core.dll, JSON NuGet

@@ -67,7 +67,8 @@ public sealed class ExportCommand : IExternalCommand
             var log = trace = new ExportTrace(work);
             log.Line("Offline3D exporter " + ExporterVersion + " | " + Assembly.GetExecutingAssembly().FullName + " | " + data.Application.Application.VersionName + " " + data.Application.Application.VersionBuild);
             log.Line("Document: " + ExportText.Clean(doc.Title, 200) + " | view: " + ExportText.Clean(target.SourcePlan.Name, 200) + " (" + target.SourcePlan.ViewType + ") | from an unplaced view: " + target.FromPlan + " | viewports: " + target.Viewports.Length);
-            var bar = progress = new ExportProgressDialog();
+            var palette = ThemePalette();
+            var bar = progress = new ExportProgressDialog(palette);
             var clock = Stopwatch.StartNew();
             var overall = new ExportProgressModel(() => clock.Elapsed.TotalSeconds);
 
@@ -153,7 +154,7 @@ public sealed class ExportCommand : IExternalCommand
                             {
                                 try {
                                 tx.Start();
-                                PrepareScope(request.OutsideCrop, request.AllUp, request.AllDown, request.IncludeAllCategories, request.Phase, request.PhaseFilter, report);
+                                PrepareScope(request.OutsideCrop, request.AllUp, request.AllDown, request.IncludeAllCategories, new ElementId(request.Phase), new ElementId(request.PhaseFilter), report);
                                 var box = regions.Length == 1 ? regions[0].Box : Union(regions);
                                 view.SetSectionBox(box); view.IsSectionBoxActive = true;
                                 PreviewFraming.Apply(doc, view, box, request.PixelSize, Warn);
@@ -186,14 +187,16 @@ public sealed class ExportCommand : IExternalCommand
                     log.Stage("Export options");
                     // Phase filter: the filter chosen last time, else the source view's. The phase is always the view's own.
                     var preferences = new ExportPreferences(ExportPreferences.DefaultPath);
-                    var filters = new[] { new NamedChoice { Name = "None", Id = ElementId.InvalidElementId } }.Concat(new FilteredElementCollector(doc).OfClass(typeof(PhaseFilter)).Cast<PhaseFilter>().OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase).Select(f => new NamedChoice { Name = ExportText.Clean(f.Name, 120), Id = f.Id })).ToArray();
+                    var filters = new[] { new NamedChoice { Name = "None", Id = -1 } }.Concat(new FilteredElementCollector(doc).OfClass(typeof(PhaseFilter)).Cast<PhaseFilter>().OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase).Select(f => new NamedChoice { Name = ExportText.Clean(f.Name, 120), Id = f.Id.Value })).ToArray();
                     var viewFilter = target.SourcePlan.get_Parameter(BuiltInParameter.VIEW_PHASE_FILTER)?.AsElementId() ?? ElementId.InvalidElementId;
                     string? rememberedFilter = preferences.Get("phaseFilter");
-                    int filterIndex = rememberedFilter != null && Array.FindIndex(filters, f => f.Name == rememberedFilter) is int remembered && remembered >= 0 ? remembered : Math.Max(0, Array.FindIndex(filters, f => f.Id == viewFilter));
-                    using var options = new ExportOptionsDialog(target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan), filters, filterIndex);
+                    int filterIndex = rememberedFilter != null && Array.FindIndex(filters, f => f.Name == rememberedFilter) is int remembered && remembered >= 0 ? remembered : Math.Max(0, Array.FindIndex(filters, f => f.Id == viewFilter.Value));
+                    int viewFilterIndex = Math.Max(0, Array.FindIndex(filters, f => f.Id == viewFilter.Value));
+                    var rememberedDetail = Enum.TryParse<ExportDetail>(preferences.Get("detail"), out var d) ? d : ExportDetail.Medium;
+                    using var options = new ExportOptionsDialog(palette, target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan), filters, filterIndex, viewFilterIndex, rememberedDetail, preferences.Get("hiddenCategories") != "False");
                     if (options.RunModal(owner, Preview) != OptionsOutcome.Export) { cancelled = true; log.Line("Cancelled in the options dialog"); return Result.Cancelled; }
                     var detail = options.DetailPreset;
-                    preferences.Set("phaseFilter", options.PhaseFilterName); preferences.Save();
+                    preferences.Set("phaseFilter", options.PhaseFilterName); preferences.Set("detail", detail.ToString()); preferences.Set("hiddenCategories", options.IncludeAllCategories.ToString()); preferences.Save();
                     log.Line("Options: detail " + detail + " (LOD " + options.TessellationLevel + "), phase filter " + ExportText.Clean(options.PhaseFilterName, 120) + ", outside crop " + options.OutsideCrop + ", all up " + options.AllUp + ", all down " + options.AllDown + ", hidden categories included " + options.IncludeAllCategories + ", tiny-part filter " + options.MinimumPartFeet.ToString("0.###", CultureInfo.InvariantCulture) + " ft, properties: " + string.Join(", ", options.ParameterNames));
                     if (options.PreviewDiagnostics.Length > 0) File.AppendAllText(Path.Combine(work, "preview-timings.txt"), options.PreviewDiagnostics + Environment.NewLine);
 
@@ -213,7 +216,7 @@ public sealed class ExportCommand : IExternalCommand
                     using (var tx = new Autodesk.Revit.DB.Transaction(doc, "Prepare full element geometry"))
                     {
                         tx.Start();
-                        PrepareScope(options.OutsideCrop, options.AllUp, options.AllDown, options.IncludeAllCategories, options.Phase, options.PhaseFilter, text => Check(bar, text));
+                        PrepareScope(options.OutsideCrop, options.AllUp, options.AllDown, options.IncludeAllCategories, new ElementId(options.Phase), new ElementId(options.PhaseFilter), text => Check(bar, text));
                         view.DetailLevel = detail == ExportDetail.VeryLow ? ViewDetailLevel.Coarse : detail == ExportDetail.Low || detail == ExportDetail.Medium ? ViewDetailLevel.Medium : ViewDetailLevel.Fine;
                         view.DisplayStyle = detail == ExportDetail.VeryLow ? DisplayStyle.Shading : DisplayStyle.Realistic;
                         view.CropBoxActive = false;
@@ -256,7 +259,7 @@ public sealed class ExportCommand : IExternalCommand
                             using (var tx = new Autodesk.Revit.DB.Transaction(doc, "Prepare region geometry"))
                             {
                                 tx.Start();
-                                ConfigureVisibility(doc, scope.Source, view, options.IncludeAllCategories, Warn, options.Phase, options.PhaseFilter);
+                                ConfigureVisibility(doc, scope.Source, view, options.IncludeAllCategories, Warn, new ElementId(options.Phase), new ElementId(options.PhaseFilter));
                                 var allowed = regionAllowed[regionIndex];
                                 var outside = candidates.Where(e => !(e is RevitLinkInstance) && !allowed.Contains(e.Id) && !tempHidden.Contains(e.Id) && e.CanBeHidden(view)).Select(e => e.Id).ToList();
                                 var sourceHidden = HiddenIn(doc, scope.Source, view);
@@ -421,6 +424,13 @@ public sealed class ExportCommand : IExternalCommand
             return new FilteredElementCollector(linked).WhereElementIsNotElementType().WhereElementIsViewIndependent().WherePasses(new BoundingBoxIntersectsFilter(outline)).GetElementCount();
         }
         catch (Autodesk.Revit.Exceptions.ApplicationException) { return 0; }
+    }
+
+    /// <summary>The EK palette for Revit's theme (Revit 2024+); light on any error.</summary>
+    private static EkPalette ThemePalette()
+    {
+        try { return UIThemeManager.CurrentTheme == UITheme.Dark ? EkPalette.DarkTheme : EkPalette.Light; }
+        catch (Exception) { return EkPalette.Light; }
     }
 
     private static BoundingBoxXYZ Union(ExportRegion[] regions) => new BoundingBoxXYZ { Min = new XYZ(regions.Min(r => r.Min.X), regions.Min(r => r.Min.Y), regions.Min(r => r.Min.Z)), Max = new XYZ(regions.Max(r => r.Max.X), regions.Max(r => r.Max.Y), regions.Max(r => r.Max.Z)) };

@@ -45,13 +45,40 @@ Built in stages from the feedback on 0.5.3. Version strings still say 0.5.3 unti
   - dashes and shifts included.
 - Solid fills keep the material colour.
 
-## Stage 2, part 2 (waiting for a choice)
+## Stage 2, part 2 (done)
 
-- **Export dialog and progress window** restyled to `docs/EK_Revit_Addin_UI_Style_Guide.md`.
-- **Mockups:** `docs/mockups/export-dialog-options.png` shows dialog options A, B and C, and progress windows P1 and P2.
+- **Export dialog: layout B with both check boxes**, styled by `docs/EK_Revit_Addin_UI_Style_Guide.md`:
+  - **Window:** own title bar with the word Close; fixed size of 640 x 352.
+  - **Left:** the preview, with "Preview · Generate / Update".
+  - **Right:**
+    - Height: View range, All levels above, All levels below or All levels; plans only;
+    - Phase filter;
+    - Detail: Very low to Very high;
+    - **Include categories hidden in the view** and **Include geometry outside the crop** (which asks for confirmation);
+    - the size estimate.
+  - **Footer:** Reset (link), Cancel, and Export… as the default button.
+  - **Removed:**
+    - Quick export, replaced by Very low;
+    - the tiny-parts filter, now part of Very low;
+    - the properties box, which keeps Mark, Comments and Type Mark;
+    - every helper paragraph.
+  - **Remembered between exports:** detail, the hidden-categories box and the phase filter.
+  - **Reset** returns to: View range, the view's own filter, Medium, hidden categories on, outside crop off.
+- **Progress window: layout P2.** It shows:
+  - the four steps;
+  - the current element count;
+  - one bar for the whole export;
+  - time left and projected PDF size;
+  - what Revit is working on.
+  - "Cancel" in the title bar (and Esc) cancels at the next safe point.
+- **Theme:** both windows follow Revit's light or dark theme (`UIThemeManager`, Revit 2024+), using the guide's palettes.
+- **Code:** both windows use no Revit types, so `tests/DialogHarness` opens them under Wine. Shots are in `evidence/v054-dialogs/`, light and dark at 96 DPI, with Wine's fonts.
+- **Shared controls** (EK title bar, buttons, links, drop-downs, check boxes) are in `EkUi.cs`, ready for the other EK windows.
 
 ## Tests
 - `tests/ExporterCoreTests`: 26 checks (2 new for progress, 1 for preferences).
+- `tests/DialogHarness`: both windows, light and dark, under Wine (no layout overflow).
+- Original suites: crop 16, scope 21, link overrides 10, wire writer 22.
 - `tests/ExporterAssemblyAudit`: 150 checks. PresentationCore and WindowsBase, Revit's own UI stack, are now allowed.
 - `tests/LargeSceneTests`: section box settings.
 - Viewer: `offline3d-reader/tests/web/hatch-check.mjs` and the 40-item browser check.
