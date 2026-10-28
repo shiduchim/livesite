@@ -123,6 +123,8 @@ public sealed class PdfViewport : FrameworkElement
     }
 
     public List<IViewportOverlay> Overlays { get; } = new();
+    /// <summary>Wheel zooms (Ctrl+wheel scrolls) instead of the default scroll.</summary>
+    public bool WheelZooms { get; set; }
     public void CancelOverlayInteraction(){_overlayDrag?.EndDrag();_overlayDrag=null;if(IsMouseCaptured)ReleaseMouseCapture();Cursor=_idleCursor;}
     private Cursor? _idleCursor;
     /// <summary>Pointer shown while not panning or dragging (the blue ClickTo3D arrow); null for the default.</summary>
@@ -346,7 +348,9 @@ public sealed class PdfViewport : FrameworkElement
         if (_session is not { IsReady: true }) return;
         _inputAt = TileStore.Timestamp;
         bool ctrl = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
-        bool zoom = !ctrl;
+        // Like other PDF readers: the wheel scrolls and Ctrl+wheel zooms. "Zoom" mode
+        // (the ⋯ menu) swaps them, as in 0.5.3. The 3D view keeps Revit's wheel zoom.
+        bool zoom = WheelZooms ? !ctrl : ctrl;
         if (zoom)
         {
             // Accumulate high-resolution wheel/touchpad deltas; one notch = one ladder step.
