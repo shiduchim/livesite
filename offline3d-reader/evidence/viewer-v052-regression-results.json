@@ -1,0 +1,79 @@
+{
+  "boxDefaultsPassed": [
+    "factory feet values visible",
+    "metres conversion",
+    "unit toggles preserve physical sizes",
+    "saved host defaults restore fields",
+    "edits sent in metres",
+    "zero square rejected"
+  ],
+  "results": [
+    {
+      "engine": "babylon",
+      "passed": [
+        "only Babylon and Three retained",
+        "size controls moved into defaults settings; view dropdown removed",
+        "half-size cube",
+        "faster cursor-centred wheel zoom",
+        "close zoom has no 8 cm clamp",
+        "shared indexed geometry loads",
+        "actual picking exposes element ID 123",
+        "hide/isolate/X-ray/show-all controls run",
+        "300 ms focus and Home controls run",
+        "500 m section box accepted",
+        "reset saved-size message sent",
+        "all display styles load",
+        "six compact paired-triangle grips with no cones",
+        "grip size stays fixed on screen",
+        "off-glyph grab area starts drag without jumping",
+        "drag moves only its face by projected distance",
+        "camera stays fixed on commit and host echo",
+        "selected-object centre stays fixed during orbit",
+        "clear selection restores pointer orbit",
+        "middle drag pans without orbiting",
+        "top view hides head-on grips",
+        "twelve box edges drawn at a fixed one-pixel width",
+        "collapsed menus leave over 800 px for the model",
+        "menus do not resize the canvas",
+        "pan follows pixels consistently at wide and close zoom",
+        "one wheel notch almost doubles zoom",
+        "stock-box fit preserves orientation and restores usable zoom",
+        "first drag after opening already tracks pixels"
+      ]
+    },
+    {
+      "engine": "three",
+      "passed": [
+        "only Babylon and Three retained",
+        "size controls moved into defaults settings; view dropdown removed",
+        "half-size cube",
+        "faster cursor-centred wheel zoom",
+        "close zoom has no 8 cm clamp",
+        "shared indexed geometry loads",
+        "actual picking exposes element ID 123",
+        "hide/isolate/X-ray/show-all controls run",
+        "300 ms focus and Home controls run",
+        "500 m section box accepted",
+        "reset saved-size message sent",
+        "all display styles load",
+        "six compact paired-triangle grips with no cones",
+        "grip size stays fixed on screen",
+        "off-glyph grab area starts drag without jumping",
+        "drag moves only its face by projected distance",
+        "camera stays fixed on commit and host echo",
+        "selected-object centre stays fixed during orbit",
+        "clear selection restores pointer orbit",
+        "middle drag pans without orbiting",
+        "top view hides head-on grips",
+        "twelve box edges drawn at a fixed one-pixel width",
+        "collapsed menus leave over 800 px for the model",
+        "menus do not resize the canvas",
+        "pan follows pixels consistently at wide and close zoom",
+        "one wheel notch almost doubles zoom",
+        "stock-box fit preserves orientation and restores usable zoom",
+        "first drag after opening already tracks pixels"
+      ]
+    }
+  ],
+  "platform": "Linux Chromium/SwiftShader with simulated native host; Windows input and physical GPU performance untested"
+}

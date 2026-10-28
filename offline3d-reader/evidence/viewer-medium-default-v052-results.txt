@@ -1,0 +1,1 @@
+PASS actual fresh viewer UI and renderer both start at Medium. Native Revit dropdown execution untested.

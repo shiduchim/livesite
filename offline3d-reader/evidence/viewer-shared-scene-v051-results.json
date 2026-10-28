@@ -1,0 +1,63 @@
+{
+  "results": [
+    {
+      "engine": "babylon",
+      "checks": [
+        "over 1.5 million placed triangles load",
+        "2000 node identities preserved",
+        "one unique GPU geometry",
+        "active section limits drawing to 1024 triangles",
+        "caps inspect under 20000 crossing triangles",
+        "six solid cap faces generated",
+        "no expanded per-element triangle arrays",
+        "old comparison worker not requested",
+        "section movement retains loaded geometry",
+        "active instance changes correctly"
+      ],
+      "metrics": {
+        "unique": 1024,
+        "placed": 2048000,
+        "nodes": 2000,
+        "active": 1024,
+        "work": {
+          "candidates": 6,
+          "trianglesVisited": 6144
+        },
+        "caps": 6,
+        "edgeDrawables": 1,
+        "geometry": 1,
+        "groupsExpanded": false
+      }
+    },
+    {
+      "engine": "three",
+      "checks": [
+        "over 1.5 million placed triangles load",
+        "2000 node identities preserved",
+        "one unique GPU geometry",
+        "active section limits drawing to 1024 triangles",
+        "caps inspect under 20000 crossing triangles",
+        "six solid cap faces generated",
+        "no expanded per-element triangle arrays",
+        "old comparison worker not requested",
+        "section movement retains loaded geometry",
+        "active instance changes correctly"
+      ],
+      "metrics": {
+        "unique": 1024,
+        "placed": 2048000,
+        "nodes": 2000,
+        "active": 1024,
+        "work": {
+          "candidates": 6,
+          "trianglesVisited": 6144
+        },
+        "caps": 6,
+        "edgeDrawables": 1,
+        "geometry": 1,
+        "groupsExpanded": false
+      }
+    }
+  ],
+  "platform": "Linux Chromium/SwiftShader; physical GPU and Revit execution untested"
+}

@@ -1,0 +1,54 @@
+{
+  "bytes": 79733700,
+  "results": [
+    {
+      "engine": "babylon",
+      "passed": [
+        "non-local scene URL rejected",
+        "host scene message stays below 300 bytes",
+        "actual over-64-MiB scene fetched once as binary",
+        "all 90 unique meshes and placements retained",
+        "all 737280 unique triangles retained",
+        "only 8192 active triangles drawn",
+        "zero edges expanded while disabled",
+        "one edge mesh expanded when enabled",
+        "moving section selects next placement",
+        "only visited edge meshes expanded",
+        "no browser or native-bridge errors"
+      ],
+      "metrics": {
+        "nodes": 90,
+        "meshes": 90,
+        "unique": 737280,
+        "active": 8192,
+        "expandedEdges": 0,
+        "byteLength": 79733700
+      }
+    },
+    {
+      "engine": "three",
+      "passed": [
+        "non-local scene URL rejected",
+        "host scene message stays below 300 bytes",
+        "actual over-64-MiB scene fetched once as binary",
+        "all 90 unique meshes and placements retained",
+        "all 737280 unique triangles retained",
+        "only 8192 active triangles drawn",
+        "zero edges expanded while disabled",
+        "one edge mesh expanded when enabled",
+        "moving section selects next placement",
+        "only visited edge meshes expanded",
+        "no browser or native-bridge errors"
+      ],
+      "metrics": {
+        "nodes": 90,
+        "meshes": 90,
+        "unique": 737280,
+        "active": 8192,
+        "expandedEdges": 0,
+        "byteLength": 79733700
+      }
+    }
+  ],
+  "platform": "Linux Chromium/SwiftShader with a loopback binary HTTP test server; native Windows WebView2 interception and physical GPU untested"
+}

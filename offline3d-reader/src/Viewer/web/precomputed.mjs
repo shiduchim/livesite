@@ -1,0 +1,3 @@
+import {parseScene} from './scene-data.mjs';
+// Expand feature lines only when an active section needs the unique mesh.
+export function featureLines(bytes,scene=parseScene(bytes)){const cache=new Map(),result=[];for(const node of scene.nodes){const mesh=scene.meshes[node.mesh];if(!mesh.edges)continue;result.push({name:node.name,mesh:node.mesh,matrix:node.matrix,get positions(){let positions=cache.get(node.mesh);if(!positions){const p=mesh.primitives[0].positions;positions=new Float32Array(mesh.edges.length*3);for(let i=0;i<mesh.edges.length;i++)positions.set(p.subarray(mesh.edges[i]*3,mesh.edges[i]*3+3),i*3);cache.set(node.mesh,positions);}return positions;}});}result.precomputed=scene.meshes.every(m=>m.precomputed);result.expandedMeshes=()=>cache.size;return result;}

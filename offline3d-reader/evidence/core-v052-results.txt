@@ -1,0 +1,56 @@
+PASS inverse and composition
+PASS singular inversion rejected
+PASS large origin axis/unit roundtrip
+PASS translated rotated link applied once
+PASS plan ray uses declared ProjectElevation
+PASS crop rejects outside and accepts boundary
+PASS uncalibrated clicks disabled
+PASS horizontal ray unsupported
+PASS registration validation
+PASS nonfinite matrix rejected
+PASS self-crossing crop rejected
+PASS nonfinite registration rejected
+PASS unknown schema rejected
+PASS valid manifest
+PASS unknown required capability
+PASS external resource URI rejected
+PASS attachment traversal rejected
+PASS oversized resource rejected
+PASS duplicate resource IDs rejected
+PASS malformed JSON rejected
+PASS GLB header and local payload
+PASS GLB nonfinite vertex rejected
+PASS GLB length mismatch rejected
+PASS GLB external URI rejected
+PASS calibration scale/rotation + independent checks
+PASS calibration rejects >1 mm residual
+PASS calibration rejects reused checks
+PASS calibration rejects collinear controls
+PASS attachment write/read/reopen round trip
+PASS unrelated attachment preserved
+PASS safe replacement of existing destination
+PASS bad descriptor leaves destination intact
+PASS rotated cropped UserUnit page roundtrip
+PASS actual page geometry mismatch rejected
+PASS copy PDF alone independent of intermediates/cache
+PASS automatic 25-marker registration, 12 fit + 13 independent checks
+PASS automatic mapping handles nested PDF form transforms
+PASS automatic registration respects actual rotated/cropped UserUnit page 90
+PASS automatic registration respects actual rotated/cropped UserUnit page 180
+PASS automatic registration respects actual rotated/cropped UserUnit page 270
+PASS automatic mapping rejects missing registration marker
+PASS automatic mapping rejects independent numeric outlier
+PASS automatic mapping rejects changed clean drawing
+PASS automatic mapping rejects drawing/marker color collision
+PASS automatic mapping rejects inconsistent actual page geometry
+PASS automatic finalizer delivers one enhanced PDF without manual controls
+PASS failed automatic finalization preserves existing destination and diagnostics
+PASS per-face materials preserve linear color opacity and surface properties
+PASS sRGB transfer anchors
+PASS invalid material values rejected
+PASS source smooth normals use inverse transpose and graphics axes
+PASS mismatched normals rejected
+PASS asymmetric section footprint agrees with rotated model mapping
+PASS section dimensions reject inversion nonfinite and overbudget sizes
+PASS viewport ambiguity guard permits disjoint bodies and rejects containment
+55 automated checks passed.

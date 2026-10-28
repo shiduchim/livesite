@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Engine benchmark + sample generator. Also acts as a render worker executable for tests. -->
+  <Import Project="..\..\src\EKFastPDF.Core\PdfiumNative.props" />
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <TieredPGO>true</TieredPGO>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EKFastPDF.Core\EKFastPDF.Core.csproj" />
+  </ItemGroup>
+</Project>

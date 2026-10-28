@@ -1,0 +1,12 @@
+Recommended workspace: Claude Code, with the two extracted source folders accessible. Ask it to edit only RevitExporter_Source_v0.5.2 and use PDFReader_Source_v0.5.2 as a read-only reference.
+Recommended model: Claude Opus 5.5 if available in your account; otherwise select the latest available Opus.
+Reasoning/effort: Max for the root-cause investigation. The available choices depend on your account. Extra high is a reasonable lower-cost alternative.
+
+For advice only, Claude Chat is sufficient: attach CLAUDE_PROMPT.txt and the exporter ZIP. If that interface cannot read ZIPs, attach EXPORTER_CODE_FOR_CHAT.txt from inside it plus HISTORY_AND_RESULTS.md and CURRENT_CONTRACT.md. No need to paste individual source files. Claude Code is recommended when you want actual file edits and builds.
+
+The AI model/effort selection is separate from the application engines. Application engines stay Babylon.js WebGL2 (default) and Three.js; exporter uses Revit CustomExporter/IExportContext. Medium remains the stock export setting.
+
+Official references checked 2026-10-26:
+https://www.anthropic.com/claude/opus
+https://code.claude.com/docs/en/model-config
+https://support.claude.com/en/articles/8664678-change-the-model-effort-and-thinking-settings

@@ -1,0 +1,1123 @@
+{
+  "baseline": "0.5.2",
+  "purpose": "Source handoff; not an installer",
+  "application_source_unchanged": true,
+  "files": [
+    {
+      "path": "CLAUDE_PROMPT.txt",
+      "bytes": 8713,
+      "sha256": "03160dffe85511339f2d4b529b1be981d595e05de8b02d23684938bfbdb36833",
+      "original_path": null
+    },
+    {
+      "path": "CLAUDE_SETUP.txt",
+      "bytes": 1246,
+      "sha256": "0429c9f98e3f58cb6a7b0ee2050034419e8e6244df76c290b7d14eaacfcc92c0",
+      "original_path": null
+    },
+    {
+      "path": "CURRENT_CONTRACT.md",
+      "bytes": 4483,
+      "sha256": "816ac0b42432da56e4d3ef07e2cc9852779603d74354882018ba7aaa98f0c739",
+      "original_path": null
+    },
+    {
+      "path": "Directory.Build.props",
+      "bytes": 248,
+      "sha256": "926a3f2df6c2f1c80be8d85a569d13679f8a71d14c0cc515c92796cec3fad01f",
+      "original_path": "Directory.Build.props"
+    },
+    {
+      "path": "HANDOFF.md",
+      "bytes": 2091,
+      "sha256": "b23beb55b1e4dbdbc36d9e474d4e555595ee8b783829a4868cc97e30824f7a88",
+      "original_path": null
+    },
+    {
+      "path": "HISTORY_AND_RESULTS.md",
+      "bytes": 10450,
+      "sha256": "8248de006f32e9e75a5876656eab4ce8a1c9491066a0a2fba07fdd9d0042d017",
+      "original_path": null
+    },
+    {
+      "path": "docs/FASTPDF-CHANGES.txt",
+      "bytes": 927,
+      "sha256": "4444202ddb8c8e4c0ca884fcb2051cef90d7a719faadb8b3aea09d10ac775ffc",
+      "original_path": "docs/FASTPDF-CHANGES.txt"
+    },
+    {
+      "path": "docs/FASTPDF-INTEGRATION.md",
+      "bytes": 3712,
+      "sha256": "6e6e0f10fe1a1c228c7688dd0fc5164b94c20fae250e24945b6747de3cc59c2f",
+      "original_path": "docs/FASTPDF-INTEGRATION.md"
+    },
+    {
+      "path": "evidence/BUILD-DEPENDENCIES.md",
+      "bytes": 3511,
+      "sha256": "be6932f1dcb3274d96e6b17093003c04f7c1bb4a064df41d9ab613ae2b254321",
+      "original_path": null
+    },
+    {
+      "path": "evidence/TEST-REPORT.md",
+      "bytes": 12691,
+      "sha256": "7bec22ff887364dfc074594cbe6bedb4053428a2a1644d173e963a48fd80424f",
+      "original_path": null
+    },
+    {
+      "path": "evidence/core-v052-results.txt",
+      "bytes": 2613,
+      "sha256": "ea252c1e9a6605ef862c39e3db61c7c69382134c53b16801f336f45b35fed866",
+      "original_path": null
+    },
+    {
+      "path": "evidence/fastpdf-v052-results.txt",
+      "bytes": 335,
+      "sha256": "057c1663f7c3663a17c00bc61525b941759d9f466db33ebb8b7ce2cda5fbcb89",
+      "original_path": null
+    },
+    {
+      "path": "evidence/khronos-large-resource-v051-results.json",
+      "bytes": 13335,
+      "sha256": "170937153018916dcde6b59810f06dd6651fa4b256bf3e9087f2c1f989960a12",
+      "original_path": null
+    },
+    {
+      "path": "evidence/khronos-quick-v052-results.json",
+      "bytes": 222,
+      "sha256": "05fdda73bd102ce6015fd0b3b01c13b9726c750cfc91ad860c5b8b6bfff80e41",
+      "original_path": null
+    },
+    {
+      "path": "evidence/large-resource-v051-results.txt",
+      "bytes": 954,
+      "sha256": "7d1e28cb19fc81ad6c0d100d36519eb63620e9a7119e9fe357eaa981e2af7f6e",
+      "original_path": null
+    },
+    {
+      "path": "evidence/large-scene-v052-results.txt",
+      "bytes": 1223,
+      "sha256": "82949feb411b02d44d99270622ffe78b78edde80ebb315c40840a86e041e23d9",
+      "original_path": null
+    },
+    {
+      "path": "evidence/viewer-large-resource-v051-results.json",
+      "bytes": 1743,
+      "sha256": "87bd5a8c443251f6da4a0419ac2438d7ad5edf79fa3e3aee34307607eb3851cc",
+      "original_path": null
+    },
+    {
+      "path": "evidence/viewer-medium-default-v052-results.txt",
+      "bytes": 105,
+      "sha256": "0430ab333f3870aa377bc809796221579e3ec35fc0937e8e71b7b0c09ad7a737",
+      "original_path": null
+    },
+    {
+      "path": "evidence/viewer-shared-scene-v051-results.json",
+      "bytes": 1829,
+      "sha256": "1234cfb49076540a68821f83cdcb57fa7f1e2a3212c855ab05955cec2f2ba714",
+      "original_path": null
+    },
+    {
+      "path": "evidence/viewer-v052-regression-results.json",
+      "bytes": 3313,
+      "sha256": "5174bc72fed6a88f01e2e90e1f09f0e692ba7537fc774935ad4bca7af3d6842f",
+      "original_path": null
+    },
+    {
+      "path": "fastpdf/Directory.Build.props",
+      "bytes": 768,
+      "sha256": "117e4c28ecfb2414e2a9832184c7795a28daf17dd2a913557ecc12ba190ed457",
+      "original_path": "fastpdf/Directory.Build.props"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/App.xaml",
+      "bytes": 11426,
+      "sha256": "f89a83635caaa73a1bc864b2eed7ff7b2aaef8a44dfb240f72d5c112e05d49e0",
+      "original_path": "fastpdf/src/EKFastPDF/App.xaml"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/App.xaml.cs",
+      "bytes": 2200,
+      "sha256": "c2adf2d6e1c94f5f4fdb164dbae6ef3b77434d50fa59c33a3bd5686ccea20b94",
+      "original_path": "fastpdf/src/EKFastPDF/App.xaml.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Assets/FastPDF.ico",
+      "bytes": 12208,
+      "sha256": "5fa0e3d6d24a417760dab46fad49616c0af33df4ebc3aeb31e79a8e528bfc578",
+      "original_path": "fastpdf/src/EKFastPDF/Assets/FastPDF.ico"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/BenchmarkRunner.cs",
+      "bytes": 12918,
+      "sha256": "95a36e464939ba47f33e70c719068bb584a322cc2afc1d0f2d5116ecef49f27d",
+      "original_path": "fastpdf/src/EKFastPDF/BenchmarkRunner.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/EKFastPDF.csproj",
+      "bytes": 2863,
+      "sha256": "bbe29026d8565a0571e752234afdc3a5712016396b86106828e81bb19358fae7",
+      "original_path": "fastpdf/src/EKFastPDF/EKFastPDF.csproj"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/MainWindow.Offline3D.cs",
+      "bytes": 4443,
+      "sha256": "5cf2efab736070f58395cf9a9bb7dfc6ddc16150c1d144d230563ab9517e96b4",
+      "original_path": "fastpdf/src/EKFastPDF/MainWindow.Offline3D.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/MainWindow.xaml",
+      "bytes": 18269,
+      "sha256": "7b3db889fa2642cfff93834cc3bdf5027429545fdd4849222feaa306730c9974",
+      "original_path": "fastpdf/src/EKFastPDF/MainWindow.xaml"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/MainWindow.xaml.cs",
+      "bytes": 22999,
+      "sha256": "cdd119177451ff82e5f6ac62532db798b5c8b95a7f9d570376afb523bf5f144c",
+      "original_path": "fastpdf/src/EKFastPDF/MainWindow.xaml.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Offline3D/BoxFootprintOverlay.cs",
+      "bytes": 3845,
+      "sha256": "133641ebc350e44024da046bb11fa5e6d58fb29f38d5144d81ea3057a8aec628",
+      "original_path": "fastpdf/src/EKFastPDF/Offline3D/BoxFootprintOverlay.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Offline3D/BoxPanel.cs",
+      "bytes": 10473,
+      "sha256": "0dd8a804d0721b58ca094a871208aab3ff55003e25a6a8e9d5c5959c3f87e681",
+      "original_path": "fastpdf/src/EKFastPDF/Offline3D/BoxPanel.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Program.cs",
+      "bytes": 6232,
+      "sha256": "feb128647655f930aedc1ffe778c9f681831f0c91879ae55808f62f8dfb9ee23",
+      "original_path": "fastpdf/src/EKFastPDF/Program.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/AppServices.cs",
+      "bytes": 1644,
+      "sha256": "b84b140953abea5c9cc5ebd81a34b865c67c4aa68b1390e1b18ada04be578c09",
+      "original_path": "fastpdf/src/EKFastPDF/Services/AppServices.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/AppSettings.cs",
+      "bytes": 2354,
+      "sha256": "711c99d2e56955288e5449374f52e1e791d6b59ff0b1ac3696576a541334e1b7",
+      "original_path": "fastpdf/src/EKFastPDF/Services/AppSettings.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/DiagnosticsReport.cs",
+      "bytes": 7946,
+      "sha256": "a62c088b50ddd22244413b2bfc1994b637b20f491fdb162cd9d942f42dedbf5c",
+      "original_path": "fastpdf/src/EKFastPDF/Services/DiagnosticsReport.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/GpuInfo.cs",
+      "bytes": 5183,
+      "sha256": "1079e6d363ab908e3b84be211de315c79c9a7d45d65474058693ce8530bb7c9a",
+      "original_path": "fastpdf/src/EKFastPDF/Services/GpuInfo.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/PrintService.cs",
+      "bytes": 2646,
+      "sha256": "f31f7487d965d3fb0043428ab7dcdadb5d7dbaffeff80eca8aec6fc029a18ec0",
+      "original_path": "fastpdf/src/EKFastPDF/Services/PrintService.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Services/SingleInstance.cs",
+      "bytes": 3847,
+      "sha256": "fbe279c22432e47883d2d96655b5a89c7580c83fc279350dec363268823b79d1",
+      "original_path": "fastpdf/src/EKFastPDF/Services/SingleInstance.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/DocumentSession.cs",
+      "bytes": 4453,
+      "sha256": "a8aafe93c4d3640e6b52148198d53a22e20510123862149dabe7f93bb070cec1",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/DocumentSession.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/PdfViewport.cs",
+      "bytes": 32667,
+      "sha256": "38e9ef5f975093724501644ce85d942f2d8cb42ec426e442770498ee55d02197",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/PdfViewport.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/SearchController.cs",
+      "bytes": 7336,
+      "sha256": "99728608d5a6e7e8496d1e6e9a691a52996b35f9e5b54dbcc2e53c200e01dcc2",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/SearchController.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/SearchHighlightOverlay.cs",
+      "bytes": 1657,
+      "sha256": "1e7130f0ecd05c5ec5d45f8295aa89a6834694412c2b0d59b60ce2435df63a90",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/SearchHighlightOverlay.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/TileStore.cs",
+      "bytes": 8207,
+      "sha256": "20dea87d79c221e4071c301b993d0c958ed2499fd17efbb38758c1bbf5b499d5",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/TileStore.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/Viewer/ViewerMetrics.cs",
+      "bytes": 3390,
+      "sha256": "89b2476533bbf872c066a3a5d6896f3fe4838f3a651f935033520acdc24c5d10",
+      "original_path": "fastpdf/src/EKFastPDF/Viewer/ViewerMetrics.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/app.manifest",
+      "bytes": 1307,
+      "sha256": "669b4adf1d7972b20209df6524060917da0ed9e4cb4561fd289d0cf152cf17d6",
+      "original_path": "fastpdf/src/EKFastPDF/app.manifest"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF/packages.lock.json",
+      "bytes": 4631,
+      "sha256": "e7cee7e2512c824459d1944ed1dede4aaa3b7de0c6a153d3e5620f76621d3643",
+      "original_path": "fastpdf/src/EKFastPDF/packages.lock.json"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Caching/ByteBudgetCache.cs",
+      "bytes": 3993,
+      "sha256": "35e70cbc2c377edfe38f7f9f1ccce321f542df861606c1bf3bb8c6919ed95b1e",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Caching/ByteBudgetCache.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Diagnostics/HardwareProfile.cs",
+      "bytes": 5275,
+      "sha256": "86dc6debcce7823257115f7b5fecfd2b3e323f04d1202e17b1e3fe64cc269de3",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Diagnostics/HardwareProfile.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Diagnostics/Log.cs",
+      "bytes": 3310,
+      "sha256": "d22272753e325825556c2a1b9f259ba663fbcaab1d41abd4749406c637aae5e0",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Diagnostics/Log.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/EKFastPDF.Core.csproj",
+      "bytes": 553,
+      "sha256": "230d3fc25a5783e18109e75a424127c3d001ccd29b2aa17a873423e497aab692",
+      "original_path": "fastpdf/src/EKFastPDF.Core/EKFastPDF.Core.csproj"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Ipc/Protocol.cs",
+      "bytes": 6335,
+      "sha256": "5b296f92377426b37dc403c75b037d0f85ef11337af9ad1a1eec0ab732261bbc",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Ipc/Protocol.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Ipc/SharedBuffer.cs",
+      "bytes": 2976,
+      "sha256": "0251ff06fc4bf6a319e9c63a83631b70219421c7299916b037681783f25ba3bb",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Ipc/SharedBuffer.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Layout/DocumentLayout.cs",
+      "bytes": 3022,
+      "sha256": "9f94a2b8ba750688bcb85b23ad46f662377ebdeb4f6714981ff2b14782ed7d7c",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Layout/DocumentLayout.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Layout/Viewport.cs",
+      "bytes": 6572,
+      "sha256": "6ca7681dba3bbb1b1be4068008c63bb9eb8704a5283a6cca55e415ef645e35aa",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Layout/Viewport.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Native/Pdfium.cs",
+      "bytes": 8141,
+      "sha256": "8b6fbe955cdaf5e1bbd50a24bdfc3106ed5378430f40379b87c493a14b1068fb",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Native/Pdfium.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Native/WindowsPerformance.cs",
+      "bytes": 1959,
+      "sha256": "069cf6c69899318e8a552b28bf7306e6b4171c9d952bd1b2457480c003d5b9e9",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Native/WindowsPerformance.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Native/WindowsPrinter.cs",
+      "bytes": 4763,
+      "sha256": "d33424e3edac50c9bd161fd8e0ed26a3e2584c5919bc6cee6fdb0b196fc2f690",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Native/WindowsPrinter.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Native/WorkerHost.cs",
+      "bytes": 18528,
+      "sha256": "151d25219e904dbf8a17ba4ed8ebeb243ce17949d25a9791dd7ebfccd5a35729",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Native/WorkerHost.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/PdfiumNative.props",
+      "bytes": 683,
+      "sha256": "99c52a00e2ce689c9e9c9affdd311b4f80fc4ad7ff56ed124fdb481197119cd5",
+      "original_path": "fastpdf/src/EKFastPDF.Core/PdfiumNative.props"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Rendering/Jobs.cs",
+      "bytes": 11556,
+      "sha256": "08adc341af89772479970bab86b9f3c6bf9c46ca75f1e18c7439653d39b1b672",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Rendering/Jobs.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Rendering/RenderPool.cs",
+      "bytes": 26484,
+      "sha256": "bbc0aceb554c74de8c4d48853fe81a6e2d43219da8180e33936c24d66125ed28",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Rendering/RenderPool.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Rendering/TileGrid.cs",
+      "bytes": 3366,
+      "sha256": "8f712bc55730b99dd9e3499d636d21fcfe80b5bf64948b7d17a17437c7240fa3",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Rendering/TileGrid.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Samples/PdfWriter.cs",
+      "bytes": 7767,
+      "sha256": "6cfbc8780b12d4931fe1657a17a537170ea104433ad4c1a3119f678417a0c592",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Samples/PdfWriter.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/Samples/SampleDocuments.cs",
+      "bytes": 12580,
+      "sha256": "874e730f95b1db0ed8bd88a60509549e0571467fdaaa374218c944400670f4cc",
+      "original_path": "fastpdf/src/EKFastPDF.Core/Samples/SampleDocuments.cs"
+    },
+    {
+      "path": "fastpdf/src/EKFastPDF.Core/packages.lock.json",
+      "bytes": 86,
+      "sha256": "cb7676a2e9352b0df8a4e376791810686c2635ff334b0b4fa3be03f144dd5190",
+      "original_path": "fastpdf/src/EKFastPDF.Core/packages.lock.json"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/EKFastPDF.Tests.csproj",
+      "bytes": 1089,
+      "sha256": "ac20e21a4107d6daa8e8e4ef0c7463df1a09edf12357995d6644ba1762a5bd60",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/EKFastPDF.Tests.csproj"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/GeometryTests.cs",
+      "bytes": 5428,
+      "sha256": "4466c4b5cc4c2bfe01eb17855f692f957c1557c746a947c739ce4c1890b1ec51",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/GeometryTests.cs"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/Offline3DTests.cs",
+      "bytes": 2384,
+      "sha256": "bd738590591106311776a61c2001f2fd1e1d108d6347f7b52ecf1a2ba93d9284",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/Offline3DTests.cs"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/PoolFixture.cs",
+      "bytes": 1250,
+      "sha256": "46bed142bbebe7d320c0749e7b41a02d50ed17fa212f945460e0decf28f4df6f",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/PoolFixture.cs"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/PoolTests.cs",
+      "bytes": 11891,
+      "sha256": "ad030224d9481479117a124259ed18baf616779e9d03c47d5ba207dd5856b97a",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/PoolTests.cs"
+    },
+    {
+      "path": "fastpdf/tests/EKFastPDF.Tests/packages.lock.json",
+      "bytes": 7543,
+      "sha256": "6f16348e7f12cd0bd82fc684d62c7693fdd32f7f42d2dc7eee63a1e84cc53b32",
+      "original_path": "fastpdf/tests/EKFastPDF.Tests/packages.lock.json"
+    },
+    {
+      "path": "fastpdf/tests/installer/Test-FastPdfInstall.ps1",
+      "bytes": 15814,
+      "sha256": "040990c3ec67f56a85f52d5e9d236a200e009c422df83fb4e5525c6415d14ab8",
+      "original_path": "fastpdf/tests/installer/Test-FastPdfInstall.ps1"
+    },
+    {
+      "path": "fastpdf/tools/EKFastPDF.Bench/EKFastPDF.Bench.csproj",
+      "bytes": 579,
+      "sha256": "00f7d6f4bb70a69551d00362d1f89e0293013cb563436a42700d6d52e29b48de",
+      "original_path": "fastpdf/tools/EKFastPDF.Bench/EKFastPDF.Bench.csproj"
+    },
+    {
+      "path": "fastpdf/tools/EKFastPDF.Bench/LegacyEngine.cs",
+      "bytes": 4000,
+      "sha256": "41585081aa7703418dd3604ffbad619bb6578b1c322a9c11401789461713809f",
+      "original_path": "fastpdf/tools/EKFastPDF.Bench/LegacyEngine.cs"
+    },
+    {
+      "path": "fastpdf/tools/EKFastPDF.Bench/Program.cs",
+      "bytes": 12082,
+      "sha256": "92ff787ac8cfb4f64ddff679a198bd228dfc4248b62db27eb9f2cac97e8db12c",
+      "original_path": "fastpdf/tools/EKFastPDF.Bench/Program.cs"
+    },
+    {
+      "path": "fastpdf/tools/EKFastPDF.Bench/packages.lock.json",
+      "bytes": 381,
+      "sha256": "1421620ba245ea40cedd992b0fc973941c412dca0ca9279dd09f680cf123cbe1",
+      "original_path": "fastpdf/tools/EKFastPDF.Bench/packages.lock.json"
+    },
+    {
+      "path": "global.json",
+      "bytes": 61,
+      "sha256": "7fd1f7f4ffa8b0dac6a02355cdc371c1623638cfbe10559759b87403d807bf78",
+      "original_path": "global.json"
+    },
+    {
+      "path": "licenses/Babylon-studio-LICENSE.md",
+      "bytes": 9226,
+      "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6",
+      "original_path": "licenses/Babylon-studio-LICENSE.md"
+    },
+    {
+      "path": "licenses/DejaVu-copyright.txt",
+      "bytes": 3859,
+      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9",
+      "original_path": "licenses/DejaVu-copyright.txt"
+    },
+    {
+      "path": "licenses/Filament-LICENSE.txt",
+      "bytes": 11362,
+      "sha256": "02d70b593dd8e9355dd8e1ca8d13c303bee5bcaf3065b66ff6e4f534e1e6a2c1",
+      "original_path": "licenses/Filament-LICENSE.txt"
+    },
+    {
+      "path": "licenses/PDFium/BUILD-LICENSE.txt",
+      "bytes": 1068,
+      "sha256": "493abc10084b58f97dce3fac1654624e1a25788f17180fe8925786c266cd2416",
+      "original_path": "licenses/PDFium/BUILD-LICENSE.txt"
+    },
+    {
+      "path": "licenses/PDFium/LICENSE",
+      "bytes": 1184,
+      "sha256": "8854f4388f1ca13b3ad9baa42e95f5546b4c0b17109c159256d3eca7be39b09b",
+      "original_path": "licenses/PDFium/LICENSE"
+    },
+    {
+      "path": "licenses/PDFium/VERSION",
+      "bytes": 37,
+      "sha256": "5a2cb59a16acd68c5792edfe8b01a2e813dce45626e1e2c6ef898b574737d293",
+      "original_path": "licenses/PDFium/VERSION"
+    },
+    {
+      "path": "licenses/PDFium/licenses/abseil.txt",
+      "bytes": 11564,
+      "sha256": "f54fff0b905df5b3464527c652a30e903b172d6dcab4d89b5e6f105d5e4a4603",
+      "original_path": "licenses/PDFium/licenses/abseil.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/agg23.txt",
+      "bytes": 725,
+      "sha256": "c110d3ea2ad77467ce0dcff7d3337e6c8be8049a5103f4b9bd5fd911a77972e5",
+      "original_path": "licenses/PDFium/licenses/agg23.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/dragonbox-Apache2-LLVM.txt",
+      "bytes": 12480,
+      "sha256": "4964a7aaf2801a42d2342d2f5bbccd2126be7a5d8d46150e1338a43ea70da5de",
+      "original_path": "licenses/PDFium/licenses/dragonbox-Apache2-LLVM.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/dragonbox-Boost.txt",
+      "bytes": 1361,
+      "sha256": "beb8e42e9d6b4284e03304d05a81a0755200a965fc8d0a5e0aea1e84cf805d6e",
+      "original_path": "licenses/PDFium/licenses/dragonbox-Boost.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/fast_float.txt",
+      "bytes": 1106,
+      "sha256": "bf1b57355feca8fce77ee95f48002f8d4789fb71b30ec7599c06cda4901fbb2b",
+      "original_path": "licenses/PDFium/licenses/fast_float.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/freetype.txt",
+      "bytes": 6741,
+      "sha256": "f4b133e25df1f86ad3ffea453aa0e613f0474f34778dbbb3e437e7b2724937d8",
+      "original_path": "licenses/PDFium/licenses/freetype.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/harfbuzz.txt",
+      "bytes": 2013,
+      "sha256": "bd836c0ddca8ea0bab54a03cd32b6ff7256cbb3840fca2edc1249a4ed92c5b02",
+      "original_path": "licenses/PDFium/licenses/harfbuzz.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/icu.txt",
+      "bytes": 28286,
+      "sha256": "93679f4389d53b6835d89843f251844fb9bc455b35bab036d3c8e7abe497a47a",
+      "original_path": "licenses/PDFium/licenses/icu.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/lcms.txt",
+      "bytes": 1353,
+      "sha256": "7312b68c5b25e9bf2b828706fb4e29588f22705112f411fd42e1f7d84c3d139a",
+      "original_path": "licenses/PDFium/licenses/lcms.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/libjpeg_turbo.ijg",
+      "bytes": 13059,
+      "sha256": "db16a04128171879c60708d171b88d97345a2dd20f9bfc173680a4497c73f704",
+      "original_path": "licenses/PDFium/licenses/libjpeg_turbo.ijg"
+    },
+    {
+      "path": "licenses/PDFium/licenses/libjpeg_turbo.md",
+      "bytes": 5755,
+      "sha256": "be2b2b5ab168bce87bc3e31f2a5c5adba4b7f6e9e51d618e958d1d46972ebd95",
+      "original_path": "licenses/PDFium/licenses/libjpeg_turbo.md"
+    },
+    {
+      "path": "licenses/PDFium/licenses/libopenjpeg.txt",
+      "bytes": 1794,
+      "sha256": "c5ab0890a737c2dfa7ba675036554f6d17741d98629b0c2a145354d00617e6b2",
+      "original_path": "licenses/PDFium/licenses/libopenjpeg.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/libpng.txt",
+      "bytes": 5479,
+      "sha256": "452390433ba0f88aa3e2b122c647741b72a0c117cd6ed7a329b49785aecb5511",
+      "original_path": "licenses/PDFium/licenses/libpng.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/llvm-libc.txt",
+      "bytes": 15418,
+      "sha256": "3b6226c32e168c83b891d8d6f0d3c29c2116dc3ef93dc93c307b54f279ecf383",
+      "original_path": "licenses/PDFium/licenses/llvm-libc.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/pdfium.txt",
+      "bytes": 12818,
+      "sha256": "961eacd9633fff6d051db7208b755e9210e30efac7adec3e6a6d52798f0ccf0e",
+      "original_path": "licenses/PDFium/licenses/pdfium.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/simdutf.txt",
+      "bytes": 1077,
+      "sha256": "c172a0ba936ff31230febb5dad869e25cb7c1a07480c7a381be8cf011bb52719",
+      "original_path": "licenses/PDFium/licenses/simdutf.txt"
+    },
+    {
+      "path": "licenses/PDFium/licenses/zlib.txt",
+      "bytes": 1332,
+      "sha256": "33fd641c9f3b0e0be64bc78fea9e94807674cdd70c48477599226cb8956565fe",
+      "original_path": "licenses/PDFium/licenses/zlib.txt"
+    },
+    {
+      "path": "licenses/PDFsharp-LICENSE.txt",
+      "bytes": 1147,
+      "sha256": "f82f46a068823bf3a33202058a6ef9b0bfc0d4203418c09873161a34e34198cf",
+      "original_path": "licenses/PDFsharp-LICENSE.txt"
+    },
+    {
+      "path": "licenses/PlayCanvas-LICENSE.txt",
+      "bytes": 1064,
+      "sha256": "42fa51ddd556be151a29f381fb97ee975825dcc454e805ea3ea9c079cca04d34",
+      "original_path": "licenses/PlayCanvas-LICENSE.txt"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2024.0.0-license.md",
+      "bytes": 1087,
+      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2024.0.0-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2025.0.2-license.md",
+      "bytes": 1087,
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2025.0.2-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2026.0.4-license.md",
+      "bytes": 1087,
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2026.0.4-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2027.0.0-license.md",
+      "bytes": 1087,
+      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapi-2027.0.0-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2024.0.0-license.md",
+      "bytes": 1087,
+      "sha256": "1ab918c84330c52edfb32194b2c1318895963029aa0cc961d6f4d8a7bcc3b26f",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2024.0.0-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2025.0.2-license.md",
+      "bytes": 1087,
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2025.0.2-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2026.0.4-license.md",
+      "bytes": 1087,
+      "sha256": "8aad9aabf75af5de9781f5d480e7410e2481f42dd63fa1bc8b560d74942dd50d",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2026.0.4-license.md"
+    },
+    {
+      "path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2027.0.0-license.md",
+      "bytes": 1087,
+      "sha256": "c93d004f03d3b8bf44aedb17b54037d78323bd7351a61d971170ffca3b1e4d26",
+      "original_path": "licenses/Revit-build-references/nice3point.revit.api.revitapiui-2027.0.0-license.md"
+    },
+    {
+      "path": "licenses/Three-LICENSE.txt",
+      "bytes": 1081,
+      "sha256": "8b378ebe60e2fe500158cb0ac71cb5e8b7d92953c2abcc63a0eb90499653b5bc",
+      "original_path": "licenses/Three-LICENSE.txt"
+    },
+    {
+      "path": "licenses/Tint-Dawn-LICENSE.txt",
+      "bytes": 11829,
+      "sha256": "0493f897193af1796d5054659f45ec7d4c5af648fa67a99f01d30e55cc805abc",
+      "original_path": "licenses/Tint-Dawn-LICENSE.txt"
+    },
+    {
+      "path": "licenses/WebView2-SDK-LICENSE.txt",
+      "bytes": 1487,
+      "sha256": "0af8f1b807512aae39c2ac1aa4d0cae65cabecb6fd554b8439a5162a0d6eca55",
+      "original_path": "licenses/WebView2-SDK-LICENSE.txt"
+    },
+    {
+      "path": "licenses/WebView2-SDK-NOTICE.txt",
+      "bytes": 3894,
+      "sha256": "106423785c5b7eba0a8e61d1837f2132e9c828e20ad530f565d981c1df60dd90",
+      "original_path": "licenses/WebView2-SDK-NOTICE.txt"
+    },
+    {
+      "path": "licenses/dotnet-LICENSE.txt",
+      "bytes": 1139,
+      "sha256": "d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b",
+      "original_path": "licenses/dotnet-LICENSE.txt"
+    },
+    {
+      "path": "licenses/dotnet-THIRD-PARTY-NOTICES.txt",
+      "bytes": 68910,
+      "sha256": "b60b2912da28eaa6518593c9e2efb5334ee062d3c42e80d8fdfa806b3dc52977",
+      "original_path": "licenses/dotnet-THIRD-PARTY-NOTICES.txt"
+    },
+    {
+      "path": "licenses/earcut-LICENSE.txt",
+      "bytes": 738,
+      "sha256": "cd661c432ea8243974e6fde6fc433ebee3e96525ca8b66321b9d9971674ede60",
+      "original_path": "licenses/earcut-LICENSE.txt"
+    },
+    {
+      "path": "licenses/glslang-LICENSE.txt",
+      "bytes": 54705,
+      "sha256": "adb783e734e906d1f46db5df29991dbde84bdb0ceab502ac2febb44fe3c2b5f4",
+      "original_path": "licenses/glslang-LICENSE.txt"
+    },
+    {
+      "path": "licenses/three-gpu-pathtracer-LICENSE.txt",
+      "bytes": 1072,
+      "sha256": "2df239f3787d174fbd6ead7bc4c748bee526564aa2e67315afcae47e15552e00",
+      "original_path": "licenses/three-gpu-pathtracer-LICENSE.txt"
+    },
+    {
+      "path": "licenses/three-mesh-bvh-LICENSE.txt",
+      "bytes": 1072,
+      "sha256": "b106ef6198a9862ed2b5b873e944ecf3583c631a84a7462d400ecc1910ce7fee",
+      "original_path": "licenses/three-mesh-bvh-LICENSE.txt"
+    },
+    {
+      "path": "licenses/xatlas-web-LICENSE.txt",
+      "bytes": 1075,
+      "sha256": "2c16d5b1c2808277fe975b4f70f0fd9afc9b3bcf04e6c676665a82cb2d5579e3",
+      "original_path": "licenses/xatlas-web-LICENSE.txt"
+    },
+    {
+      "path": "samples/SYNTHETIC-Offline3D.pdf",
+      "bytes": 42079,
+      "sha256": "f152069c62b5f331e17a1ac020fa426827c6373dd6e69f817c4126a537797547",
+      "original_path": "samples/SYNTHETIC-Offline3D.pdf"
+    },
+    {
+      "path": "src/AutomaticRegistration/AutomaticRegistration.csproj",
+      "bytes": 241,
+      "sha256": "d1e3214b440aa64305c6915e4aa920bf2d3cfe63c9c0a17075bab6ac0c190386",
+      "original_path": "src/AutomaticRegistration/AutomaticRegistration.csproj"
+    },
+    {
+      "path": "src/AutomaticRegistration/AutomaticRegistrationService.cs",
+      "bytes": 8206,
+      "sha256": "6135ab923a8fbb249803c7d9501871b6949b138baaef25c93e8ff65c519c6056",
+      "original_path": "src/AutomaticRegistration/AutomaticRegistrationService.cs"
+    },
+    {
+      "path": "src/AutomaticRegistration/ExportFinalizer.cs",
+      "bytes": 3579,
+      "sha256": "7661ebbd1d406350626204e776cc2b2691ab264244a0995fa9f35a23b238c821",
+      "original_path": "src/AutomaticRegistration/ExportFinalizer.cs"
+    },
+    {
+      "path": "src/AutomaticRegistration/Native.cs",
+      "bytes": 4889,
+      "sha256": "58c3e07b54ee538d802af5ed6bffb92be7033c7aee381386328d8c315ca3349b",
+      "original_path": "src/AutomaticRegistration/Native.cs"
+    },
+    {
+      "path": "src/AutomaticRegistration/packages.lock.json",
+      "bytes": 3380,
+      "sha256": "12d86427d28d1c5e567bdaa10116994f6dad6f017b251bac23ffbf7157c90ba8",
+      "original_path": "src/AutomaticRegistration/packages.lock.json"
+    },
+    {
+      "path": "src/Core/AutomaticExport.cs",
+      "bytes": 865,
+      "sha256": "765e0fc9fb6dfffa2c4f15d05c348b0a0eeb4e94287ab1fa2a80a2ea1a3789aa",
+      "original_path": "src/Core/AutomaticExport.cs"
+    },
+    {
+      "path": "src/Core/BoxVolume.cs",
+      "bytes": 1576,
+      "sha256": "34ac55ac792f824b4ed1a13df5604335e4d4804952cd60d4308342161a62b54d",
+      "original_path": "src/Core/BoxVolume.cs"
+    },
+    {
+      "path": "src/Core/Contract.cs",
+      "bytes": 19045,
+      "sha256": "b007d6242bcc2367906e691282a7ec3549643cd473c36b598765ea6abc94cb34",
+      "original_path": "src/Core/Contract.cs"
+    },
+    {
+      "path": "src/Core/ContractModels.cs",
+      "bytes": 3965,
+      "sha256": "b5c913a2d182e1fd918c1b6106d34733dafdf981c0797ead41a9241c8406e6a2",
+      "original_path": "src/Core/ContractModels.cs"
+    },
+    {
+      "path": "src/Core/Core.csproj",
+      "bytes": 210,
+      "sha256": "f64c5a8cd1c1637618ec5e8c41b09b9ecf8407e945b996b52007bbdf56ea4e93",
+      "original_path": "src/Core/Core.csproj"
+    },
+    {
+      "path": "src/Core/CreaseNormals.cs",
+      "bytes": 1345,
+      "sha256": "6451fa38fcbc07aa37e9277b1eac4009c3db5b6b90a16d3793b15ae27b698273",
+      "original_path": "src/Core/CreaseNormals.cs"
+    },
+    {
+      "path": "src/Core/ExportVolume.cs",
+      "bytes": 4639,
+      "sha256": "90b2a7b5fbc58bc0f9d60d7e4963b5530bdd664bc0fb2478644f537d71ccfc96",
+      "original_path": "src/Core/ExportVolume.cs"
+    },
+    {
+      "path": "src/Core/FeatureEdges.cs",
+      "bytes": 1485,
+      "sha256": "3a811696f476bc475fd0df18a6d5b4b393ee274cfc5f5a367a9dff11e16bedc3",
+      "original_path": "src/Core/FeatureEdges.cs"
+    },
+    {
+      "path": "src/Core/Geometry.cs",
+      "bytes": 7488,
+      "sha256": "880042628904f5d8201bf277ca3f661ac52c6040ae88a2157e64a9ef34135f9f",
+      "original_path": "src/Core/Geometry.cs"
+    },
+    {
+      "path": "src/Core/GlbBuilder.cs",
+      "bytes": 11327,
+      "sha256": "c349ede6b4a9260ffd4ea9fcabfb5249795cb51469a6c79f04e4760567ebae77",
+      "original_path": "src/Core/GlbBuilder.cs"
+    },
+    {
+      "path": "src/Core/IndexedGeometry.cs",
+      "bytes": 4446,
+      "sha256": "1e3358a3cd09c6810ddc16d36e79e8cb8986bdfb54f49a02e53ff28c16a1df22",
+      "original_path": "src/Core/IndexedGeometry.cs"
+    },
+    {
+      "path": "src/Core/SceneLimits.cs",
+      "bytes": 567,
+      "sha256": "9f723999436a934365b95c67362936384ab5d9755d0c296478c7b33528051979",
+      "original_path": "src/Core/SceneLimits.cs"
+    },
+    {
+      "path": "src/Core/SectionBoxDefaults.cs",
+      "bytes": 1743,
+      "sha256": "057bcbcf123553da8f4e1cdb399f1297b73b0469a71f5c7a1be262a634b54bd5",
+      "original_path": "src/Core/SectionBoxDefaults.cs"
+    },
+    {
+      "path": "src/Core/SpoolSceneWriter.cs",
+      "bytes": 10946,
+      "sha256": "9e89238bcd7a8efa805e595519989ea82eeba30278530ece5697db3700b21513",
+      "original_path": "src/Core/SpoolSceneWriter.cs"
+    },
+    {
+      "path": "src/Core/packages.lock.json",
+      "bytes": 3316,
+      "sha256": "c2fde38292ed0b59cf7bc0e00bbeff9e0cc930b7c4a19cd3212d2f3b280b63a5",
+      "original_path": "src/Core/packages.lock.json"
+    },
+    {
+      "path": "src/Packaging/Packaging.csproj",
+      "bytes": 243,
+      "sha256": "583b0f42196a1f349484f045879dc95d3cf65687a4ccdb8735d39cdf953f0ebd",
+      "original_path": "src/Packaging/Packaging.csproj"
+    },
+    {
+      "path": "src/Packaging/PdfPackage.cs",
+      "bytes": 10045,
+      "sha256": "184b501e9d1f1a7213c9bf5eb8ed2c48984727e2f12fd88de5402f898341d7b4",
+      "original_path": "src/Packaging/PdfPackage.cs"
+    },
+    {
+      "path": "src/Packaging/packages.lock.json",
+      "bytes": 3252,
+      "sha256": "b9abc171591332e1a6d0f8d5e10bb701286e166ae06bc10f74ac94bab3c3ab3b",
+      "original_path": "src/Packaging/packages.lock.json"
+    },
+    {
+      "path": "src/Viewer/web/app.mjs",
+      "bytes": 4097,
+      "sha256": "e138a780998f7a3b69fc9cf04300488b8413c1941df8c183fa55831c6bb0f09c",
+      "original_path": "src/Viewer/web/app.mjs"
+    },
+    {
+      "path": "src/Viewer/web/comparison-base.mjs",
+      "bytes": 7864,
+      "sha256": "575d1fa76929cecbc30624795afc3dbf2232dc1c7ceece1ca36a66a915ada9fd",
+      "original_path": "src/Viewer/web/comparison-base.mjs"
+    },
+    {
+      "path": "src/Viewer/web/comparison-worker.mjs",
+      "bytes": 7623,
+      "sha256": "0c4f644971c9fecb5ad35234f999a9161fadaf5f97a16c5d9fd63875d704834b",
+      "original_path": "src/Viewer/web/comparison-worker.mjs"
+    },
+    {
+      "path": "src/Viewer/web/engines/photo-source.mjs",
+      "bytes": 1868,
+      "sha256": "c222c00f27cbb1f64063376bec0aa5c012424bbdddb5cc3cfec19740863d2a8a",
+      "original_path": "src/Viewer/web/engines/photo-source.mjs"
+    },
+    {
+      "path": "src/Viewer/web/engines/playcanvas-source.mjs",
+      "bytes": 4531,
+      "sha256": "d679e301c9a2caf3b37a8789ccd2b6732eb370e0f2086ad77d82b1ce9752eded",
+      "original_path": "src/Viewer/web/engines/playcanvas-source.mjs"
+    },
+    {
+      "path": "src/Viewer/web/engines/three-source.mjs",
+      "bytes": 12929,
+      "sha256": "28b71311bce6c7cf6596919c86d352cd1fa544cfacbee1c3f653f313eb5e4947",
+      "original_path": "src/Viewer/web/engines/three-source.mjs"
+    },
+    {
+      "path": "src/Viewer/web/filament-adapter.mjs",
+      "bytes": 4346,
+      "sha256": "8fbf43839c54b3ff2207861c33704acf2b299e9e0382df9a7b10bfe84f6fa6a8",
+      "original_path": "src/Viewer/web/filament-adapter.mjs"
+    },
+    {
+      "path": "src/Viewer/web/index.html",
+      "bytes": 1855,
+      "sha256": "ebfe09b32c321469452db1b951ffc016a0aaa161b7aaa59e344ca631dde2af34",
+      "original_path": "src/Viewer/web/index.html"
+    },
+    {
+      "path": "src/Viewer/web/navigation.mjs",
+      "bytes": 1429,
+      "sha256": "89b0105e6980ee8c9e2a8c953cbee0c0922aa2b31bb79c3ec5ad92a2081c40cc",
+      "original_path": "src/Viewer/web/navigation.mjs"
+    },
+    {
+      "path": "src/Viewer/web/package-lock.json",
+      "bytes": 27048,
+      "sha256": "21ae5c799276f88a983edb06829dc627b75cb0bb1bf0fb005f1fd9724d2dd8a2",
+      "original_path": "src/Viewer/web/package-lock.json"
+    },
+    {
+      "path": "src/Viewer/web/package.json",
+      "bytes": 321,
+      "sha256": "9cd59dc79493f629bd846c4b841be0cfd4b135b6ae1b9d0ee6fb2fc08af22aab",
+      "original_path": "src/Viewer/web/package.json"
+    },
+    {
+      "path": "src/Viewer/web/precomputed.mjs",
+      "bytes": 779,
+      "sha256": "3c43882ff66b7b531cefc307e076c71bbddb95101b1ea1900ca1e6e7d2727b7d",
+      "original_path": "src/Viewer/web/precomputed.mjs"
+    },
+    {
+      "path": "src/Viewer/web/renderer.mjs",
+      "bytes": 23781,
+      "sha256": "ce7cd49e404bd8a770a757dd624802167ee12f213fae8d0d1af06835ea486af2",
+      "original_path": "src/Viewer/web/renderer.mjs"
+    },
+    {
+      "path": "src/Viewer/web/scene-data.mjs",
+      "bytes": 3267,
+      "sha256": "fbac96e427e7e4a40fbaf5c48232a14306ea91250aa365eccd0fa4c66e563387",
+      "original_path": "src/Viewer/web/scene-data.mjs"
+    },
+    {
+      "path": "src/Viewer/web/section-grips.mjs",
+      "bytes": 4705,
+      "sha256": "ec0de32ba8acf136c7ab9c36cbcb1f2d4619c69f860ceca134c01e45f7a25181",
+      "original_path": "src/Viewer/web/section-grips.mjs"
+    },
+    {
+      "path": "src/Viewer/web/section-worker.mjs",
+      "bytes": 1673,
+      "sha256": "64f218755862f4f1ebdb7661d6de7b66e1ad6c431967af1d499ebe8b171d2ce7",
+      "original_path": "src/Viewer/web/section-worker.mjs"
+    },
+    {
+      "path": "src/Viewer/web/sections.mjs",
+      "bytes": 4965,
+      "sha256": "c3e2424cc3bbd83aa5b523b74e2c63091409e1bc367f03a6fe550f5bf485c952",
+      "original_path": "src/Viewer/web/sections.mjs"
+    },
+    {
+      "path": "src/Viewer/web/style.css",
+      "bytes": 1610,
+      "sha256": "534e10ef55b268ebd61e7ffb3e053ecf275dc51795527cea2950537d3efaf3ff",
+      "original_path": "src/Viewer/web/style.css"
+    },
+    {
+      "path": "src/Viewer/web/three.css",
+      "bytes": 8090,
+      "sha256": "9c58048281b5c7689633d2bb8f33ddb65c514057f4dded6cfb1b08c93b45e3c4",
+      "original_path": "src/Viewer/web/three.css"
+    },
+    {
+      "path": "src/Viewer/web/three.html",
+      "bytes": 5006,
+      "sha256": "b5660246a3eb5284a49e4ea5be3ff601846ddf4e812c11d1d56bc342055df00d",
+      "original_path": "src/Viewer/web/three.html"
+    },
+    {
+      "path": "src/Viewer/web/three.mjs",
+      "bytes": 12296,
+      "sha256": "c326fdf71885fbb23de4206dd3ae9e852cddfb3d3f007572150c116a0d734965",
+      "original_path": "src/Viewer/web/three.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/babylon.js",
+      "bytes": 6794120,
+      "sha256": "420088fc4c31c22591703ce207c7736f15419faa556b0678d28f71dbf7ea523a",
+      "original_path": "src/Viewer/web/vendor/babylon.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/babylonjs-LICENSE",
+      "bytes": 9226,
+      "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6",
+      "original_path": "src/Viewer/web/vendor/babylonjs-LICENSE"
+    },
+    {
+      "path": "src/Viewer/web/vendor/babylonjs-loaders-LICENSE",
+      "bytes": 9226,
+      "sha256": "9362ea9ea17cb221a20cbbd63f404710834cc273d2a9a7b60314fd68ab702cd6",
+      "original_path": "src/Viewer/web/vendor/babylonjs-loaders-LICENSE"
+    },
+    {
+      "path": "src/Viewer/web/vendor/earcut.js",
+      "bytes": 7131,
+      "sha256": "1444195270d4358ef8dd1a448074f555d7ac3c83c850f5648b611ea1d2090ff3",
+      "original_path": "src/Viewer/web/vendor/earcut.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/filament.js",
+      "bytes": 218482,
+      "sha256": "22730010adb244a92a7333a06db97898a50695191dd056aea875a0fbef15b867",
+      "original_path": "src/Viewer/web/vendor/filament.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/filament.wasm",
+      "bytes": 3562806,
+      "sha256": "1be93e9c937c752b6e8dce79a380b3b16db1b84afa0d9302bebba65b66e3e39b",
+      "original_path": "src/Viewer/web/vendor/filament.wasm"
+    },
+    {
+      "path": "src/Viewer/web/vendor/glslang.js",
+      "bytes": 16030,
+      "sha256": "c3a3c2a47284b16b60293fa08a5842fbe8689ac617edc857ab6cb8134a590db4",
+      "original_path": "src/Viewer/web/vendor/glslang.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/glslang.wasm",
+      "bytes": 943680,
+      "sha256": "d79453e0803ebcdf3753c6b1d8d51543b52fed96f7f0d4aec94acd847e225169",
+      "original_path": "src/Viewer/web/vendor/glslang.wasm"
+    },
+    {
+      "path": "src/Viewer/web/vendor/loaders.js",
+      "bytes": 288275,
+      "sha256": "02a6782cf71693218165ae87b114697a74b9cb081c8123e3fcc310e159598d6c",
+      "original_path": "src/Viewer/web/vendor/loaders.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/pdf.mjs",
+      "bytes": 658371,
+      "sha256": "a209a2124baa35cbb9015b809926f1bcec9dd1c247296290e205dd9d76cb9128",
+      "original_path": "src/Viewer/web/vendor/pdf.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/pdf.worker.mjs",
+      "bytes": 2209730,
+      "sha256": "7c237f83fa56bce645d8af51d183c9c56ba7b2d2928ff42754dc7020bea36323",
+      "original_path": "src/Viewer/web/vendor/pdf.worker.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/pdfjs-dist-LICENSE",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "original_path": "src/Viewer/web/vendor/pdfjs-dist-LICENSE"
+    },
+    {
+      "path": "src/Viewer/web/vendor/photo-adapter.mjs",
+      "bytes": 866454,
+      "sha256": "44173f8fe8282521007e808fda137db6b482e2b79a59c5ea978291ad2340fd50",
+      "original_path": "src/Viewer/web/vendor/photo-adapter.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/playcanvas-adapter.mjs",
+      "bytes": 2016481,
+      "sha256": "ebba29a3ed22634fbb09155aa7b6ce762c65c2169ac12ee10bd59133d917719c",
+      "original_path": "src/Viewer/web/vendor/playcanvas-adapter.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/studio.env",
+      "bytes": 350766,
+      "sha256": "65f5a57bdf9d9e27776df663cd6bb2cb3890c40994f0efe2b4b0cf6e0647f3cb",
+      "original_path": "src/Viewer/web/vendor/studio.env"
+    },
+    {
+      "path": "src/Viewer/web/vendor/studio.ktx",
+      "bytes": 262288,
+      "sha256": "0b6cf030c001aac071b9e3537df65a45a9ce562006c5c4571640c6210f8db683",
+      "original_path": "src/Viewer/web/vendor/studio.ktx"
+    },
+    {
+      "path": "src/Viewer/web/vendor/three-adapter.mjs",
+      "bytes": 658399,
+      "sha256": "da1e98a4b0c6ed965f5274ec96738fbe5a3e171e9734ccca1daf9db46106e595",
+      "original_path": "src/Viewer/web/vendor/three-adapter.mjs"
+    },
+    {
+      "path": "src/Viewer/web/vendor/twgsl.js",
+      "bytes": 74555,
+      "sha256": "b4f1f66263b801210f955f74aa71f1939be647ce0fd80ea5befd12a78499d5ff",
+      "original_path": "src/Viewer/web/vendor/twgsl.js"
+    },
+    {
+      "path": "src/Viewer/web/vendor/twgsl.wasm",
+      "bytes": 1702916,
+      "sha256": "a434c2decdbb38caadf5f486d806384a1543554828c983c77922b2d92579914c",
+      "original_path": "src/Viewer/web/vendor/twgsl.wasm"
+    },
+    {
+      "path": "src/Viewer/web/vendor.cjs",
+      "bytes": 813,
+      "sha256": "da42188b192cd613c521e55c1c3d6f09c2ede90bff15b06ae28762c01d86431c",
+      "original_path": "src/Viewer/web/vendor.cjs"
+    }
+  ]
+}

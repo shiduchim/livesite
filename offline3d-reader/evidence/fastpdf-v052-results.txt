@@ -1,0 +1,7 @@
+VSTest version 17.11.1 (x64)
+
+Starting test execution, please wait...
+A total of 1 test files matched the specified pattern.
+Results File: /workspace/work/3dpdf/tests/fastpdf-v052/_1727a823fc67_2026-10-26_13_09_55.trx
+
+Passed!  - Failed:     0, Passed:    37, Skipped:     0, Total:    37, Duration: 4 s - EKFastPDF.Tests.dll (net8.0)

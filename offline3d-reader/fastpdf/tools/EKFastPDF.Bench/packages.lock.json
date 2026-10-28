@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0": {
+      "bblanchon.PDFium.Linux": {
+        "type": "Direct",
+        "requested": "[157.0.8100, )",
+        "resolved": "157.0.8100",
+        "contentHash": "+VKTzJDX1aMJ2AX33qxtyLQY2d5IA1o1FwDbQeaJQnYevSFbYAFjVeQeinaPcjiEA4qUSicjhh7uGCQD4qqFyw=="
+      },
+      "ekfastpdf.core": {
+        "type": "Project"
+      }
+    }
+  }
+}

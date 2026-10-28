@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\src\EKFastPDF.Core\PdfiumNative.props" />
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="xunit" Version="2.9.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\EKFastPDF.Core\EKFastPDF.Core.csproj" />
+    <!-- The bench executable doubles as the render worker process in integration tests. -->
+    <ProjectReference Include="..\..\tools\EKFastPDF.Bench\EKFastPDF.Bench.csproj" />
+  </ItemGroup>
+<ItemGroup><ProjectReference Include="../../../src/Packaging/Packaging.csproj"/><Content Include="../../../samples/SYNTHETIC-Offline3D.pdf" Link="SYNTHETIC-Offline3D.pdf" CopyToOutputDirectory="PreserveNewest"/></ItemGroup></Project>
