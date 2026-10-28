@@ -4,7 +4,7 @@ import {SectionGrips} from './section-grips.mjs';
 const $=id=>document.getElementById(id),bridge=window.chrome.webview;
 let renderer=navigation(new BabylonAdapter()),engineName='babylon',pending,sceneBytes,loaded=false,lastBounds=0,switching=false,awaitingBoundsEcho=false,identityByMesh=new Map(),identityByElement=new Map();
 let selected=null;const grips=new SectionGrips(()=>renderer);
-const send=m=>bridge.postMessage(m),fail=e=>send({type:'error',message:String(e.message||e)});
+const send=m=>bridge.postMessage(m),fail=e=>{const message=String(e?.message||e);if(!loaded)$('hint').textContent='3D model could not be shown: '+message;send({type:'error',message});};
 const dimensions=()=>{};
 let defaults={square:3.048,above:3.048,below:.1524,unit:'feet'},draft={...defaults};
 function showDefaults(){
@@ -32,8 +32,21 @@ function closeMenus(){for(const name of ['settings','tools']){ $(name+'-panel').
 for(const name of ['settings','tools'])$(name+'-toggle').onclick=()=>{const open=$(name+'-panel').hidden;closeMenus();$(name+'-panel').hidden=!open;$(name+'-toggle').setAttribute('aria-expanded',String(open));};
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMenus();});
 $('engine').onchange=()=>switchEngine($('engine').value);
+// The viewer hands the GLB over in shared memory (or in chunks on an old
+// WebView2 runtime); there is no network request for the model.
+let incoming=null,incomingTimer=0,earlyBuffer=null;
+async function deliver(bytes){
+ if(!bytes||!incoming||sceneBytes&&loaded)return;
+ if(bytes.byteLength!==incoming.size){earlyBuffer=null;throw new Error('Incomplete 3D model transfer ('+bytes.byteLength+' of '+incoming.size+' bytes)');}
+ clearTimeout(incomingTimer);earlyBuffer=null;sceneBytes=bytes;incoming=null;
+ const started=performance.now();await renderer.load(sceneBytes);loaded=true;$('engine').disabled=false;if(pending)renderer.box(pending,true);
+ send({type:'loaded',ms:Math.round(performance.now()-started)});
+}
+bridge.addEventListener('sharedbufferreceived',async e=>{const shared=e.getBuffer();let copy=null;try{if(e.additionalData?.type==='sceneBuffer')copy=new Uint8Array(shared.slice(0));}finally{bridge.releaseBuffer?.(shared);}
+ if(!copy)return;try{if(incoming)await deliver(copy);else earlyBuffer=copy;}catch(error){$('engine').disabled=false;fail(error);}});
 bridge.addEventListener('message',async({data:m})=>{try{
- if(m.type==='scene'){identityByMesh=new Map((m.identities||[]).map(x=>[x.meshName,x]));identityByElement=new Map((m.identities||[]).map(x=>[x.meshName.split('/')[0],x]));$('engine').disabled=true;$('hint').textContent='Loading 3D model…';if(m.url){const expected=new URL('/scene.glb',location.href).href;if(m.url!==expected)throw new Error('Invalid local scene address');const response=await fetch(expected,{cache:'no-store'});if(!response.ok)throw new Error('The local model could not be read ('+response.status+')');sceneBytes=new Uint8Array(await response.arrayBuffer());if(sceneBytes.byteLength!==m.size)throw new Error('Incomplete local model transfer');}else sceneBytes=Uint8Array.from(atob(m.glb),c=>c.charCodeAt(0));await renderer.load(sceneBytes);loaded=true;$('engine').disabled=false;if(pending)renderer.box(pending,true);}
+ if(m.type==='scene'){identityByMesh=new Map((m.identities||[]).map(x=>[x.meshName,x]));identityByElement=new Map((m.identities||[]).map(x=>[x.meshName.split('/')[0],x]));$('engine').disabled=true;$('hint').textContent='Loading 3D model ('+(m.size/1048576).toFixed(1)+' MB)…';incoming={size:m.size,chunks:null,received:0};clearTimeout(incomingTimer);incomingTimer=setTimeout(()=>{if(incoming&&!sceneBytes)fail(new Error('The 3D model was not received from the viewer. Close and reopen 3D.'));},60000);await deliver(earlyBuffer);}
+ if(m.type==='sceneChunk'){if(!incoming||m.total!==incoming.size||sceneBytes)return;incoming.chunks??=new Uint8Array(m.total);const part=Uint8Array.from(atob(m.data),c=>c.charCodeAt(0));incoming.chunks.set(part,m.offset);incoming.received+=part.length;$('hint').textContent='Loading 3D model… '+Math.round(100*incoming.received/m.total)+'%';if(incoming.received===m.total)await deliver(incoming.chunks);}
  if(m.type==='box'){pending=m;dimensions(m);if(loaded){renderer.box(m,false,awaitingBoundsEcho&&!m.fitBox);if(m.fitBox){cancelAnimationFrame(renderer.animation);const state=renderer.getCameraState();state.target=renderer.bounds.min.map((v,k)=>(v+renderer.bounds.max[k])/2);state.radius=Math.max(m.width,m.depth,m.above+m.below)*(.7/.45);renderer.setCameraState(state);}}awaitingBoundsEcho=false;}
  if(m.type==='boxDefaults'){defaults={square:m.square,above:m.above,below:m.below,unit:m.unit==='meters'?'meters':'feet'};draft={...defaults};showDefaults();$('defaults-status').classList.remove('error');$('defaults-status').textContent='Saved defaults · used when opening 3D and by Reset box.';}
  if(m.type==='settingsError'){$('defaults-status').classList.add('error');$('defaults-status').textContent='Could not save: '+m.message;}

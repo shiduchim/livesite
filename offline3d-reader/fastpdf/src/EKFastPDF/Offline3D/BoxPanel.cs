@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Runtime.InteropServices;
 using System.Windows.Controls;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -9,7 +10,10 @@ namespace EKFastPDF.Offline3D;
 /// <summary>Constructed only when the user activates 3D. Never renders a PDF page.</summary>
 internal sealed class BoxPanel:IDisposable
 {
-    private const string Origin="https://offline3d-v052.local";
+    // ".example" is reserved (RFC 6761); WebView2 documents that ".local" host
+    // names can delay every navigation.
+    private const string Host="offline3d.example",Origin="https://"+Host;
+    private const int ChunkBytes=4*1024*1024;
     public WebView2 Control {get;}=new();
     public event Action? HideRequested;
     public event Action? UndockRequested;
@@ -20,6 +24,7 @@ internal sealed class BoxPanel:IDisposable
     private SectionBoxDefaults defaults;
     private Point3? center;
     private bool ready,sent,disposed;
+    private CoreWebView2Environment? environment;
     private double width=3.048,depth=3.048,above=3.048,below=.1524;
     private BoxVolume? volume;
     private ViewRegion? activeRegion;
@@ -29,15 +34,14 @@ internal sealed class BoxPanel:IDisposable
         var runtime=Path.Combine(AppContext.BaseDirectory,"WebView2Runtime");
         if(!File.Exists(Path.Combine(runtime,"msedgewebview2.exe")))runtime=null;
         try{CoreWebView2Environment.GetAvailableBrowserVersionString(runtime);}catch{throw new FileNotFoundException("WebView2 Runtime is missing. Rerun INSTALL.cmd to set up the viewer dependency.");}
-        var environment=await CoreWebView2Environment.CreateAsync(runtime,Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Offline3DPrototype","FastPDF-WebCache"),new CoreWebView2EnvironmentOptions{AdditionalBrowserArguments="--force_high_performance_gpu"});
+        var environment=this.environment=await CoreWebView2Environment.CreateAsync(runtime,Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Offline3DPrototype","FastPDF-WebCache"),new CoreWebView2EnvironmentOptions{AdditionalBrowserArguments="--force_high_performance_gpu"});
         if(disposed)return;
         await Control.EnsureCoreWebView2Async(environment);if(disposed)return;
         var web=Control.CoreWebView2;web.Settings.AreHostObjectsAllowed=false;web.Settings.AreDevToolsEnabled=false;web.Settings.AreDefaultContextMenusEnabled=false;web.Settings.IsPasswordAutosaveEnabled=false;web.Settings.IsGeneralAutofillEnabled=false;
-        web.SetVirtualHostNameToFolderMapping("offline3d-v052.local",Path.Combine(AppContext.BaseDirectory,"offline3d"),CoreWebView2HostResourceAccessKind.DenyCors);
+        web.SetVirtualHostNameToFolderMapping(Host,Path.Combine(AppContext.BaseDirectory,"offline3d"),CoreWebView2HostResourceAccessKind.DenyCors);
         web.AddWebResourceRequestedFilter("*",CoreWebView2WebResourceContext.All);
         web.WebResourceRequested+=(_,e)=>{
             if(Uri.TryCreate(e.Request.Uri,UriKind.Absolute,out var u)&&u.GetLeftPart(UriPartial.Authority)==Origin&&u.Query.Length==0){
-                if(u.AbsolutePath=="/scene.glb"&&e.Request.Method=="GET"&&e.ResourceContext==CoreWebView2WebResourceContext.Fetch){e.Response=environment.CreateWebResourceResponse(new MemoryStream(package.Glb,false),200,"OK","Content-Type: model/gltf-binary\r\nCache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nContent-Length: "+package.Glb.Length);return;}
                 if(Allowed.Contains(u.AbsolutePath))return;
             }
             e.Response=environment.CreateWebResourceResponse(new MemoryStream(),403,"Blocked","");
@@ -60,10 +64,34 @@ internal sealed class BoxPanel:IDisposable
     }
     private void Post(object message){if(!disposed&&ready)Control.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(message,Contract.Json));}
     private void SendBox(bool fitBox=false){if(!center.HasValue||!ready||disposed)return;
-        if(!sent){sent=true;Post(new{type="scene",url=Origin+"/scene.glb",size=package.Glb.Length,identities=package.Elements});}
+        if(!sent){sent=true;SendScene();}
         if(volume==null)return;
         Post(new{type="box",fitBox,x=(volume.MinX+volume.MaxX)/2,y=volume.Level,z=(volume.MinZ+volume.MaxZ)/2,width=volume.Width,depth=volume.Depth,above=volume.Above,below=volume.Below,minX=volume.MinX,maxX=volume.MaxX,minY=volume.MinY,maxY=volume.MaxY,minZ=volume.MinZ,maxZ=volume.MaxZ});
         FootprintChanged?.Invoke(Footprint(volume));
+    }
+    /// <summary>
+    /// v0.5.2 served scene.glb by answering a fetch for a URL on the
+    /// folder-mapped virtual host from WebResourceRequested. In the installed
+    /// viewer that fetch failed ("Failed to fetch") and 3D stayed on "Loading".
+    /// The model is now handed over without any network request: as one
+    /// read-only shared-memory buffer (WebView2 PostSharedBufferToScript), or,
+    /// on a runtime without that API, as base64 chunks over the message channel.
+    /// </summary>
+    private void SendScene(){
+        // The page accepts whichever complete copy arrives: the buffer or all chunks.
+        Post(new{type="scene",size=package.Glb.Length,identities=package.Elements});
+        try{
+            using var buffer=environment!.CreateSharedBuffer((ulong)package.Glb.Length);
+            using(var stream=buffer.OpenStream())stream.Write(package.Glb,0,package.Glb.Length);
+            Control.CoreWebView2.PostSharedBufferToScript(buffer,CoreWebView2SharedBufferAccess.ReadOnly,JsonSerializer.Serialize(new{type="sceneBuffer",size=package.Glb.Length}));
+            return;
+        }catch(Exception ex) when (ex is NotImplementedException or InvalidCastException or COMException or ArgumentException or InvalidOperationException){
+            Status?.Invoke("3D: shared memory unavailable ("+ex.GetType().Name+"); sending the model in parts.");
+        }
+        for(int offset=0;offset<package.Glb.Length&&!disposed;offset+=ChunkBytes){
+            int count=Math.Min(ChunkBytes,package.Glb.Length-offset);
+            Post(new{type="sceneChunk",offset,total=package.Glb.Length,data=Convert.ToBase64String(package.Glb,offset,count)});
+        }
     }
     private Point3[] Footprint(BoxVolume box){
         if(activeRegion==null)return box.PdfFootprint(package.Registration);
