@@ -21,18 +21,24 @@ export function triangulateSection(loops,earcut){
  const output=[];for(let i=0;i<rings.length;i++){if(rings[i].depth%2)continue;const holes=[],flat=rings[i].points.flat();for(let j=i+1;j<rings.length;j++)if(rings[j].parent===i&&rings[j].depth%2){holes.push(flat.length/2);flat.push(...rings[j].points.flat());}for(const n of earcut(flat,holes,2))output.push(flat[n*2],flat[n*2+1]);}return output;
 }
 export class SectionCaps {
- constructor(scene,models,bytes){this.scene=scene;this.caps=[];this.groups=new Map();this.request=0;
+ constructor(scene,models,bytes){this.scene=scene;this.caps=[];this.groups=new Map();this.materials=new Map();this.lineMaterial=null;this.showOutlines=true;this.request=0;
   for(const mesh of models){const key=mesh.name.split('/')[0];if(!this.groups.has(key))this.groups.set(key,{material:mesh.material});}
   this.worker=new Worker(new URL('./section-worker.mjs',import.meta.url),{type:'module'});const copy=bytes.slice();this.worker.postMessage({type:'init',bytes:copy},[copy.buffer]);
   this.worker.onmessage=({data:m})=>{if(m.id!==this.request||this.scene.isDisposed)return;this.clear();if(m.error){this.onError?.(m.error);return;}this.workStats={candidates:m.candidates,trianglesVisited:m.trianglesVisited};this.openContours=m.open;this.apply(m.bounds,m.caps);this.onChanged?.();};
   this.worker.onerror=e=>this.onError?.(e.message||'Section worker failed');
  }
- clear(){for(const m of this.caps)m.dispose(false,true);this.caps=[];}
+ // Outlines share one line material and caps share materials, so neither is disposed with a cap.
+ clear(){for(const m of this.caps){m.metadata.outline?.dispose(false,false,true);m.dispose(false,false);}this.caps=[];}
+ capMaterial(material){if(!('roughness' in material))return material;let clone=this.materials.get(material);if(!clone){clone=material.clone('Section material');clone.backFaceCulling=false;clone.roughness=Math.max(.65,clone.roughness??1);this.materials.set(material,clone);}return clone;}
  rebuild(bounds,enabled=true){this.request++;this.clear();if(enabled)this.worker.postMessage({type:'cut',id:this.request,bounds});}
  apply(bounds,caps){const B=window.BABYLON;for(const item of caps){const {axis,side,flat,other,key}=item,value=bounds[side][axis],group=this.groups.get(key);if(!group)continue;
    const positions=[],normals=[],indices=[];for(let i=0;i<flat.length;i+=2){const p=[0,0,0],n=[0,0,0];p[axis]=value+(side==='min'?1:-1)*1e-5;p[other[0]]=flat[i];p[other[1]]=flat[i+1];n[axis]=side==='min'?-1:1;positions.push(...p);normals.push(...n);indices.push(indices.length);}
-   const cap=new B.Mesh('Solid section',this.scene),data=new B.VertexData();data.positions=positions;data.normals=normals;data.indices=indices;data.applyToMesh(cap);cap.material=group.material.clone('Section material');cap.material.backFaceCulling=false;if('roughness' in cap.material)cap.material.roughness=Math.max(.65,cap.material.roughness);cap.metadata={owner:key};cap.isPickable=true;cap.receiveShadows=true;this.caps.push(cap);
+   const cap=new B.Mesh('Solid section',this.scene),data=new B.VertexData();data.positions=positions;data.normals=normals;data.indices=indices;data.applyToMesh(cap);cap.material=this.capMaterial(group.material);cap.metadata={owner:key,outline:this.showOutlines?this.outline(cap,positions):null};cap.isPickable=true;cap.receiveShadows=true;this.caps.push(cap);
   }
  }
- dispose(){this.worker?.terminate();this.request++;this.clear();this.groups.clear();}
+ // Revit draws the cut boundary: the cap triangles' edges that only one triangle uses.
+ outline(cap,positions){const B=window.BABYLON,count=new Map(),key=i=>positions[i*3]+','+positions[i*3+1]+','+positions[i*3+2];for(let t=0;t<positions.length/3;t+=3)for(let k=0;k<3;k++){const a=t+k,b=t+(k+1)%3,ka=key(a),kb=key(b),edge=ka<kb?ka+'|'+kb:kb+'|'+ka;count.set(edge,count.has(edge)?null:[a,b]);}
+  const points=[];for(const pair of count.values())if(pair)for(const i of pair)points.push(positions[i*3],positions[i*3+1],positions[i*3+2]);if(!points.length)return null;
+  const line=new B.LinesMesh('Section outline',this.scene,cap,null,false,false,false,this.lineMaterial||undefined);this.lineMaterial??=line.material;const data=new B.VertexData();data.positions=points;data.indices=Array.from({length:points.length/3},(_,i)=>i);data.applyToMesh(line);line.color=new B.Color3(.1,.1,.1);line.isPickable=false;return line;}
+ dispose(){this.worker?.terminate();this.request++;this.clear();this.groups.clear();for(const material of this.materials.values())material.dispose();this.materials.clear();this.lineMaterial?.dispose();this.lineMaterial=null;}
 }
