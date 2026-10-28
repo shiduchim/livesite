@@ -1,8 +1,8 @@
 # EK Triangle 1.0.2 - automated test results
 
 Machine: Microsoft Windows Server 2022 Datacenter 10.0.20348 (GitHub Actions Windows runner)  
-Date (UTC): 2026-10-28 21:45  
-Commit: e7be4afa24df7f83e938c85ba93e16b02f3e95ef
+Date (UTC): 2026-10-28 21:53  
+Commit: c7bbc01c0d258201e439c4adb0b2e98825bb385b
 
 These are automated build, simulation and Windows checks. They do NOT replace the short manual check inside Revit (see docs/ACCEPTANCE-TEST.md); Revit itself is not available on CI.
 
