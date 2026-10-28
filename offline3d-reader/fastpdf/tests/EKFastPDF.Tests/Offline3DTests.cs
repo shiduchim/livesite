@@ -34,4 +34,19 @@ public sealed class Offline3DTests
     }
     [Fact]
     public void FootprintMapping_RejectsSingularPageMap()=>Assert.Throws<InvalidDataException>(()=>new PdfPageMap(0,0,1,2,2,4).Unapply(1,2));
+    [Fact]
+    public void Has3D_FindsThePackageQuicklyAndOnlyInThreeDPdfs()
+    {
+        Assert.True(PdfPackageService.Has3D(Path.Combine(AppContext.BaseDirectory,"SYNTHETIC-Offline3D.pdf")));
+        string plain=Path.Combine(fixture.SampleDir,"plain-no-3d.pdf");
+        using(var pdf=new PdfDocument()){pdf.AddPage();pdf.Save(plain);}
+        Assert.False(PdfPackageService.Has3D(plain));
+        // The name split across the 1 MiB read boundary is still found.
+        string split=Path.Combine(fixture.SampleDir,"split-name.bin");
+        var name=System.Text.Encoding.ASCII.GetBytes(Contract.ManifestName);
+        var data=new byte[(1<<20)+64];Array.Copy(name,0,data,(1<<20)+name.Length/2-name.Length,name.Length);
+        File.WriteAllBytes(split,data);
+        Assert.True(PdfPackageService.Has3D(split));
+        Assert.False(PdfPackageService.Has3D(Path.Combine(fixture.SampleDir,"missing.pdf")));
+    }
 }
