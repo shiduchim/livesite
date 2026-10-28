@@ -3,6 +3,8 @@ using System.Text.Json;
 using EKFastPDF.Core.Diagnostics;
 using EKFastPDF.Core.Library;
 
+using EKFastPDF.Core.Rendering;
+
 namespace EKFastPDF.Services;
 
 /// <summary>User settings in %APPDATA%\EK FastPDF\settings.json. Zero means "automatic".</summary>
@@ -40,6 +42,11 @@ public sealed class AppSettings
     public bool OpenRecentOnStart { get; set; } = true;
     /// <summary>When the EKPDF window comes forward, open recent PDFs not opened yet.</summary>
     public bool OpenRecentOnActivate { get; set; }
+
+    /// <summary>Light, Soft grey, Warm, Dark grey, Dark, Night or "Match Windows".</summary>
+    public string Theme { get; set; } = "Light";
+    /// <summary>"Theme" (as the theme) or a <see cref="PageLook"/> name.</summary>
+    public string Pages { get; set; } = "Theme";
 
     public static string Directory => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Offline3D-FastPDF-Dev");
     private static string FilePath => Path.Combine(Directory, "settings.json");

@@ -39,7 +39,7 @@ public sealed class TileStore
     private readonly Dictionary<TileKey, RenderJob> _pending = new();
     private readonly Dictionary<(int Doc, int Page), Dictionary<long, int>> _levels = new();
     private readonly HashSet<TileKey> _failed = new();
-    private readonly ConcurrentQueue<(TileKey Key, TileBitmap? Tile, RenderResult Result)> _arrivals = new();
+    private readonly ConcurrentQueue<(TileKey Key, TileBitmap? Tile, RenderResult Result, int Generation)> _arrivals = new();
     private readonly Dispatcher _dispatcher;
     private int _drainScheduled;
 
@@ -119,13 +119,26 @@ public sealed class TileStore
     {
         var key = (TileKey)job.Tag!;
         TileBitmap? tile = null;
+        int generation = Services.PageTint.Generation;
         if (result.Outcome == JobOutcome.Completed)
         {
             try
             {
                 int bufferSize = (result.Height - 1) * result.Stride + result.Width * 4;
-                var bitmap = BitmapSource.Create(result.Width, result.Height, 96, 96, PixelFormats.Bgr32, null,
-                    result.Pixels, bufferSize, result.Stride);
+                var look = Services.PageTint.Look;
+                BitmapSource bitmap;
+                if (look == PageLook.Original)
+                    bitmap = BitmapSource.Create(result.Width, result.Height, 96, 96, PixelFormats.Bgr32, null, result.Pixels, bufferSize, result.Stride);
+                else
+                {
+                    // Theme page look (dimmed, warm paper, dark): change a copy, never the shared buffer.
+                    int stride = result.Width * 4;
+                    var pixels = new byte[stride * result.Height];
+                    for (int y = 0; y < result.Height; y++)
+                        System.Runtime.InteropServices.Marshal.Copy(result.Pixels + y * result.Stride, pixels, y * stride, stride);
+                    Services.PageTint.Apply(pixels, look);
+                    bitmap = BitmapSource.Create(result.Width, result.Height, 96, 96, PixelFormats.Bgr32, null, pixels, stride);
+                }
                 bitmap.Freeze();
                 tile = new TileBitmap
                 {
@@ -139,7 +152,7 @@ public sealed class TileStore
                 result = new RenderResult { Outcome = JobOutcome.Failed, Error = e.Message };
             }
         }
-        _arrivals.Enqueue((key, tile, result));
+        _arrivals.Enqueue((key, tile, result, generation));
         if (Interlocked.Exchange(ref _drainScheduled, 1) == 0)
             _dispatcher.BeginInvoke(DispatcherPriority.Normal, Drain);
     }
@@ -150,9 +163,10 @@ public sealed class TileStore
         var arrived = new List<TileKey>();
         while (_arrivals.TryDequeue(out var item))
         {
-            var (key, tile, result) = item;
+            var (key, tile, result, generation) = item;
             _pending.Remove(key);
             if (!_pool.IsRegistered(key.Doc)) continue; // document closed meanwhile
+            if (generation != Services.PageTint.Generation) continue; // drawn with the previous page look
             switch (result.Outcome)
             {
                 case JobOutcome.Completed when tile != null:

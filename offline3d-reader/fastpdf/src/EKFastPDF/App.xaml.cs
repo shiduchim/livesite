@@ -20,6 +20,11 @@ public partial class App : Application
         DispatcherUnhandledException += OnDispatcherUnhandledException;
         Log.Info($"WPF render tier {RenderCapability.Tier >> 16}, process render mode {RenderOptions.ProcessRenderMode}, startup {Program.Uptime.ElapsedMilliseconds} ms");
 
+        Themes.Apply(Settings.Theme, Settings.Pages);
+        Microsoft.Win32.SystemEvents.UserPreferenceChanged += (_, _) =>
+        {
+            if (Settings.Theme == Themes.MatchWindows) Dispatcher.BeginInvoke(() => { if (Themes.Resolve(Settings.Theme) != Themes.Current) Themes.Apply(Settings.Theme, Settings.Pages); });
+        };
         _services = new AppServices(Settings);
         _services.Pool.Warmup(); // worker processes start while the window appears
 

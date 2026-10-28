@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:viewer="clr-namespace:EKFastPDF.Viewer"
         Title="EKPDF" Width="1320" Height="840" MinWidth="760" MinHeight="480"
-        WindowStartupLocation="CenterScreen" Background="{StaticResource Chrome}"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource Chrome}"
         FontFamily="{StaticResource UiFont}" UseLayoutRounding="True" SnapsToDevicePixels="True"
         AllowDrop="True" Drop="Window_Drop" DragOver="Window_DragOver"
         PreviewKeyDown="Window_PreviewKeyDown" Closing="Window_Closing" StateChanged="Window_StateChanged"
@@ -21,7 +21,7 @@
         </Grid.RowDefinitions>
 
         <!-- Title bar: logo, tabs, Open; in Compact also the page and zoom tools. No + or x controls. -->
-        <Grid Grid.Row="0" Background="{StaticResource Chrome}">
+        <Grid Grid.Row="0" Background="{DynamicResource Chrome}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
@@ -50,8 +50,8 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="Auto"/>
                                     </Grid.ColumnDefinitions>
-                                    <Ellipse x:Name="Busy" Grid.Column="0" Width="6" Height="6" Margin="0,0,6,0" Fill="{StaticResource Accent}" Visibility="Collapsed" VerticalAlignment="Center"/>
-                                    <TextBlock x:Name="Caption" Grid.Column="1" Text="{Binding Title}" FontSize="12" Foreground="{StaticResource InkSoft}"
+                                    <Ellipse x:Name="Busy" Grid.Column="0" Width="6" Height="6" Margin="0,0,6,0" Fill="{DynamicResource Accent}" Visibility="Collapsed" VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="Caption" Grid.Column="1" Text="{Binding Title}" FontSize="12" Foreground="{DynamicResource InkSoft}"
                                                TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
                                     <!-- Close: a small circle (middle-click, Ctrl+W and right-click also close). -->
                                     <Button x:Name="CloseTab" Grid.Column="2" Width="18" Height="18" Margin="4,0,0,0" Style="{StaticResource IconButton}"
@@ -62,9 +62,9 @@
                             </Border>
                             <DataTemplate.Triggers>
                                 <DataTrigger Binding="{Binding IsActive}" Value="True">
-                                    <Setter TargetName="Tab" Property="Background" Value="White"/>
-                                    <Setter TargetName="Tab" Property="BorderBrush" Value="#DCDCDC"/>
-                                    <Setter TargetName="Caption" Property="Foreground" Value="{StaticResource Ink}"/>
+                                    <Setter TargetName="Tab" Property="Background" Value="{DynamicResource Surface}"/>
+                                    <Setter TargetName="Tab" Property="BorderBrush" Value="{DynamicResource TabBorder}"/>
+                                    <Setter TargetName="Caption" Property="Foreground" Value="{DynamicResource Ink}"/>
                                     <Setter TargetName="CloseTab" Property="Visibility" Value="Visible"/>
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding State}" Value="Opening">
@@ -93,13 +93,13 @@
                     <Path x:Name="MaximizeIcon" Data="{StaticResource IconMaximize}" Style="{StaticResource IconPath}" Width="11" Height="11" StrokeThickness="1.2"/>
                 </Button>
                 <Button Style="{StaticResource ChromeButton}" Width="Auto" Padding="12,0" Click="CloseWindow_Click" ToolTip="Close EKPDF">
-                    <TextBlock Text="Close" FontSize="11.5" Foreground="{StaticResource InkSoft}"/>
+                    <TextBlock Text="Close" FontSize="11.5" Foreground="{DynamicResource InkSoft}"/>
                 </Button>
             </StackPanel>
         </Grid>
 
         <!-- Regular layout only: the toolbar. -->
-        <Border x:Name="ToolbarRow" Grid.Row="1" Height="40" Background="White" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,1">
+        <Border x:Name="ToolbarRow" Grid.Row="1" Height="40" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,1">
             <Grid Margin="8,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -149,7 +149,7 @@
                 <Border x:Name="Box3DDivider" Style="{StaticResource Divider}"/>
                 <Button x:Name="Box3DButton" Style="{StaticResource SoftButton}" Tag="Accent" Click="Box3D_Click" ToolTip="Open a spot of the plan in 3D" Visibility="Collapsed"/>
             </StackPanel>
-            <Border x:Name="SearchField" CornerRadius="4" Background="{StaticResource Field}" BorderBrush="{StaticResource FieldBorder}" BorderThickness="1" Height="24" Width="230">
+            <Border x:Name="SearchField" CornerRadius="4" Background="{DynamicResource Field}" BorderBrush="{DynamicResource FieldBorder}" BorderThickness="1" Height="24" Width="230">
                 <Grid Margin="7,0,1,0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
@@ -158,11 +158,11 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Path Data="{StaticResource IconSearch}" Stroke="{StaticResource InkFaint}" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" StrokeEndLineCap="Round"/>
+                    <Path Data="{StaticResource IconSearch}" Stroke="{DynamicResource InkFaint}" StrokeThickness="1.5" Width="12" Height="12" Stretch="Uniform" StrokeEndLineCap="Round"/>
                     <TextBox x:Name="SearchBox" Grid.Column="1" Background="Transparent" BorderThickness="0" FontSize="12" Margin="5,0,0,0"
-                             Foreground="{StaticResource Ink}" VerticalContentAlignment="Center" TextChanged="SearchBox_TextChanged"
+                             Foreground="{DynamicResource Ink}" VerticalContentAlignment="Center" TextChanged="SearchBox_TextChanged"
                              PreviewKeyDown="SearchBox_PreviewKeyDown" ToolTip="Search text (Ctrl+F; Enter for next, Esc to close)"/>
-                    <TextBlock x:Name="SearchHint" Grid.Column="1" Text="Search" Margin="7,0,0,0" IsHitTestVisible="False" Style="{StaticResource BarText}" Foreground="{StaticResource InkFaint}"/>
+                    <TextBlock x:Name="SearchHint" Grid.Column="1" Text="Search" Margin="7,0,0,0" IsHitTestVisible="False" Style="{StaticResource BarText}" Foreground="{DynamicResource InkFaint}"/>
                     <TextBlock x:Name="SearchCounter" Grid.Column="2" Style="{StaticResource BarText}" FontSize="11" Margin="4,0,2,0"/>
                     <Button Grid.Column="3" Style="{StaticResource IconButton}" Width="20" Height="20" Click="PrevResult_Click" ToolTip="Previous result (Shift+F3)">
                         <Path Data="{StaticResource IconUp}" Style="{StaticResource IconPath}" Width="11" Height="11"/>
@@ -178,18 +178,18 @@
         </Grid>
 
         <!-- Document area -->
-        <Grid Grid.Row="2" Background="{StaticResource DocBackground}">
+        <Grid Grid.Row="2" Background="{DynamicResource DocBackground}">
             <Grid.ColumnDefinitions><ColumnDefinition Width="*" MinWidth="180"/><ColumnDefinition x:Name="BoxDividerColumn" Width="0"/><ColumnDefinition x:Name="BoxColumn" Width="0"/></Grid.ColumnDefinitions>
-            <GridSplitter x:Name="BoxDivider" Grid.Column="1" Width="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#D6D8DC" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Visibility="Collapsed" ToolTip="Drag to resize the 3D view"/>
+            <GridSplitter x:Name="BoxDivider" Grid.Column="1" Width="6" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="{DynamicResource Splitter}" ResizeDirection="Columns" ResizeBehavior="PreviousAndNext" Visibility="Collapsed" ToolTip="Drag to resize the 3D view"/>
             <ContentControl x:Name="BoxHost" Grid.Column="2"/>
 
             <viewer:PdfViewport x:Name="Viewport"/>
 
-            <Grid x:Name="StatePanel" Background="{StaticResource DocBackground}" Visibility="Collapsed">
+            <Grid x:Name="StatePanel" Background="{DynamicResource DocBackground}" Visibility="Collapsed">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460">
-                    <ProgressBar x:Name="StateProgress" IsIndeterminate="True" Height="3" Width="140" Foreground="{StaticResource Accent}" Background="#D6D8DC" BorderThickness="0" Margin="0,0,0,22"/>
-                    <TextBlock x:Name="StateTitle" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource Ink}" TextAlignment="Center" TextWrapping="Wrap"/>
-                    <TextBlock x:Name="StateDetail" FontSize="12.5" Foreground="{StaticResource InkSoft}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,10,0,0"/>
+                    <ProgressBar x:Name="StateProgress" IsIndeterminate="True" Height="3" Width="140" Foreground="{DynamicResource Accent}" Background="{DynamicResource Splitter}" BorderThickness="0" Margin="0,0,0,22"/>
+                    <TextBlock x:Name="StateTitle" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource Ink}" TextAlignment="Center" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="StateDetail" FontSize="12.5" Foreground="{DynamicResource InkSoft}" TextAlignment="Center" TextWrapping="Wrap" Margin="0,10,0,0"/>
                     <StackPanel x:Name="PasswordPanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,0" Visibility="Collapsed">
                         <PasswordBox x:Name="PasswordInput" Width="200" Height="32" VerticalContentAlignment="Center" Padding="6,0" KeyDown="PasswordInput_KeyDown"/>
                         <Button Content="Open" Style="{StaticResource AccentButton}" Margin="8,0,0,0" Padding="16,6" Click="Unlock_Click"/>
@@ -198,11 +198,11 @@
             </Grid>
 
             <!-- Compact layout: search opens here (Ctrl+F or the search button). -->
-            <Border x:Name="SearchOverlay" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,12,0" Padding="4" Background="{StaticResource Chrome}" BorderBrush="{StaticResource FieldBorder}" BorderThickness="1" CornerRadius="4" Visibility="Collapsed">
+            <Border x:Name="SearchOverlay" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,8,12,0" Padding="4" Background="{DynamicResource Chrome}" BorderBrush="{DynamicResource FieldBorder}" BorderThickness="1" CornerRadius="4" Visibility="Collapsed">
                 <ContentControl x:Name="SearchOverlayHost" Focusable="False"/>
             </Border>
             <!-- Compact layout: messages appear briefly instead of the status bar. -->
-            <Border x:Name="Toast" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12,0,0,10" Padding="8,3" Background="#F2FFFFFF" BorderBrush="#DCDCDC" BorderThickness="1" CornerRadius="4" Visibility="Collapsed" IsHitTestVisible="False" MaxWidth="640">
+            <Border x:Name="Toast" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="12,0,0,10" Padding="8,3" Background="{DynamicResource ToastBack}" BorderBrush="{DynamicResource TabBorder}" BorderThickness="1" CornerRadius="4" Visibility="Collapsed" IsHitTestVisible="False" MaxWidth="640">
                 <TextBlock x:Name="ToastText" Style="{StaticResource BarText}" FontSize="11.5" TextTrimming="CharacterEllipsis"/>
             </Border>
 
@@ -211,7 +211,7 @@
         </Grid>
 
         <!-- Regular layout only: the status bar. -->
-        <Border x:Name="StatusRow" Grid.Row="3" Height="22" Background="White" BorderBrush="{StaticResource Line}" BorderThickness="0,1,0,0">
+        <Border x:Name="StatusRow" Grid.Row="3" Height="22" Background="{DynamicResource Surface}" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0">
             <Grid Margin="10,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -219,7 +219,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusText" Style="{StaticResource BarText}" FontSize="11" TextTrimming="CharacterEllipsis"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
-                    <Ellipse x:Name="SharpDot" Width="6" Height="6" Fill="#9AA0A6" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                    <Ellipse x:Name="SharpDot" Width="6" Height="6" Fill="{DynamicResource InkFaint}" VerticalAlignment="Center" Margin="0,0,5,0"/>
                     <TextBlock x:Name="RenderText" Style="{StaticResource BarText}" FontSize="11"/>
                 </StackPanel>
             </Grid>

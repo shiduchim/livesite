@@ -44,6 +44,10 @@ public partial class MainWindow : Window
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(400), DispatcherPriority.Background, (_, _) => UpdateRenderStatus(), Dispatcher);
         _statusTimer.Start();
         InitLibrary();
+        Themes.Changed += OnThemeChanged;
+        Closed += (_, _) => Themes.Changed -= OnThemeChanged;
+        Viewport.ApplyTheme();
+        _library?.ApplyTheme();
         RefreshState();
     }
 
@@ -68,7 +72,7 @@ public partial class MainWindow : Window
         (_compact ? SearchOverlayHost : ToolbarSearchHost).Content = SearchField;
         FitPageButton.Visibility = FitWidthButton.Visibility = _compact ? Visibility.Collapsed : Visibility.Visible;
         PageBox.BorderThickness = new Thickness(_compact ? 0 : 1);
-        PageBox.Background = _compact ? Brushes.Transparent : (Brush)FindResource("Field");
+        if (_compact) PageBox.Background = Brushes.Transparent; else PageBox.SetResourceReference(BackgroundProperty, "Field");
         ToolbarRow.Visibility = StatusRow.Visibility = _compact ? Visibility.Collapsed : Visibility.Visible;
         SearchToggle.Visibility = _compact ? Visibility.Visible : Visibility.Collapsed;
         SearchOverlay.Visibility = Visibility.Collapsed;
@@ -386,6 +390,8 @@ public partial class MainWindow : Window
         menu.Items.Add(Choice("Mouse wheel scrolls (Ctrl+wheel zooms)", !Viewport.WheelZooms, () => SetWheel(false)));
         menu.Items.Add(Choice("Mouse wheel zooms (Ctrl+wheel scrolls)", Viewport.WheelZooms, () => SetWheel(true)));
         menu.Items.Add(new Separator());
+        menu.Items.Add(ThemeMenu());
+        menu.Items.Add(PagesMenu());
         menu.Items.Add(MenuItem("New PDFs settings…", ShowNewPdfsSettings));
         menu.Items.Add(new Separator());
         var print = MenuItem("Print…", () => Print_Click(this, new RoutedEventArgs()), "Ctrl+P"); print.IsEnabled = _active?.IsReady == true; menu.Items.Add(print);

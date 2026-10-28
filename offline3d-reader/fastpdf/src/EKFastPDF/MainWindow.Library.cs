@@ -6,6 +6,8 @@ using EKFastPDF.Core.Library;
 using EKFastPDF.Services;
 using EKFastPDF.Viewer;
 
+using EKFastPDF.Core.Rendering;
+
 namespace EKFastPDF;
 
 /// <summary>
@@ -120,5 +122,50 @@ public partial class MainWindow
     {
         _watcher?.Dispose();
         _images?.Dispose();
+    }
+}
+
+public partial class MainWindow
+{
+    // ------------------------------------------------------------------ themes
+
+    private MenuItem ThemeMenu()
+    {
+        var root = new MenuItem { Header = "Theme" };
+        string chosen = _services.Settings.Theme;
+        root.Items.Add(Choice(Themes.MatchWindows, chosen == Themes.MatchWindows, () => SetTheme(Themes.MatchWindows, null)));
+        root.Items.Add(new Separator());
+        foreach (var name in Themes.Names)
+            root.Items.Add(Choice(name, chosen == name, () => SetTheme(name, null)));
+        return root;
+    }
+
+    private MenuItem PagesMenu()
+    {
+        var root = new MenuItem { Header = "Pages" };
+        string chosen = _services.Settings.Pages;
+        string asTheme = PageTint.Label(Themes.DefaultPages(Themes.Current));
+        root.Items.Add(Choice("As the theme (" + asTheme.ToLowerInvariant() + ")", chosen == "Theme", () => SetTheme(null, "Theme")));
+        root.Items.Add(new Separator());
+        foreach (var look in Enum.GetValues<PageLook>())
+            root.Items.Add(Choice(PageTint.Label(look), chosen == look.ToString(), () => SetTheme(null, look.ToString())));
+        return root;
+    }
+
+    private void SetTheme(string? theme, string? pages)
+    {
+        var s = _services.Settings;
+        if (theme != null) s.Theme = theme;
+        if (pages != null) s.Pages = pages;
+        s.Save();
+        Themes.Apply(s.Theme, s.Pages);
+    }
+
+    private void OnThemeChanged()
+    {
+        // Pages already drawn in the old look are drawn again.
+        foreach (var session in Sessions) _services.Tiles.ForgetDocument(session.DocId);
+        Viewport.ApplyTheme();
+        _library?.ApplyTheme();
     }
 }

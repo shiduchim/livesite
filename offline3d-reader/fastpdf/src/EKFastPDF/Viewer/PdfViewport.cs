@@ -79,10 +79,20 @@ public sealed class PdfViewport : FrameworkElement
 
     private static readonly int[] OverviewEdges = { 256, 1024, 1600 };
     private static readonly int[] OverviewEdgesLargestFirst = { 1600, 1024, 256 };
-    private static readonly Brush Backdrop = Frozen(new SolidColorBrush(Color.FromRgb(0xE6, 0xEB, 0xF3)));
-    private static readonly Brush PageBrush = Brushes.White;
     private static readonly Brush ShadowBrush = Frozen(new SolidColorBrush(Color.FromArgb(28, 20, 40, 80)));
-    private static readonly Pen PageEdge = Frozen(new Pen(Frozen(new SolidColorBrush(Color.FromRgb(0xC9, 0xD2, 0xDF))), 1));
+    // Theme colours (Services/Themes.cs): background, blank page and page edge.
+    private Brush Backdrop = Frozen(new SolidColorBrush(Color.FromRgb(0xE3, 0xE5, 0xE8)));
+    private Brush PageBrush = Brushes.White;
+    private Pen PageEdge = Frozen(new Pen(Frozen(new SolidColorBrush(Color.FromRgb(0xC9, 0xD2, 0xDF))), 1));
+
+    /// <summary>Picks up the theme's background and page colours.</summary>
+    public void ApplyTheme()
+    {
+        if (TryFindResource("DocBackground") is SolidColorBrush back) Backdrop = back;
+        PageBrush = Frozen(new SolidColorBrush(Services.PageTint.Paper));
+        if (TryFindResource("PageEdge") is SolidColorBrush edge) PageEdge = Frozen(new Pen(edge, 1));
+        Invalidate();
+    }
 
     private readonly ContainerVisual _root = new();
     private readonly DrawingVisual _preview = new();

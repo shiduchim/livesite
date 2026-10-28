@@ -439,6 +439,17 @@ public sealed class LibraryView : Grid
     }
 
     private static readonly BitmapImage Badge3D = LoadBadge();
+    private static Brush Paper = Brushes.White;
+
+    /// <summary>The theme or page look changed: pictures are made again in the new look.</summary>
+    public void ApplyTheme()
+    {
+        var paper = new SolidColorBrush(PageTint.Paper);
+        paper.Freeze();
+        Paper = paper;
+        _images.ClearMemory();
+        BuildList();
+    }
 
     private static BitmapImage LoadBadge()
     {
@@ -621,7 +632,7 @@ public sealed class LibraryView : Grid
             Page = page;
             BorderThickness = new Thickness(1);
             SetResourceReference(BorderBrushProperty, "PageEdge");
-            Background = Brushes.White;
+            Background = Paper;
             RenderOptions.SetBitmapScalingMode(_image, BitmapScalingMode.HighQuality);
             var grid = new Grid();
             grid.Children.Add(_image);

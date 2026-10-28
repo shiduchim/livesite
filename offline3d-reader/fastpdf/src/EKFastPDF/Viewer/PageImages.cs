@@ -124,23 +124,29 @@ public sealed class PageImages : IDisposable
 
     private async Task<BitmapSource?> Load(string path, string fileKey, int page, int width, string key)
     {
+        int generation = Services.PageTint.Generation;
+        var look = Services.PageTint.Look;
         try
         {
+            // The disk keeps the PDF's own colours; the page look (theme) is applied in memory.
             string disk = Path.Combine(_dir, Hash(fileKey + "|" + page + "|" + width) + ".png");
-            BitmapSource? image = width <= DiskMaxWidth ? await Task.Run(() => ReadPng(disk)) : null;
+            BitmapSource? image = width <= DiskMaxWidth ? await Task.Run(() => ReadPng(disk, look)) : null;
             if (image is null)
             {
                 var t = await _renderer.RenderAsync(path, page, width);
                 if (t is null) return null;
                 image = await Task.Run(() =>
                 {
-                    var b = BitmapSource.Create(t.Width, t.Height, 96, 96, PixelFormats.Bgr32, null, t.Pixels, t.Stride);
-                    b.Freeze();
-                    if (width <= DiskMaxWidth) WritePng(disk, b);
-                    return (BitmapSource)b;
+                    if (width <= DiskMaxWidth)
+                    {
+                        var plain = BitmapSource.Create(t.Width, t.Height, 96, 96, PixelFormats.Bgr32, null, t.Pixels, t.Stride);
+                        plain.Freeze();
+                        WritePng(disk, plain);
+                    }
+                    return Tinted(t.Pixels, t.Width, t.Height, t.Stride, look);
                 });
             }
-            Remember(key, image);
+            if (generation == Services.PageTint.Generation) Remember(key, image);
             return image;
         }
         catch (Exception e) when (e is IOException or InvalidOperationException or NotSupportedException or OperationCanceledException)
@@ -149,6 +155,21 @@ public sealed class PageImages : IDisposable
             return null;
         }
         finally { _inFlight.Remove(key); }
+    }
+
+    private static BitmapSource Tinted(byte[] pixels, int width, int height, int stride, PageLook look)
+    {
+        if (look != PageLook.Original) Services.PageTint.Apply(pixels, look);
+        var b = BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgr32, null, pixels, stride);
+        b.Freeze();
+        return b;
+    }
+
+    /// <summary>Forgets pictures in memory (the page look changed); the disk copies stay.</summary>
+    public void ClearMemory()
+    {
+        _memory.Clear();
+        _bytes = 0;
     }
 
     private void Remember(string key, BitmapSource image)
@@ -164,17 +185,20 @@ public sealed class PageImages : IDisposable
         }
     }
 
-    private static BitmapSource? ReadPng(string file)
+    private static BitmapSource? ReadPng(string file, PageLook look)
     {
         try
         {
             if (!File.Exists(file)) return null;
             using var stream = File.OpenRead(file);
             var frame = BitmapFrame.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
-            frame.Freeze();
-            return frame;
+            BitmapSource source = frame.Format == PixelFormats.Bgr32 ? frame : new FormatConvertedBitmap(frame, PixelFormats.Bgr32, null, 0);
+            int stride = source.PixelWidth * 4;
+            var pixels = new byte[stride * source.PixelHeight];
+            source.CopyPixels(pixels, stride, 0);
+            return Tinted(pixels, source.PixelWidth, source.PixelHeight, stride, look);
         }
-        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException or FileFormatException) { return null; }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or NotSupportedException or FileFormatException or ArgumentException) { return null; }
     }
 
     private void WritePng(string file, BitmapSource image)
