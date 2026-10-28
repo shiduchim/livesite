@@ -1,5 +1,6 @@
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using EKFastPDF.Core.Rendering;
@@ -31,7 +32,12 @@ public partial class MainWindow
         try{using var stream=Application.GetResourceStream(new Uri("pack://application:,,,/Assets/ClickTo3D.cur"))!.Stream;return new Cursor(stream,true);}
         catch(Exception ex) when (ex is IOException or ArgumentException or NullReferenceException or System.ComponentModel.Win32Exception){return Cursors.Hand;}
     }
-    private static readonly Brush ArmedBackground=new SolidColorBrush(Color.FromRgb(47,111,222)),ArmedBorder=new SolidColorBrush(Color.FromRgb(28,74,160));
+    /// <summary>The ClickTo3D icon (branding/clickto3d-icon-source.png) and a label.</summary>
+    private static StackPanel BoxButtonContent(string text){
+        var icon=new System.Windows.Controls.Image{Width=16,Height=16,Margin=new Thickness(0,0,6,0),Source=new System.Windows.Media.Imaging.BitmapImage(new Uri("pack://application:,,,/Assets/ClickTo3D-32.png"))};
+        RenderOptions.SetBitmapScalingMode(icon,BitmapScalingMode.HighQuality);
+        var panel=new StackPanel{Orientation=Orientation.Horizontal};panel.Children.Add(icon);panel.Children.Add(new TextBlock{Text=text,VerticalAlignment=VerticalAlignment.Center});return panel;
+    }
 
     // ClickTo3D shows only for PDFs that carry 3D (checked once per document, off the UI thread).
     private readonly Dictionary<DocumentSession,bool?> has3D=new();
@@ -46,7 +52,8 @@ public partial class MainWindow
             show=has3D[session]==true;
         }
         if(session!=null&&session.IsClosed)has3D.Remove(session);
-        Box3DButton.Visibility=show||boxArmed||boxShown?Visibility.Visible:Visibility.Collapsed;
+        Box3DButton.Visibility=Box3DDivider.Visibility=show||boxArmed||boxShown?Visibility.Visible:Visibility.Collapsed;
+        if(Box3DButton.Content==null)SyncBoxButton();
         Box3DButton.IsEnabled=ready;
     }
 
@@ -128,8 +135,9 @@ public partial class MainWindow
 
     private void SyncBoxButton()
     {
-        if(boxArmed){Box3DButton.Content="ClickTo3D";Box3DButton.Background=ArmedBackground;Box3DButton.BorderBrush=ArmedBorder;Box3DButton.Foreground=Brushes.White;Box3DButton.ToolTip="Click a spot on the plan to open it in 3D (Esc cancels)";}
-        else{Box3DButton.ClearValue(BackgroundProperty);Box3DButton.ClearValue(BorderBrushProperty);Box3DButton.ClearValue(ForegroundProperty);Box3DButton.Content=boxShown?"Close 3D":"ClickTo3D";Box3DButton.ToolTip=boxShown?"Close the 3D view":"Open a spot of the plan in 3D";}
+        Box3DButton.Tag=boxArmed?"Armed":"Accent";
+        Box3DButton.Content=BoxButtonContent(boxShown?"Close 3D":"ClickTo3D");
+        Box3DButton.ToolTip=boxArmed?"Click a spot on the plan to open it in 3D (Esc cancels)":boxShown?"Close the 3D view":"Open a spot of the plan in 3D";
     }
 
     /// <summary>Hides 3D and leaves arming. The panel stays loaded for this document.</summary>

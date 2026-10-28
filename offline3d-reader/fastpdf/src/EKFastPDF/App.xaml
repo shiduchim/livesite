@@ -4,18 +4,22 @@
              ShutdownMode="OnMainWindowClose">
     <Application.Resources>
         <!-- Palette: light theme, EK blue accent -->
-        <Color x:Key="AccentColor">#3C68B5</Color>
-        <SolidColorBrush x:Key="Accent" Color="#3C68B5"/>
-        <SolidColorBrush x:Key="AccentHover" Color="#335C9F"/>
-        <SolidColorBrush x:Key="AccentSoft" Color="#E3EBF8"/>
-        <SolidColorBrush x:Key="Ink" Color="#1F2A3C"/>
-        <SolidColorBrush x:Key="InkSoft" Color="#5E6B80"/>
-        <SolidColorBrush x:Key="InkFaint" Color="#8F9BAE"/>
-        <SolidColorBrush x:Key="Chrome" Color="#E9EEF5"/>
+        <Color x:Key="AccentColor">#5D75A5</Color>
+        <SolidColorBrush x:Key="Accent" Color="#5D75A5"/>
+        <SolidColorBrush x:Key="AccentHover" Color="#9DB0D8"/>
+        <SolidColorBrush x:Key="AccentSoft" Color="#E8EDF7"/>
+        <SolidColorBrush x:Key="Ink" Color="#1B1B1B"/>
+        <SolidColorBrush x:Key="InkSoft" Color="#5F6368"/>
+        <SolidColorBrush x:Key="InkFaint" Color="#9AA0A6"/>
+        <SolidColorBrush x:Key="Chrome" Color="#F0F0F0"/>
+        <SolidColorBrush x:Key="Field" Color="#FFFFFF"/>
+        <SolidColorBrush x:Key="FieldBorder" Color="#C3C8CF"/>
+        <SolidColorBrush x:Key="ButtonBorder" Color="#D0D0D0"/>
+        <SolidColorBrush x:Key="DocBackground" Color="#E3E5E8"/>
         <SolidColorBrush x:Key="Surface" Color="#FFFFFF"/>
-        <SolidColorBrush x:Key="Line" Color="#DCE3EE"/>
-        <SolidColorBrush x:Key="Hover" Color="#EDF1F7"/>
-        <SolidColorBrush x:Key="Pressed" Color="#DFE6F1"/>
+        <SolidColorBrush x:Key="Line" Color="#E1E1E1"/>
+        <SolidColorBrush x:Key="Hover" Color="#F2F7FC"/>
+        <SolidColorBrush x:Key="Pressed" Color="#E6EFF9"/>
         <FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
 
         <!-- Icons (24x24 stroke geometry; deliberately no plus or X shapes) -->
@@ -39,21 +43,21 @@
 
         <Style x:Key="IconPath" TargetType="Path">
             <Setter Property="Stroke" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Control}}"/>
-            <Setter Property="StrokeThickness" Value="1.6"/>
+            <Setter Property="StrokeThickness" Value="1.5"/>
             <Setter Property="StrokeStartLineCap" Value="Round"/>
             <Setter Property="StrokeEndLineCap" Value="Round"/>
             <Setter Property="StrokeLineJoin" Value="Round"/>
-            <Setter Property="Width" Value="18"/>
-            <Setter Property="Height" Value="18"/>
+            <Setter Property="Width" Value="16"/>
+            <Setter Property="Height" Value="16"/>
             <Setter Property="Stretch" Value="Uniform"/>
             <Setter Property="SnapsToDevicePixels" Value="True"/>
         </Style>
 
         <Style x:Key="IconButton" TargetType="Button">
-            <Setter Property="Foreground" Value="#3A475C"/>
+            <Setter Property="Foreground" Value="#5F6368"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Width" Value="34"/>
-            <Setter Property="Height" Value="34"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Focusable" Value="False"/>
@@ -61,7 +65,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -78,35 +82,49 @@
             <Setter Property="Width" Value="Double.NaN"/>
             <Setter Property="Padding" Value="10,0"/>
             <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
         </Style>
 
-        <Style x:Key="AccentButton" TargetType="Button">
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="{StaticResource Accent}"/>
+        <!-- Style-guide button: height 24, radius 4, light fill, darker bottom edge. IsDefault-like accent: Tag="Accent". -->
+        <Style x:Key="SoftButton" TargetType="Button">
+            <Setter Property="Foreground" Value="{StaticResource Ink}"/>
             <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-            <Setter Property="FontSize" Value="13.5"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="18,9"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="MinWidth" Value="52"/>
+            <Setter Property="Padding" Value="9,0"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Focusable" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="9" Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border x:Name="Edge" Background="#BABABA" CornerRadius="4" Padding="0,0,0,1">
+                            <Border x:Name="Bg" Background="#FDFDFD" BorderBrush="{StaticResource ButtonBorder}" BorderThickness="1,1,1,0" CornerRadius="4,4,3,3" Padding="{TemplateBinding Padding}">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="{StaticResource AccentHover}"/></Trigger>
-                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.5"/></Trigger>
+                            <Trigger Property="Tag" Value="Accent"><Setter TargetName="Bg" Property="BorderBrush" Value="#9DB0D8"/><Setter TargetName="Edge" Property="Background" Value="#8A9ECA"/><Setter Property="Foreground" Value="#2F4A86"/></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="{StaticResource Hover}"/><Setter TargetName="Bg" Property="BorderBrush" Value="#9DB0D8"/></Trigger>
+                            <Trigger Property="Tag" Value="Armed"><Setter TargetName="Bg" Property="Background" Value="{StaticResource Accent}"/><Setter TargetName="Bg" Property="BorderBrush" Value="#4A5F8C"/><Setter TargetName="Edge" Property="Background" Value="#3E5079"/><Setter Property="Foreground" Value="White"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="{StaticResource Pressed}"/></Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter Property="Opacity" Value="0.45"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
 
+        <Style x:Key="AccentButton" TargetType="Button" BasedOn="{StaticResource SoftButton}">
+            <Setter Property="Tag" Value="Accent"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Padding" Value="16,0"/>
+        </Style>
+
+
         <Style x:Key="ChromeButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
-            <Setter Property="Width" Value="44"/>
-            <Setter Property="Height" Value="40"/>
+            <Setter Property="Width" Value="40"/>
+            <Setter Property="Height" Value="32"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -114,8 +132,8 @@
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="#DCE3EE"/></Trigger>
-                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="#CFD8E6"/></Trigger>
+                            <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Bg" Property="Background" Value="#EBEBEB"/></Trigger>
+                            <Trigger Property="IsPressed" Value="True"><Setter TargetName="Bg" Property="Background" Value="#E0E0E0"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -124,24 +142,24 @@
 
         <Style x:Key="FieldBox" TargetType="TextBox">
             <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource Ink}"/>
-            <Setter Property="Background" Value="#F4F6FA"/>
-            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Background" Value="{StaticResource Field}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource FieldBorder}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Padding" Value="6,0"/>
-            <Setter Property="Height" Value="30"/>
+            <Setter Property="Height" Value="24"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="Box" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="7">
+                        <Border x:Name="Box" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4">
                             <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsKeyboardFocused" Value="True">
                                 <Setter TargetName="Box" Property="BorderBrush" Value="{StaticResource Accent}"/>
-                                <Setter TargetName="Box" Property="Background" Value="White"/>
+                                
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -151,15 +169,15 @@
 
         <Style x:Key="BarText" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource InkSoft}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style x:Key="Divider" TargetType="Border">
             <Setter Property="Width" Value="1"/>
-            <Setter Property="Height" Value="22"/>
-            <Setter Property="Margin" Value="8,0"/>
+            <Setter Property="Height" Value="16"/>
+            <Setter Property="Margin" Value="6,0"/>
             <Setter Property="Background" Value="{StaticResource Line}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -168,13 +186,13 @@
             <Setter Property="FontFamily" Value="{StaticResource UiFont}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="#26344A"/>
+            <Setter Property="Background" Value="#2B2B2B"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="8,5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToolTip">
-                        <Border Background="{TemplateBinding Background}" CornerRadius="6" Padding="{TemplateBinding Padding}">
+                        <Border Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}">
                             <ContentPresenter/>
                         </Border>
                     </ControlTemplate>

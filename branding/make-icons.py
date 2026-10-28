@@ -64,6 +64,8 @@ def main(root: Path):
     click = prepared(root / 'branding' / 'clickto3d-icon-source.png')
     assets = root / 'offline3d-reader' / 'fastpdf' / 'src' / 'EKFastPDF' / 'Assets'
     for n in (16, 20, 24, 32, 48): square(click, n).save(assets / f'ClickTo3D-{n}.png')
+    # The app logo inside the window (title bar 18 DIP, welcome 56 DIP), sharp at high DPI.
+    for n in (64, 256): square(im, n).save(assets / f'EKPDF-{n}.png')
     square(click, 256).save(pngs / 'clickto3d-256.png')
 
 if __name__ == '__main__':

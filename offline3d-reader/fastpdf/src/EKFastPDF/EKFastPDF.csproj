@@ -28,6 +28,8 @@
   <ItemGroup>
     <Resource Include="Assets\FastPDF.ico" />
     <Resource Include="Assets\ClickTo3D.cur" />
+    <Resource Include="Assets\ClickTo3D-*.png" />
+    <Resource Include="Assets\EKPDF-*.png" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EKFastPDF.Core\EKFastPDF.Core.csproj" />

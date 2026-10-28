@@ -84,6 +84,50 @@ Tested in headless Chromium (39 checks in `tests/web/viewer-3d-check.cjs`) and w
 6. Shift + middle drag left and right. The model should turn the same way as in Revit.
 7. Switch to Three.js. Realistic should be greyed out.
 
+## Stage 4: PDF viewer layout
+
+Built to `docs/mockups/viewer-layouts.png` and the UI style guide. **It compiles and the viewer tests pass, but WPF does not run under Wine, so this layout has not been seen running yet.**
+
+### Layouts: Compact (default) and Regular, in the ⋯ menu
+
+- **Compact:** one 36 px bar with the tabs, Open, page number, zoom, ClickTo3D, search and ⋯, plus the window buttons.
+  - Search opens over the top right of the page (search button or Ctrl+F; Esc closes it).
+  - Messages appear for four seconds in the bottom corner instead of in a status bar.
+  - The PDF gets about 93 % of the window height.
+- **Regular:** tabs, then a 40 px toolbar (Print, page, zoom, fit page, fit width, ClickTo3D, the search field and ⋯), then a 22 px status bar.
+- Both layouts use the same controls, moved between the title bar and the toolbar, so they always behave alike.
+
+### No + or × controls
+
+- **Tabs:** close a tab with the small circle shown on the active and hovered tab, a middle-click, Ctrl+W, or right-click › Close tab. The right-click menu also has Close other tabs and Open file location.
+- **Open:** an **Open** button sits next to the tabs.
+- **Zoom:** the 100% ▾ list has Zoom in, Zoom out, Fit page, Fit width and preset sizes; there are no − / + buttons.
+- **Window:** minimize and maximize keep their icons, and the window's × is now the word **Close**.
+
+### ClickTo3D
+
+- It shows only when the open PDF carries 3D. `PdfPackageService.Has3D` finds the package's attachment name with a streaming byte search, checked once per document off the UI thread.
+- The button has the ClickTo3D icon (`branding/clickto3d-icon-source.png`). When armed it turns slate blue.
+
+### Mouse wheel
+
+- **In the PDF:** the wheel **scrolls** and Ctrl+wheel zooms, like other PDF readers. The ⋯ menu can switch it to zoom.
+- **In the 3D view:** unchanged, the wheel zooms as in Revit.
+- **Scroll direction:** wheel, arrow keys and Space scrolled **backwards** in 0.5.3 (`ScrollBy` negated the movement). Fixed.
+- **Settings:** new `Layout` and `WheelMode` settings. The old `WheelZooms` value is ignored, so everyone starts with Scroll.
+
+### Look
+
+- **Colours:** the style guide's palette (neutral greys, slate accent `#5D75A5`, 4 px corners, 24 px fields, 12 px text).
+- **Branding:** the window is titled EKPDF and the logo is in the title bar. The welcome screen says EKPDF, with a guide-style button.
+
+### Check on Windows
+
+1. Open a regular PDF: there is no ClickTo3D button. Open the 3D sample: the button appears.
+2. Scroll with the wheel: the pages move up when scrolling down. Ctrl+wheel zooms.
+3. In ⋯, switch between Regular and Compact layouts. Restart the viewer: the layout is kept.
+4. In Compact, press Ctrl+F: search appears over the page, and Esc closes it.
+
 ## Next stages
 
 2. Exporter: speed, overall progress and size estimate, a cleaned-up options dialog, a very low detail mode, a phase filter, the cut material on section caps, and the new icon.

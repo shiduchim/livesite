@@ -12,8 +12,12 @@ public sealed class AppSettings
     public int TileSize { get; set; } = 512;
     /// <summary>PDFium sub-pixel (LCD) text anti-aliasing, as in v1.1.</summary>
     public bool LcdText { get; set; } = true;
-    /// <summary>When true the plain mouse wheel zooms and Ctrl+wheel scrolls (drawing-viewer style).</summary>
+    /// <summary>Before 0.5.4: the wheel zoomed. Read for old files only; <see cref="WheelMode"/> replaces it.</summary>
     public bool WheelZooms { get; set; } = true;
+    /// <summary>"Scroll" (default, like other PDF readers: Ctrl+wheel zooms) or "Zoom" (wheel zooms, Ctrl+wheel scrolls).</summary>
+    public string WheelMode { get; set; } = "Scroll";
+    /// <summary>"Compact" (default: one bar, no status bar) or "Regular" (toolbar and status bar).</summary>
+    public string Layout { get; set; } = "Compact";
     /// <summary>"Auto" (GPU when available) or "Software".</summary>
     public string RenderMode { get; set; } = "Auto";
     public bool DebugOverlay { get; set; }

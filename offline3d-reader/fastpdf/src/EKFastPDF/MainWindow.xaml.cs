@@ -35,6 +35,10 @@ public partial class MainWindow : Window
         Viewport.Attach(services);
         Closed += (_,_) => Discard3D();
         Viewport.ShowDebug = services.Settings.DebugOverlay;
+        Viewport.WheelZooms = services.Settings.WheelMode == "Zoom";
+        ApplyLayout(services.Settings.Layout);
+        // Compact has no status bar: messages written to it appear briefly over the page.
+        System.ComponentModel.DependencyPropertyDescriptor.FromProperty(TextBlock.TextProperty, typeof(TextBlock)).AddValueChanged(StatusText, (_, _) => ShowToast(StatusText.Text));
         Viewport.ViewChanged += SyncToolbar;
         RestorePlacement();
         _statusTimer = new DispatcherTimer(TimeSpan.FromMilliseconds(400), DispatcherPriority.Background, (_, _) => UpdateRenderStatus(), Dispatcher);
@@ -43,6 +47,78 @@ public partial class MainWindow : Window
                            $"{(RenderCapability.Tier >> 16 == 2 ? "GPU composition" : "software composition")}" +
                            (services.Gpu.Primary is { } g ? $"  ·  {g.Name}" : "");
         RefreshState();
+    }
+
+    // ------------------------------------------------------------------ layout
+
+    private bool _compact;
+    private string _idleStatus = "";
+    private DispatcherTimer? _toastTimer;
+
+    /// <summary>
+    /// Compact (default): one bar with tabs, page and zoom tools, ClickTo3D, search and the
+    /// menu; search opens over the page and messages appear briefly. Regular: a toolbar with
+    /// the search field and a status bar. The same controls move between the two places.
+    /// </summary>
+    private void ApplyLayout(string layout)
+    {
+        _compact = layout != "Regular";
+        if (ToolHolder.Children.Count > 0) ToolHolder.Children.Clear();
+        foreach (var host in new[] { TitleNavHost, TitleMoreHost, ToolbarNavHost, ToolbarSearchHost, ToolbarMoreHost, SearchOverlayHost }) host.Content = null;
+        (_compact ? TitleNavHost : ToolbarNavHost).Content = NavTools;
+        (_compact ? TitleMoreHost : ToolbarMoreHost).Content = MoreButton;
+        (_compact ? SearchOverlayHost : ToolbarSearchHost).Content = SearchField;
+        FitPageButton.Visibility = FitWidthButton.Visibility = _compact ? Visibility.Collapsed : Visibility.Visible;
+        PageBox.BorderThickness = new Thickness(_compact ? 0 : 1);
+        PageBox.Background = _compact ? Brushes.Transparent : (Brush)FindResource("Field");
+        ToolbarRow.Visibility = StatusRow.Visibility = _compact ? Visibility.Collapsed : Visibility.Visible;
+        SearchToggle.Visibility = _compact ? Visibility.Visible : Visibility.Collapsed;
+        SearchOverlay.Visibility = Visibility.Collapsed;
+        Toast.Visibility = Visibility.Collapsed;
+    }
+
+    private void SetLayout(string layout)
+    {
+        _services.Settings.Layout = layout; _services.Settings.Save();
+        ApplyLayout(layout);
+    }
+
+    private void ShowToast(string text)
+    {
+        if (!_compact || string.IsNullOrWhiteSpace(text) || text == _idleStatus) return;
+        ToastText.Text = text; Toast.Visibility = Visibility.Visible;
+        _toastTimer ??= new DispatcherTimer(TimeSpan.FromSeconds(4), DispatcherPriority.Background, (_, _) => { Toast.Visibility = Visibility.Collapsed; _toastTimer!.Stop(); }, Dispatcher);
+        _toastTimer.Stop(); _toastTimer.Start();
+    }
+
+    private void ShowSearch()
+    {
+        if (_compact) SearchOverlay.Visibility = Visibility.Visible;
+        SearchBox.Focus(); SearchBox.SelectAll();
+    }
+
+    private void SearchToggle_Click(object sender, RoutedEventArgs e)
+    {
+        if (SearchOverlay.Visibility == Visibility.Visible) { SearchOverlay.Visibility = Visibility.Collapsed; Viewport.Focus(); }
+        else ShowSearch();
+    }
+
+    private void Tab_RightClick(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: DocumentSession s } tab) return;
+        var menu = new ContextMenu { PlacementTarget = tab };
+        menu.Items.Add(MenuItem("Close tab", () => CloseSession(s), "Ctrl+W"));
+        var others = MenuItem("Close other tabs", () => { foreach (var other in Sessions.Where(o => !ReferenceEquals(o, s)).ToList()) CloseSession(other); });
+        others.IsEnabled = Sessions.Count > 1; menu.Items.Add(others);
+        menu.Items.Add(new Separator());
+        menu.Items.Add(MenuItem("Open file location", () => ShowInFolder(s.FilePath)));
+        menu.IsOpen = true; e.Handled = true;
+    }
+
+    private static void ShowInFolder(string path)
+    {
+        try { Process.Start(new ProcessStartInfo("explorer.exe", "/select,\"" + path + "\"") { UseShellExecute = true }); }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException) { }
     }
 
     // ------------------------------------------------------------------ documents
@@ -125,7 +201,8 @@ public partial class MainWindow : Window
         if (s is null || ready)
         {
             StatePanel.Visibility = Visibility.Collapsed;
-            StatusText.Text = s is null ? "Drop PDF files here or press Ctrl+O" : $"{s.Title}  ·  {s.Status}";
+            _idleStatus = s is null ? "Drop PDF files here or press Ctrl+O" : $"{s.Title}  ·  {s.Status}";
+            StatusText.Text = _idleStatus;
             return;
         }
         StatePanel.Visibility = Visibility.Visible;
@@ -279,6 +356,9 @@ public partial class MainWindow : Window
     private void ZoomMenu_Click(object sender, RoutedEventArgs e)
     {
         var menu = new ContextMenu { PlacementTarget = ZoomBox, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+        menu.Items.Add(MenuItem("Zoom in", () => Viewport.ZoomStep(+2), "Ctrl+="));
+        menu.Items.Add(MenuItem("Zoom out", () => Viewport.ZoomStep(-2), "Ctrl+−"));
+        menu.Items.Add(new Separator());
         menu.Items.Add(MenuItem("Fit page", Viewport.FitPage, "Ctrl+0"));
         menu.Items.Add(MenuItem("Fit width", Viewport.FitWidth, "Ctrl+2"));
         menu.Items.Add(new Separator());
@@ -291,7 +371,16 @@ public partial class MainWindow : Window
     {
         var settings = _services.Settings;
         var menu = new ContextMenu { PlacementTarget = (UIElement)sender, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
-        menu.Items.Add(new MenuItem { Header="Mouse wheel zooms · Ctrl+wheel scrolls", IsEnabled=false });
+        menu.Items.Add(new MenuItem { Header = "View", IsEnabled = false });
+        menu.Items.Add(Choice("Compact layout", _compact, () => SetLayout("Compact")));
+        menu.Items.Add(Choice("Regular layout", !_compact, () => SetLayout("Regular")));
+        menu.Items.Add(new Separator());
+        menu.Items.Add(Choice("Mouse wheel scrolls (Ctrl+wheel zooms)", !Viewport.WheelZooms, () => SetWheel(false)));
+        menu.Items.Add(Choice("Mouse wheel zooms (Ctrl+wheel scrolls)", Viewport.WheelZooms, () => SetWheel(true)));
+        menu.Items.Add(new Separator());
+        var print = MenuItem("Print…", () => Print_Click(this, new RoutedEventArgs()), "Ctrl+P"); print.IsEnabled = _active?.IsReady == true; menu.Items.Add(print);
+        if (_active != null) { var path = _active.FilePath; menu.Items.Add(MenuItem("Open file location", () => ShowInFolder(path))); }
+        menu.Items.Add(new Separator());
         menu.Items.Add(Toggle("Sub-pixel (LCD) text smoothing", settings.LcdText, v =>
         {
             settings.LcdText = v;
@@ -300,14 +389,27 @@ public partial class MainWindow : Window
             Viewport.Invalidate();
         }));
         menu.Items.Add(Toggle("Show render statistics (F12)", Viewport.ShowDebug, v => { Viewport.ShowDebug = v; settings.DebugOverlay = v; settings.Save(); Viewport.Invalidate(); }));
-        menu.Items.Add(new Separator());
         menu.Items.Add(MenuItem("Diagnostics report…", ShowDiagnostics, "Ctrl+Shift+D"));
         menu.Items.Add(MenuItem("Open log folder", () => OpenFolder(Program.LogDirectory)));
         menu.Items.Add(new Separator());
-        menu.Items.Add(MenuItem("About EK FastPDF", () => MessageBox.Show(this,
-            $"EK FastPDF {typeof(MainWindow).Assembly.GetName().Version}\n\nRendering: PDFium in {_services.Pool.WorkerCount} parallel worker processes, GPU-composited viewport.\n" +
-            "PDFium © The PDFium Authors (BSD-3-Clause / Apache-2.0).", "About EK FastPDF", MessageBoxButton.OK, MessageBoxImage.Information)));
+        menu.Items.Add(MenuItem("About EKPDF", () => MessageBox.Show(this,
+            $"EKPDF {typeof(MainWindow).Assembly.GetName().Version?.ToString(3)}\n\nRendering: PDFium in {_services.Pool.WorkerCount} parallel worker processes, GPU-composited viewport.\n" +
+            "PDFium © The PDFium Authors (BSD-3-Clause / Apache-2.0).", "About EKPDF", MessageBoxButton.OK, MessageBoxImage.Information)));
         menu.IsOpen = true;
+    }
+
+    private void SetWheel(bool zooms)
+    {
+        Viewport.WheelZooms = zooms;
+        _services.Settings.WheelMode = zooms ? "Zoom" : "Scroll"; _services.Settings.Save();
+    }
+
+    /// <summary>A menu choice shown with a check mark when selected.</summary>
+    private static MenuItem Choice(string header, bool selected, Action choose)
+    {
+        var item = new MenuItem { Header = header, IsCheckable = false, IsChecked = selected };
+        item.Click += (_, _) => choose();
+        return item;
     }
 
     private static MenuItem MenuItem(string header, Action action, string? gesture = null)
@@ -383,6 +485,7 @@ public partial class MainWindow : Window
         {
             SearchBox.Text = "";
             s.Search.Start("");
+            if (_compact) SearchOverlay.Visibility = Visibility.Collapsed;
             Viewport.Focus();
             e.Handled = true;
         }
@@ -411,7 +514,7 @@ public partial class MainWindow : Window
         {
             case Key.O when ctrl: Open_Click(this, e); break;
             case Key.P when ctrl: Print_Click(this, e); break;
-            case Key.F when ctrl: SearchBox.Focus(); SearchBox.SelectAll(); break;
+            case Key.F when ctrl: ShowSearch(); break;
             case Key.W when ctrl: if (_active != null) CloseSession(_active); break;
             case Key.F4 when ctrl: if (_active != null) CloseSession(_active); break;
             case Key.Tab when ctrl: SwitchTab(shift ? -1 : 1); break;
