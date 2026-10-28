@@ -1,4 +1,4 @@
-// Revit's paired grip triangles: each 16 x 17 px with a 6 px gap, blue with a dark outline. The SVG stays a fixed screen size;
+// Revit's paired grip triangles, blue with a dark outline, drawn at 3/4 of the 0.5.3 size (CSS). The SVG stays a fixed screen size;
 // a larger transparent button captures the complete axis-constrained drag.
 export class SectionGrips {
  constructor(getRenderer){this.getRenderer=getRenderer;this.layer=document.createElement('div');this.layer.className='section-grips';this.layer.setAttribute('aria-label','Section box face grips');document.querySelector('.model-area').append(this.layer);this.buttons=[];const ns='http://www.w3.org/2000/svg';this.outline=document.createElementNS(ns,'svg');this.outline.classList.add('section-outline');this.outline.setAttribute('aria-hidden','true');this.wire=document.createElementNS(ns,'path');this.outline.append(this.wire);this.layer.append(this.outline);

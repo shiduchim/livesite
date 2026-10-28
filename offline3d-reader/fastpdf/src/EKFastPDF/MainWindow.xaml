@@ -104,7 +104,7 @@
                     <Button Style="{StaticResource IconButton}" Click="Open_Click" ToolTip="Open (Ctrl+O)">
                         <Path Data="{StaticResource IconOpen}" Style="{StaticResource IconPath}"/>
                     </Button>
-                    <Button x:Name="Box3DButton" Content="3D box" Padding="10,5" Margin="4,0" Click="Box3D_Click" ToolTip="Offline 3D PDF v0.5.0 — activate the 3D box"/>
+                    <Button x:Name="Box3DButton" Content="ClickTo3D" Padding="10,5" Margin="4,0" Click="Box3D_Click" ToolTip="Open a spot of the plan in 3D"/>
                     <Button x:Name="PrintButton" Style="{StaticResource IconButton}" Click="Print_Click" ToolTip="Print (Ctrl+P)">
                         <Path Data="{StaticResource IconPrint}" Style="{StaticResource IconPath}"/>
                     </Button>

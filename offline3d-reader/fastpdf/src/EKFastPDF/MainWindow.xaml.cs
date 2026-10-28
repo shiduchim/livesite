@@ -33,7 +33,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         TabStrip.ItemsSource = Sessions;
         Viewport.Attach(services);
-        Closed += (_,_) => Close3D();
+        Closed += (_,_) => Discard3D();
         Viewport.ShowDebug = services.Settings.DebugOverlay;
         Viewport.ViewChanged += SyncToolbar;
         RestorePlacement();
@@ -78,7 +78,7 @@ public partial class MainWindow : Window
 
     public void ActivateSession(DocumentSession? session)
     {
-        if (!ReferenceEquals(_active,session)) Close3D();
+        if (!ReferenceEquals(_active,session)) Discard3D();
         _active = session;
         Viewport.SetSession(session);
         _syncingSearch = true;

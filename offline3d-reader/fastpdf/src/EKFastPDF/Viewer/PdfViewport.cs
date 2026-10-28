@@ -123,7 +123,10 @@ public sealed class PdfViewport : FrameworkElement
     }
 
     public List<IViewportOverlay> Overlays { get; } = new();
-    public void CancelOverlayInteraction(){_overlayDrag?.EndDrag();_overlayDrag=null;if(IsMouseCaptured)ReleaseMouseCapture();Cursor=null;}
+    public void CancelOverlayInteraction(){_overlayDrag?.EndDrag();_overlayDrag=null;if(IsMouseCaptured)ReleaseMouseCapture();Cursor=_idleCursor;}
+    private Cursor? _idleCursor;
+    /// <summary>Pointer shown while not panning or dragging (the blue ClickTo3D arrow); null for the default.</summary>
+    public Cursor? IdleCursor{get=>_idleCursor;set{_idleCursor=value;if(!_panning&&_overlayDrag==null)Cursor=value;}}
     public ViewerMetrics Metrics { get; } = new();
     public bool ShowDebug { get; set; }
 
@@ -411,7 +414,7 @@ public sealed class PdfViewport : FrameworkElement
                 PageClicked.Invoke(page,(dx-rect.X)/rect.Width,(dy-rect.Y)/rect.Height);
         }
         ReleaseMouseCapture();
-        Cursor = null;
+        Cursor = _idleCursor;
         e.Handled = true;
     }
 

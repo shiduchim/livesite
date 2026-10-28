@@ -25,16 +25,23 @@ internal sealed class BoxPanel:IDisposable
     private Point3? center;
     private bool ready,sent,disposed;
     private CoreWebView2Environment? environment;
+    // One environment for the whole process: a second CreateAsync on the same profile
+    // while the previous browser process is still closing can fail, which made 3D
+    // refuse to reopen after it was closed.
+    private static Task<CoreWebView2Environment>? sharedEnvironment;
+    private static readonly object EnvironmentLock=new();
     private double width=3.048,depth=3.048,above=3.048,below=.1524;
     private BoxVolume? volume;
     private ViewRegion? activeRegion;
-    private static readonly HashSet<string> Allowed=new(StringComparer.Ordinal){"/three.html","/three.css","/three.mjs","/navigation.mjs","/section-grips.mjs","/precomputed.mjs","/scene-data.mjs","/renderer.mjs","/sections.mjs","/section-worker.mjs","/comparison-base.mjs","/vendor/babylon.js","/vendor/loaders.js","/vendor/earcut.js","/vendor/studio.env","/vendor/studio.ktx","/vendor/three-adapter.mjs","/vendor/glslang.js","/vendor/glslang.wasm","/vendor/twgsl.js","/vendor/twgsl.wasm"};
-    public BoxPanel(OpenPackage package){this.package=package;defaults=SectionBoxDefaults.Load(DefaultsPath);width=depth=defaults.SquareSizeMeters;above=defaults.AboveMeters;below=defaults.BelowMeters;}
+    private static readonly HashSet<string> Allowed=new(StringComparer.Ordinal){"/three.html","/three.css","/three.mjs","/measure.mjs","/outlines.mjs","/comparison-worker.mjs","/navigation.mjs","/section-grips.mjs","/precomputed.mjs","/scene-data.mjs","/renderer.mjs","/sections.mjs","/section-worker.mjs","/comparison-base.mjs","/vendor/babylon.js","/vendor/loaders.js","/vendor/earcut.js","/vendor/studio.env","/vendor/studio.ktx","/vendor/three-adapter.mjs","/vendor/glslang.js","/vendor/glslang.wasm","/vendor/twgsl.js","/vendor/twgsl.wasm"};
+    public BoxPanel(OpenPackage package){this.package=package;defaults=SectionBoxDefaults.Load(DefaultsPath);width=defaults.Width();depth=defaults.Depth();above=defaults.AboveMeters;below=defaults.BelowMeters;}
+    public bool IsReady=>ready;
     public async Task InitializeAsync(){
-        var runtime=Path.Combine(AppContext.BaseDirectory,"WebView2Runtime");
-        if(!File.Exists(Path.Combine(runtime,"msedgewebview2.exe")))runtime=null;
-        try{CoreWebView2Environment.GetAvailableBrowserVersionString(runtime);}catch{throw new FileNotFoundException("WebView2 Runtime is missing. Rerun INSTALL.cmd to set up the viewer dependency.");}
-        var environment=this.environment=await CoreWebView2Environment.CreateAsync(runtime,Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Offline3DPrototype","FastPDF-WebCache"),new CoreWebView2EnvironmentOptions{AdditionalBrowserArguments="--force_high_performance_gpu"});
+        Task<CoreWebView2Environment> pending;
+        lock(EnvironmentLock){pending=sharedEnvironment??=CreateEnvironmentAsync();}
+        CoreWebView2Environment environment;
+        try{environment=this.environment=await pending;}
+        catch{lock(EnvironmentLock){if(ReferenceEquals(sharedEnvironment,pending))sharedEnvironment=null;}throw;}
         if(disposed)return;
         await Control.EnsureCoreWebView2Async(environment);if(disposed)return;
         var web=Control.CoreWebView2;web.Settings.AreHostObjectsAllowed=false;web.Settings.AreDevToolsEnabled=false;web.Settings.AreDefaultContextMenusEnabled=false;web.Settings.IsPasswordAutosaveEnabled=false;web.Settings.IsGeneralAutofillEnabled=false;
@@ -49,8 +56,22 @@ internal sealed class BoxPanel:IDisposable
         web.NavigationStarting+=(_,e)=>{if(e.Uri!=Origin+"/three.html")e.Cancel=true;};web.NewWindowRequested+=(_,e)=>e.Handled=true;web.DownloadStarting+=(_,e)=>e.Cancel=true;web.PermissionRequested+=(_,e)=>e.State=CoreWebView2PermissionState.Deny;
         web.WebMessageReceived+=Message;web.Navigate(Origin+"/three.html");
     }
-    public void SetPoint(double pdfX,double pdfY){activeRegion=package.Registration.ViewRegions.FirstOrDefault(r=>Coordinates.Inside(r.CropPdf,pdfX,pdfY));center=Coordinates.PlanClick(package.Registration,pdfX,pdfY);
-        volume=BoxVolume.Centered(package.Registration.ModelToGraphics.Apply(center.Value),width,depth,above,below);SendBox();}
+    private static async Task<CoreWebView2Environment> CreateEnvironmentAsync(){
+        var runtime=Path.Combine(AppContext.BaseDirectory,"WebView2Runtime");
+        if(!File.Exists(Path.Combine(runtime,"msedgewebview2.exe")))runtime=null;
+        try{CoreWebView2Environment.GetAvailableBrowserVersionString(runtime);}catch{throw new FileNotFoundException("WebView2 Runtime is missing. Rerun INSTALL.cmd to set up the viewer dependency.");}
+        return await CoreWebView2Environment.CreateAsync(runtime,Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"Offline3DPrototype","FastPDF-WebCache"),new CoreWebView2EnvironmentOptions{AdditionalBrowserArguments="--force_high_performance_gpu"});
+    }
+    /// <summary>Where a box would go for a click at this PDF point (the dashed hover preview), or null outside the plan.</summary>
+    public Point3[]? PreviewFootprint(double pdfX,double pdfY){
+        try{var region=package.Registration.ViewRegions.FirstOrDefault(r=>Coordinates.Inside(r.CropPdf,pdfX,pdfY));
+            var point=Coordinates.PlanClick(package.Registration,pdfX,pdfY);
+            return Footprint(defaults.At(package.Registration.ModelToGraphics.Apply(point)),region);}
+        catch(Exception){return null;}
+    }
+    /// <summary>Puts a box at a PDF point; <paramref name="fit"/> also fits the 3D view to it (first open).</summary>
+    public void SetPoint(double pdfX,double pdfY,bool fit=false){activeRegion=package.Registration.ViewRegions.FirstOrDefault(r=>Coordinates.Inside(r.CropPdf,pdfX,pdfY));center=Coordinates.PlanClick(package.Registration,pdfX,pdfY);
+        volume=defaults.At(package.Registration.ModelToGraphics.Apply(center.Value));width=volume.Width;depth=volume.Depth;above=volume.Above;below=volume.Below;SendBox(fit);}
     public void SetDocked(bool value)=>Post(new{type="docked",value});
     public void ResizeEdgeFromPdf(int edge,double pdfX,double pdfY){
         if(disposed||volume==null)return;
@@ -62,12 +83,15 @@ internal sealed class BoxPanel:IDisposable
         try{next.Validate();}catch(InvalidDataException){return;}
         volume=next;width=next.Width;depth=next.Depth;above=next.Above;below=next.Below;SendBox();
     }
+    /// <summary>A stretch from the PDF ended: new boxes use this size from now on.</summary>
+    public void CommitResize(){if(!disposed&&volume!=null)Remember(volume);}
+    private void Remember(BoxVolume box){try{var next=defaults.Remember(box);next.Save(DefaultsPath);defaults=next;PostDefaults();}catch(Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException){Status?.Invoke("Could not remember the box size: "+ex.Message);}}
     private void Post(object message){if(!disposed&&ready)Control.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(message,Contract.Json));}
     private void SendBox(bool fitBox=false){if(!center.HasValue||!ready||disposed)return;
         if(!sent){sent=true;SendScene();}
         if(volume==null)return;
         Post(new{type="box",fitBox,x=(volume.MinX+volume.MaxX)/2,y=volume.Level,z=(volume.MinZ+volume.MaxZ)/2,width=volume.Width,depth=volume.Depth,above=volume.Above,below=volume.Below,minX=volume.MinX,maxX=volume.MaxX,minY=volume.MinY,maxY=volume.MaxY,minZ=volume.MinZ,maxZ=volume.MaxZ});
-        FootprintChanged?.Invoke(Footprint(volume));
+        FootprintChanged?.Invoke(Footprint(volume,activeRegion));
     }
     /// <summary>
     /// v0.5.2 served scene.glb by answering a fetch for a URL on the
@@ -93,36 +117,33 @@ internal sealed class BoxPanel:IDisposable
             Post(new{type="sceneChunk",offset,total=package.Glb.Length,data=Convert.ToBase64String(package.Glb,offset,count)});
         }
     }
-    private Point3[] Footprint(BoxVolume box){
-        if(activeRegion==null)return box.PdfFootprint(package.Registration);
-        var inverse=package.Registration.ModelToGraphics.Inverse();var transform=activeRegion.ModelToPdf*inverse;
-        if(Math.Abs(activeRegion.PlaneNormal[2])>.99)return new[]{new Point3(box.MinX,box.Level,box.MinZ),new Point3(box.MaxX,box.Level,box.MinZ),new Point3(box.MaxX,box.Level,box.MaxZ),new Point3(box.MinX,box.Level,box.MaxZ)}.Select(transform.Apply).ToArray();
+    private Point3[] Footprint(BoxVolume box,ViewRegion? region){
+        if(region==null)return box.PdfFootprint(package.Registration);
+        var inverse=package.Registration.ModelToGraphics.Inverse();var transform=region.ModelToPdf*inverse;
+        if(Math.Abs(region.PlaneNormal[2])>.99)return new[]{new Point3(box.MinX,box.Level,box.MinZ),new Point3(box.MaxX,box.Level,box.MinZ),new Point3(box.MaxX,box.Level,box.MaxZ),new Point3(box.MinX,box.Level,box.MaxZ)}.Select(transform.Apply).ToArray();
         var points=Enumerable.Range(0,8).Select(i=>transform.Apply(new Point3((i&1)==0?box.MinX:box.MaxX,(i&2)==0?box.MinY:box.MaxY,(i&4)==0?box.MinZ:box.MaxZ))).ToArray();double x=points.Min(p=>p.X),y=points.Min(p=>p.Y),X=points.Max(p=>p.X),Y=points.Max(p=>p.Y);return new[]{new Point3(x,y),new Point3(X,y),new Point3(X,Y),new Point3(x,Y)};
     }
-    private void PostDefaults()=>Post(new{type="boxDefaults",square=defaults.SquareSizeMeters,above=defaults.AboveMeters,below=defaults.BelowMeters,unit=defaults.Unit});
-    private void ResetBounds(){width=depth=defaults.SquareSizeMeters;above=defaults.AboveMeters;below=defaults.BelowMeters;if(!center.HasValue)return;volume=defaults.At(package.Registration.ModelToGraphics.Apply(center.Value));SendBox(true);}
+    private void PostDefaults()=>Post(new{type="boxDefaults",width=defaults.Width(),depth=defaults.Depth(),above=defaults.AboveMeters,below=defaults.BelowMeters,unit=defaults.Unit,isDefault=defaults.IsFactory()});
+    private void SaveDefaults(SectionBoxDefaults next){next.Save(DefaultsPath);defaults=next;PostDefaults();}
+    private void ResetBounds(){width=defaults.Width();depth=defaults.Depth();above=defaults.AboveMeters;below=defaults.BelowMeters;if(!center.HasValue)return;volume=defaults.At(package.Registration.ModelToGraphics.Apply(center.Value));SendBox(true);}
     private void Message(object? sender,CoreWebView2WebMessageReceivedEventArgs e){
         if(disposed||e.Source!=Origin+"/three.html"||e.WebMessageAsJson.Length>4096)return;
         try{using var doc=JsonDocument.Parse(e.WebMessageAsJson);var root=doc.RootElement;switch(root.GetProperty("type").GetString()){
-            case "ready":ready=true;PostDefaults();SendBox();break;
+            // Send the model as soon as the page can take it, usually while the
+            // user is still choosing a spot, so the panel opens on a ready model.
+            case "ready":ready=true;PostDefaults();if(!sent){sent=true;SendScene();}SendBox();break;
             case "hide":HideRequested?.Invoke();break;
             case "undock":UndockRequested?.Invoke();break;
             case "resetBounds":ResetBounds();break;
-            case "setBoxDefaults":
-                var updated=new SectionBoxDefaults{SquareSizeMeters=root.GetProperty("square").GetDouble(),AboveMeters=root.GetProperty("above").GetDouble(),BelowMeters=root.GetProperty("below").GetDouble(),Unit=root.GetProperty("unit").GetString()??""};
-                updated.Save(DefaultsPath);defaults=updated;PostDefaults();ResetBounds();break;
+            case "restoreBoxDefault":SaveDefaults(SectionBoxDefaults.Factory(defaults.Unit));ResetBounds();break;
+            case "setUnit":var unit=root.GetProperty("unit").GetString();if(unit is "feet" or "meters"&&unit!=defaults.Unit)SaveDefaults(defaults.WithUnit(unit));break;
             case "error":Status?.Invoke(root.GetProperty("message").GetString()??"3D error");break;
-            case "size":
-                double Read(string key,double min){double v=root.GetProperty(key).GetDouble();if(!double.IsFinite(v)||v<min||v>2000000000)throw new InvalidDataException("Invalid 3D box size");return v/100;}
-                double w=Read("width",1),d=Read("depth",1),a=Read("above",1),b=Read("below",0);width=w;depth=d;above=a;below=b;
-                if(volume!=null)volume=BoxVolume.Centered(new Point3((volume.MinX+volume.MaxX)/2,volume.Level,(volume.MinZ+volume.MaxZ)/2),w,d,a,b);
-                SendBox();break;
             case "bounds":
                 if(volume==null)break;
                 var next=new BoxVolume{MinX=root.GetProperty("minX").GetDouble(),MaxX=root.GetProperty("maxX").GetDouble(),MinY=root.GetProperty("minY").GetDouble(),MaxY=root.GetProperty("maxY").GetDouble(),MinZ=root.GetProperty("minZ").GetDouble(),MaxZ=root.GetProperty("maxZ").GetDouble(),Level=volume.Level};
                 next.Validate();volume=next;width=next.Width;depth=next.Depth;above=next.Above;below=next.Below;
-                FootprintChanged?.Invoke(Footprint(next));
-                if(root.TryGetProperty("final",out var final)&&final.GetBoolean())SendBox();break;
+                FootprintChanged?.Invoke(Footprint(next,activeRegion));
+                if(root.TryGetProperty("final",out var final)&&final.GetBoolean()){Remember(next);SendBox();}break;
         }}catch(Exception ex){Status?.Invoke(ex.Message);if(ready)Post(new{type="settingsError",message=ex.Message});}
     }
     public void Dispose(){if(disposed)return;disposed=true;Control.Dispose();}
