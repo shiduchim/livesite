@@ -1,0 +1,96 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box}body{margin:0;padding:24px;background:#d9d9d9;font:12px 'Segoe UI',Arial,sans-serif;color:#1b1b1b;display:flex;flex-wrap:wrap;gap:28px;align-items:flex-start}
+.win{background:#f0f0f0;border:1px solid #bdbdbd;display:flex;flex-direction:column}
+.titlebar{height:30px;background:#f9f9f9;display:flex;align-items:center;justify-content:space-between;padding-left:12px}.titlebar .close{height:30px;padding:0 12px;display:flex;align-items:center;color:#5f6368;font-size:11.5px}
+.content{padding:14px 12px 14px 18px;flex:1}
+.sub{color:#5f6368;margin:-2px 0 12px}
+.grid{display:grid;grid-template-columns:110px 1fr;row-gap:0;align-items:center}
+.grid>label{height:34px;display:flex;align-items:center}
+.field{height:23px;border:1px solid #c3c8cf;border-radius:4px;background:#fff;display:flex;align-items:center;justify-content:space-between;padding:0 6px 0 7px;margin-right:20px}
+.field .chev{width:8px;height:8px;border-right:1.3px solid #5f6368;border-bottom:1.3px solid #5f6368;transform:rotate(45deg) translate(-2px,-2px)}
+.check{display:flex;align-items:center;gap:7px;height:30px}.box{width:13px;height:13px;border:1px solid #8d939b;border-radius:2px;background:#fff}.box.on{background:#5d75a5;border-color:#5d75a5;position:relative}.box.on:after{content:'';position:absolute;left:3.5px;top:0.5px;width:3.5px;height:7px;border:solid #fff;border-width:0 1.6px 1.6px 0;transform:rotate(45deg)}
+.est{margin-top:10px;color:#5f6368}.est b{color:#1b1b1b;font-weight:400}
+.footer{border-top:1px solid #e1e1e1;padding:12px 26px 12px 30px;display:flex;align-items:center;justify-content:space-between}
+.link{color:#5f6368}.btns{display:flex;gap:16px}
+.btn{height:23px;min-width:71px;padding:0 10px;border:1px solid #d0d0d0;border-bottom-color:#bababa;border-radius:4px;background:#fdfdfd;display:flex;align-items:center;justify-content:center}
+.btn.default{border-color:#9db0d8;border-bottom-color:#8a9eca}
+.label-cap{font-size:11px;color:#5f6368;margin:6px 0 2px}
+.preview{background:#fff;border:1px solid #c3c8cf;border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.preview svg{display:block}
+.seg{display:inline-flex;height:19px;border:1px solid #d1d1d1;border-radius:4px;overflow:hidden;background:#fff}.seg span{padding:0 6px;font-size:11px;line-height:17px;color:#6e6e6e}.seg span+span{border-left:1px solid #d1d1d1}.seg .on{background:#e8e8e8;color:#1b1b1b}
+.cap{font:600 13px Arial,sans-serif;color:#333;margin:0 0 8px}.caption{width:100%;font:600 13px 'Segoe UI',Arial,sans-serif;color:#333;margin-bottom:-14px}
+.bar{height:6px;background:#e1e1e1;border-radius:3px;overflow:hidden;margin:10px 20px 8px 0}.bar i{display:block;height:100%;width:42%;background:#5d75a5;border-radius:3px}
+.steps{margin:4px 0 0;padding:0;list-style:none;color:#5f6368}.steps li{height:22px;display:flex;align-items:center;gap:8px}.steps .done{color:#1b1b1b}.steps .now{color:#1b1b1b}
+.dot{width:10px;height:10px;border-radius:50%;border:1px solid #b7bec8;background:#fff}.done .dot{background:#5d75a5;border-color:#5d75a5}.now .dot{border:2px solid #5d75a5}
+</style></head><body>
+
+<div><div class="cap">A · Compact: four choices only</div><div class="win" id="a" style="width:367px">
+ <div class="titlebar"><span>Export 3D PDF</span><span class="close">Close</span></div>
+ <div class="content">
+  <div class="sub">Level 1 – Floor Plan</div>
+  <div class="grid">
+   <label>Height</label><div class="field"><span>View range</span><i class="chev"></i></div>
+   <label>Phase</label><div class="field"><span>New Construction</span><i class="chev"></i></div>
+   <label>Phase filter</label><div class="field"><span>Show Complete</span><i class="chev"></i></div>
+   <label>Detail</label><div class="field"><span>Medium</span><i class="chev"></i></div>
+  </div>
+  <div class="est">Estimated PDF size <b>40 – 90 MB</b></div>
+ </div>
+ <div class="footer"><span class="link">Reset</span><div class="btns"><span class="btn">Cancel</span><span class="btn default">Export…</span></div></div>
+</div></div>
+
+<div><div class="cap">B · With preview (Revit snapshot of the box)</div><div class="win" id="b" style="width:620px">
+ <div class="titlebar"><span>Export 3D PDF</span><span class="close">Close</span></div>
+ <div class="content" style="display:grid;grid-template-columns:268px 1fr;gap:18px">
+  <div><div class="preview" style="height:202px">
+   <svg width="230" height="170" viewBox="0 0 230 170"><g fill="none" stroke="#335bb9" stroke-width="1"><path d="M30 60 L120 25 L205 55 L115 92 Z"/><path d="M30 60 V125 L115 160 V92"/><path d="M205 55 V118 L115 160"/></g><g fill="#c9ced6"><path d="M46 70 L120 41 L188 64 L114 94 Z"/></g><g fill="#9aa3b0"><path d="M100 50 l18 -7 v40 l-18 7z"/><path d="M60 82 l40 -15 v10 l-40 15z"/></g><g fill="#7e8794"><path d="M140 62 l22 8 v30 l-22 -8z"/></g></svg>
+   </div><div style="margin-top:6px;color:#5f6368">Preview · <span style="color:#2f62c9">Update</span></div></div>
+  <div class="grid" style="grid-template-columns:86px 1fr;align-content:start">
+   <label>Height</label><div class="field" style="margin-right:0"><span>View range</span><i class="chev"></i></div>
+   <label>Phase</label><div class="field" style="margin-right:0"><span>New Construction</span><i class="chev"></i></div>
+   <label>Phase filter</label><div class="field" style="margin-right:0"><span>Show Complete</span><i class="chev"></i></div>
+   <label>Detail</label><div class="field" style="margin-right:0"><span>Medium</span><i class="chev"></i></div>
+   <label style="grid-column:1/3;height:auto;margin-top:12px;color:#5f6368">Estimated PDF size <b style="font-weight:400;color:#1b1b1b;margin-left:4px">40 – 90 MB</b></label>
+  </div>
+ </div>
+ <div class="footer"><span class="link">Reset</span><div class="btns"><span class="btn">Cancel</span><span class="btn default">Export…</span></div></div>
+</div></div>
+
+<div><div class="cap">C · Compact with every option</div><div class="win" id="c" style="width:367px">
+ <div class="titlebar"><span>Export 3D PDF</span><span class="close">Close</span></div>
+ <div class="content">
+  <div class="sub">Level 1 – Floor Plan</div>
+  <div class="grid">
+   <label>Height</label><div class="field"><span>View range</span><i class="chev"></i></div>
+   <label>Phase</label><div class="field"><span>New Construction</span><i class="chev"></i></div>
+   <label>Phase filter</label><div class="field"><span>Show Complete</span><i class="chev"></i></div>
+   <label>Detail</label><div class="field"><span>Medium</span><i class="chev"></i></div>
+   <label>Properties</label><div class="field"><span>Mark, Comments, Type Mark</span></div>
+  </div>
+  <div class="check" style="margin-top:4px"><span class="box on"></span>Include categories hidden in the view</div>
+  <div class="check" style="height:22px"><span class="box"></span>Include geometry outside the crop</div>
+  <div class="est">Estimated PDF size <b>40 – 90 MB</b> · <span style="color:#2f62c9">Preview…</span></div>
+ </div>
+ <div class="footer"><span class="link">Reset</span><div class="btns"><span class="btn">Cancel</span><span class="btn default">Export…</span></div></div>
+</div>
+
+<div style="width:100%"></div>
+<div><div class="cap">P1 · Progress: one line</div><div class="win" id="p1" style="width:367px">
+ <div class="titlebar"><span>Exporting 3D PDF</span><span class="close">Cancel</span></div>
+ <div class="content">
+  <div>Collecting model geometry · 42 %</div>
+  <div class="bar"><i></i></div>
+  <div style="color:#5f6368">About 3 minutes left · PDF about 85 MB</div>
+  <div style="color:#5f6368;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Walls | Basic Wall: Interior - 4 7/8" Partition</div>
+ </div>
+</div></div>
+
+<div><div class="cap">P2 · Progress: with steps</div><div class="win" id="p2" style="width:367px">
+ <div class="titlebar"><span>Exporting 3D PDF</span><span class="close">Cancel</span></div>
+ <div class="content">
+  <ul class="steps"><li class="done"><span class="dot"></span>Prepare export view</li><li class="now"><span class="dot"></span>Collect model geometry</li><li><span class="dot"></span>Write 3D model</li><li><span class="dot"></span>Export PDF pages</li></ul>
+  <div class="bar"><i></i></div>
+  <div style="display:flex;justify-content:space-between;color:#5f6368;margin-right:20px"><span>About 3 minutes left</span><span>PDF about 85 MB</span></div>
+ </div>
+</div></div>
+</body></html>
