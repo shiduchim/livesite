@@ -1,0 +1,36 @@
+{
+  "version": "0.5.4",
+  "reader": {
+    "files": 346,
+    "webAssets": [
+      "comparison-base.mjs",
+      "comparison-worker.mjs",
+      "measure.mjs",
+      "navigation.mjs",
+      "outlines.mjs",
+      "precomputed.mjs",
+      "renderer.mjs",
+      "scene-data.mjs",
+      "section-grips.mjs",
+      "section-worker.mjs",
+      "sections.mjs",
+      "three.css",
+      "three.html",
+      "three.mjs",
+      "vendor/babylon.js",
+      "vendor/earcut.js",
+      "vendor/glslang.js",
+      "vendor/glslang.wasm",
+      "vendor/loaders.js",
+      "vendor/studio.env",
+      "vendor/studio.ktx",
+      "vendor/three-adapter.mjs",
+      "vendor/twgsl.js",
+      "vendor/twgsl.wasm"
+    ]
+  },
+  "addin": {
+    "files": 18,
+    "exporters": 6
+  }
+}

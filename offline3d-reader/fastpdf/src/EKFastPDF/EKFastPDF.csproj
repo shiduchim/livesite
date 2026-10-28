@@ -6,9 +6,9 @@
     <UseWPF>true</UseWPF>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Offline3D.FastPDF.Dev</AssemblyName>
-    <Version>0.5.3</Version>
-    <FileVersion>0.5.3.0</FileVersion>
-    <InformationalVersion>0.5.3-experimental</InformationalVersion>
+    <Version>0.5.4</Version>
+    <FileVersion>0.5.4.0</FileVersion>
+    <InformationalVersion>0.5.4</InformationalVersion>
     <RootNamespace>EKFastPDF</RootNamespace>
     <ApplicationIcon>Assets\FastPDF.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>

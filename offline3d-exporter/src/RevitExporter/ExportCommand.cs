@@ -19,7 +19,7 @@ namespace Offline3D.RevitExporter;
 [Transaction(TransactionMode.Manual)]
 public sealed class ExportCommand : IExternalCommand
 {
-    internal const string ExporterVersion = "0.5.3";
+    internal const string ExporterVersion = "0.5.4";
     /// <summary>Margin added to the native section box only. The exact crop is
     /// still applied per triangle; the margin keeps any Revit section-box cut
     /// (and its cap faces) outside the crop, so boundary triangles stay whole.</summary>
@@ -61,6 +61,8 @@ public sealed class ExportCommand : IExternalCommand
             var owner = new RevitWindow(data.Application.MainWindowHandle);
             using var target = ExportTarget.Create(ui, owner.Handle);
             if (target == null) return Result.Cancelled;
+            // Checked first: EKPDF finishes every export, so a missing reader is reported before any work.
+            if (ViewerHelper() == null) throw new ExportSetupException("EKPDF is not installed. Install EKPDF (the PDF reader), which finishes each 3D PDF, then export again.");
 
             string work = folder = Path.Combine(Path.GetTempPath(), "Offline3DExport-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(work);
@@ -363,9 +365,7 @@ public sealed class ExportCommand : IExternalCommand
                     overall.Enter(ExportStage.Finishing);
                     log.Stage("Starting the viewer helper");
                     Check(bar, "Checking the PDF mapping in the viewer helper");
-                    string install = Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.Parent!.Parent!.FullName;
-                    string tool = Path.Combine(install, "Viewer", "Offline3D.FastPDF.Dev.exe");
-                    if (!File.Exists(tool)) throw new FileNotFoundException("The viewer helper is missing (" + tool + "). Reinstall Offline 3D PDF.");
+                    string tool = ViewerHelper() ?? throw new FileNotFoundException("EKPDF is not installed. Install EKPDF (the PDF reader), which finishes each 3D PDF, then export again.");
                     using (var helper = Process.Start(new ProcessStartInfo(tool, "--auto-export \"" + work + "\" \"" + destination + "\"") { UseShellExecute = false, CreateNoWindow = true, WorkingDirectory = Path.GetDirectoryName(tool)! }))
                         log.Line("Viewer helper started (process " + (helper?.Id.ToString(CultureInfo.InvariantCulture) ?? "?") + "). It reports success or failure in its own message. Destination: " + destination);
                     bar.Complete();
@@ -424,6 +424,23 @@ public sealed class ExportCommand : IExternalCommand
             return new FilteredElementCollector(linked).WhereElementIsNotElementType().WhereElementIsViewIndependent().WherePasses(new BoundingBoxIntersectsFilter(outline)).GetElementCount();
         }
         catch (Autodesk.Revit.Exceptions.ApplicationException) { return 0; }
+    }
+
+    /// <summary>
+    /// EKPDF's viewer, which finishes each export: the path the EKPDF reader setup
+    /// records (HKCU\Software\EKPDF\ViewerExe), else the 0.5.x combined layout next to
+    /// the add-in. Null when neither exists.
+    /// </summary>
+    internal static string? ViewerHelper()
+    {
+        try
+        {
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\EKPDF");
+            if (key?.GetValue("ViewerExe") is string path && File.Exists(path)) return path;
+        }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException) { }
+        string legacy = Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location)!.Parent!.Parent!.FullName, "Viewer", "Offline3D.FastPDF.Dev.exe");
+        return File.Exists(legacy) ? legacy : null;
     }
 
     /// <summary>The EK palette for Revit's theme (Revit 2024+); light on any error.</summary>

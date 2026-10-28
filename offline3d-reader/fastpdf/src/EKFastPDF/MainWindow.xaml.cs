@@ -88,8 +88,8 @@ public partial class MainWindow : Window
         UpdateSearchCounter();
         RefreshState();
         SyncToolbar();
-        if (session != null) Title = session.Title + " – Offline 3D PDF Viewer v0.5.3";
-        else Title = "Offline 3D PDF Viewer v0.5.3";
+        if (session != null) Title = session.Title + " – EKPDF";
+        else Title = "EKPDF";
     }
 
     public void CloseSession(DocumentSession session)

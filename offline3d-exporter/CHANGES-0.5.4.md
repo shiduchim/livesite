@@ -75,6 +75,52 @@ Built in stages from the feedback on 0.5.3. Version strings still say 0.5.3 unti
 - **Code:** both windows use no Revit types, so `tests/DialogHarness` opens them under Wine. Shots are in `evidence/v054-dialogs/`, light and dark at 96 DPI, with Wine's fonts.
 - **Shared controls** (EK title bar, buttons, links, drop-downs, check boxes) are in `EkUi.cs`, ready for the other EK windows.
 
+## Stage 3: separate installers (done)
+
+The 0.5.3 package installed the viewer and the Revit add-in together. 0.5.4 has two packages, in `release/0.5.4/`:
+
+| Package | For | Contents |
+|---|---|---|
+| `EKPDF-0.5.4.zip` (71 MB) | anyone, Revit not needed | the PDF reader with its 3D view |
+| `EKPDF-RevitAddin-0.5.4.zip` (1 MB) | Revit users | Export 3D PDF for Revit 2024–2027 |
+
+**Both packages**
+- Setup: extract, then double-click `INSTALL.cmd`.
+- Install for the current Windows user, with no administrator rights.
+- Appear in **Windows Settings › Apps** with their icon, version and size, and uninstall from there or with `UNINSTALL.cmd`.
+- Verify every payload file's SHA-256 before installing, as 0.5.3 did.
+
+**Reader** (`offline3d-reader/installer/scripts/Setup-Reader.ps1`)
+- Installs to `%LOCALAPPDATA%\EKPDF\Reader` and adds Start › **EKPDF**.
+- Asks before installing Microsoft WebView2 if it is missing.
+- Records `HKCU\Software\EKPDF\ViewerExe`, where the add-in finds it.
+- An update replaces the previous version.
+- Uninstalling warns if the Revit add-in still needs the reader.
+
+**Add-in** (`build/addin-installer/scripts/Setup-Addin.ps1`)
+- Requires EKPDF to be installed first.
+- Installs the matching exporter for every full Revit 2024–2027 it finds, into `%LOCALAPPDATA%\EKPDF\RevitAddin`.
+- Uses the same manifest file and AddInId as 0.5.x, so it **replaces an earlier combined installation**: the old viewer copy and Start menu entry are removed, while logs and settings are kept.
+- Rolls back the manifests if anything fails.
+
+**Exporter**
+- Finds EKPDF through the registry entry (falling back to the 0.5.x layout).
+- Says so **before** any export work if EKPDF is missing.
+
+**Naming and version**
+- The viewer window is now titled **EKPDF**; the full UI work is Stage 4.
+- Version strings are 0.5.4: viewer and exporter assemblies, and the exporter's log line. The internal exe name is unchanged.
+
+**Building and checking**
+- **Build:** `build/package-installers.py` builds both zips from a self-contained viewer publish and the six exporter builds.
+- **Checks during the build:**
+  - every hash;
+  - the 3D page files are byte-identical to the source;
+  - every file they reference ships, and every one is on the viewer's page allow-list (the check that would have caught the 0.5.3 `outlines.mjs` gap);
+  - names and versions in the compiled files;
+  - no Autodesk DLLs.
+- **Setup scripts:** they parse in PowerShell. `tests/installer/setup-dry-run.ps1` runs the real setup functions on the packages: payload verification for both products, wrong-product and tampered-file rejection, add-in manifest ownership, and unsafe paths. **The installers themselves have not run on Windows yet.**
+
 ## Tests
 - `tests/ExporterCoreTests`: 26 checks (2 new for progress, 1 for preferences).
 - `tests/DialogHarness`: both windows, light and dark, under Wine (no layout overflow).

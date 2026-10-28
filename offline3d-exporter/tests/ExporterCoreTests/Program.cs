@@ -5,7 +5,7 @@ using Offline3D;
 using E = exporter::Offline3D;
 using X = exporter::Offline3D.RevitExporter;
 
-// Linux checks for the Revit-independent exporter core (v0.5.3). Revit's
+// Linux checks for the Revit-independent exporter core (v0.5.3, extended in 0.5.4). Revit's
 // callback order is simulated; native Revit behaviour is NOT tested here.
 int passed = 0;
 var timer = Stopwatch.StartNew();

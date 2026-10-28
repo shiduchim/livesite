@@ -32,6 +32,9 @@ Start with [CHANGES-0.5.3.md](CHANGES-0.5.3.md), which has the diagnosis, the ch
 
     build/build-exporters.sh out/exporters                  # six variants
     build/package-update.sh out                             # drop-in update ZIP for a 0.5.2 install
+    dotnet publish ../offline3d-reader/fastpdf/src/EKFastPDF/EKFastPDF.csproj -c Release -r win-x64 --self-contained true -o out/viewer
+    python3 -I build/package-installers.py --viewer out/viewer --exporters out/exporters --notices <extracted 0.5.3 package> --version 0.5.4 --out release/0.5.4
+                                                            # 0.5.4+: EKPDF reader and EKPDF Revit add-in, separately
     dotnet run --project tests/ExporterCoreTests -c Release  # 23 core checks (simulated Revit callbacks)
     dotnet run --project tests/ExporterAssemblyAudit -c Release -- out/exporters   # 150 metadata checks
     dotnet run --project tests/CropExportTests -c Release    # plus the other original suites
