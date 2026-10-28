@@ -12,7 +12,6 @@ internal sealed class BoxFootprintOverlay:IInteractiveViewportOverlay
     private readonly PdfPageMap map;
     private Point3[]? points;
     private readonly Action<int,double,double> resize;
-    private readonly Action commit;
     /// <summary>While set, a dashed box follows the pointer: where a click would put the 3D box.</summary>
     public Func<double,double,Point3[]?>? Preview{get;set;}
     private static readonly Pen PreviewOutline=new(new SolidColorBrush(Color.FromRgb(47,111,222)),1.5){DashStyle=new DashStyle(new double[]{4,3},0)};
@@ -23,7 +22,7 @@ internal sealed class BoxFootprintOverlay:IInteractiveViewportOverlay
     private static readonly Brush GripFill=new SolidColorBrush(Color.FromRgb(114,149,209));
     private static readonly Brush GripStroke=new SolidColorBrush(Color.FromRgb(41,76,127));
     private static readonly Brush Fill=new SolidColorBrush(Color.FromArgb(30,25,118,210));
-    public BoxFootprintOverlay(PdfPageMap map,Action<int,double,double> resize,Action commit){this.map=map;this.resize=resize;this.commit=commit;}
+    public BoxFootprintOverlay(PdfPageMap map,Action<int,double,double> resize){this.map=map;this.resize=resize;}
     public void SetPoints(Point3[]? value){points=value;}
     private Point[] ScreenPoints(OverlayContext context)=>ScreenPoints(points,context);
     private Point[] ScreenPoints(Point3[]? points,OverlayContext context){
@@ -39,7 +38,7 @@ internal sealed class BoxFootprintOverlay:IInteractiveViewportOverlay
     public void DragTo(Point point,OverlayContext context){
         if(drag<0)return;point+=grabOffset;var page=context.ScreenToPage(point.X,point.Y);if(page==null||page.Value.Page!=0)return;var rect=context.Session.Layout!.PageRect(0);var (x,y)=map.Apply(page.Value.X/rect.Width,page.Value.Y/rect.Height);resize(drag,x,y);
     }
-    public void EndDrag(){if(drag>=0)commit();drag=-1;}
+    public void EndDrag(){drag=-1;}
     public void Render(DrawingContext dc,OverlayContext context){
         if(!context.VisiblePages.Contains(0))return;var page=context.Session.Layout!.PageRect(0);
         // The blue pointer is the system cursor (Assets/ClickTo3D.cur). Before the

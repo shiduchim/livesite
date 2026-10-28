@@ -3,32 +3,25 @@ using System.Text.Json;
 namespace Offline3D;
 
 /// <summary>
-/// The section box size used for a new box, in metres. Since 0.5.4 it is the size
-/// the user last stretched a box to; <see cref="Factory"/> restores the stock size.
-/// The displayed unit is stored with it.
+/// The section box size set in 3D Settings, in metres, with the displayed unit. Every
+/// newly opened 3D view starts with it; a box stretched in 3D keeps its size only
+/// until 3D is closed. <see cref="Factory"/> is the Reset size.
 /// </summary>
 public sealed class SectionBoxDefaults
 {
     public const double FactorySquare = 3.048, FactoryAbove = 3.048, FactoryBelow = .1524;
-    /// <summary>Width and depth before 0.5.4, which kept the box square. Still read for older files.</summary>
     public double SquareSizeMeters { get; set; } = FactorySquare;
-    public double? WidthMeters { get; set; }
-    public double? DepthMeters { get; set; }
     public double AboveMeters { get; set; } = FactoryAbove;
     public double BelowMeters { get; set; } = FactoryBelow;
     public string Unit { get; set; } = "feet";
 
-    public double Width() => WidthMeters ?? SquareSizeMeters;
-    public double Depth() => DepthMeters ?? SquareSizeMeters;
-    public bool IsFactory() => Near(Width(), FactorySquare) && Near(Depth(), FactorySquare) && Near(AboveMeters, FactoryAbove) && Near(BelowMeters, FactoryBelow);
+    public bool IsFactory() => Near(SquareSizeMeters, FactorySquare) && Near(AboveMeters, FactoryAbove) && Near(BelowMeters, FactoryBelow);
     private static bool Near(double a, double b) => Math.Abs(a - b) < 1e-6;
 
     public static SectionBoxDefaults Factory(string unit = "feet") => new() { Unit = unit };
-    /// <summary>The same unit with the size of <paramref name="box"/>.</summary>
-    public SectionBoxDefaults Remember(BoxVolume box) => new() { SquareSizeMeters = box.Width, WidthMeters = box.Width, DepthMeters = box.Depth, AboveMeters = box.Above, BelowMeters = box.Below, Unit = Unit };
-    public SectionBoxDefaults WithUnit(string unit) => new() { SquareSizeMeters = SquareSizeMeters, WidthMeters = WidthMeters, DepthMeters = DepthMeters, AboveMeters = AboveMeters, BelowMeters = BelowMeters, Unit = unit };
+    public SectionBoxDefaults WithUnit(string unit) => new() { SquareSizeMeters = SquareSizeMeters, AboveMeters = AboveMeters, BelowMeters = BelowMeters, Unit = unit };
 
-    public BoxVolume At(Point3 point) => BoxVolume.Centered(point, Width(), Depth(), AboveMeters, BelowMeters);
+    public BoxVolume At(Point3 point) => BoxVolume.Centered(point, SquareSizeMeters, SquareSizeMeters, AboveMeters, BelowMeters);
     public void Validate()
     {
         if (Unit != "feet" && Unit != "meters") throw new InvalidDataException("Choose Feet or Meters.");

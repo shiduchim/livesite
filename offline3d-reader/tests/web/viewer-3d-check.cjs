@@ -24,10 +24,11 @@ const results=[];const check=(name,ok,detail='')=>{results.push({name,ok,detail}
  await page.waitForFunction(()=>window.__sent.some(m=>m.type==='ready'));
  check('page reports ready',true);
  // Host: defaults, then the model while the panel is still closed.
- await page.evaluate(()=>{window.__host({type:'boxDefaults',width:3.048,depth:3.048,above:3.048,below:.1524,unit:'feet',isDefault:true});window.__host({type:'scene',size:window.__size,identities:[]});window.__sendBuffer();});
+ await page.evaluate(()=>{window.__host({type:'boxDefaults',square:3.048,above:3.048,below:.1524,unit:'feet',isDefault:true});window.__host({type:'scene',size:window.__size,identities:[]});window.__sendBuffer();});
  await page.waitForTimeout(800);
  check('model waits while the panel has no size',await page.evaluate(()=>!window.__sent.some(m=>m.type==='loaded')));
- check('settings show the remembered size',(await page.textContent('#box-size')).includes(`10'-0" × 10'-0"`),await page.textContent('#box-size'));
+ const fields=()=>page.evaluate(()=>['above','below','square'].map(k=>document.getElementById('box-'+k).value).join(' '));
+ check('settings show the default box (ClickTo3D layout)',await fields()==='10.00 0.50 10.00',await fields());
  check('Restore default is disabled at the factory size',await page.isDisabled('#restore-box-default'));
  // Open the panel: the box follows the click.
  await page.evaluate(()=>document.getElementById('closed').remove());
@@ -66,10 +67,22 @@ const results=[];const check=(name,ok,detail='')=>{results.push({name,ok,detail}
  await page.click('#brightness-reset');check('Brightness reset returns to 1',Math.abs(await exposure()-1)<1e-6&&await page.inputValue('#brightness')==='1');
  check('Exposure and Environment sliders removed',await page.evaluate(()=>!document.getElementById('exposure')&&!document.getElementById('environment')));
  await page.screenshot({path:path.join(out,'viewer-3d-settings.png')});
- // Restore default sends to the host.
- await page.evaluate(()=>window.__host({type:'boxDefaults',width:4,depth:2,above:3,below:.2,unit:'feet',isDefault:false}));
- check('stretched size shown and Restore enabled',!(await page.isDisabled('#restore-box-default'))&&(await page.textContent('#box-size')).startsWith(`13'-1 1/2"`),await page.textContent('#box-size'));
- await page.click('#restore-box-default');check('Restore default asks the host',await page.evaluate(()=>window.__sent.some(m=>m.type==='restoreBoxDefault')));
+ // Section box settings: edits save at once (metres), steppers, validation, units, Reset.
+ const sent=type=>page.evaluate(t=>window.__sent.filter(m=>m.type===t),type);
+ await page.fill('#box-above','12');await page.press('#box-above','Enter');
+ let saved=(await sent('setBoxDefaults')).pop();check('editing a field saves the size in metres',saved&&Math.abs(saved.above-12*.3048)<1e-9&&Math.abs(saved.square-3.048)<1e-9&&Math.abs(saved.below-.1524)<1e-9,JSON.stringify(saved));
+ await page.click('#box-square + .steps [data-step="1"]');saved=(await sent('setBoxDefaults')).pop();check('▲ adds exactly 1 ft',await page.inputValue('#box-square')==='11.00'&&Math.abs(saved.square-11*.3048)<1e-9);
+ for(let i=0;i<2;i++)await page.click('#box-below + .steps [data-step="-1"]');check('▼ stops height below at 0',await page.inputValue('#box-below')==='0.00');
+ const before=(await sent('setBoxDefaults')).length;await page.fill('#box-square','0');await page.press('#box-square','Enter');
+ check('invalid size is refused and not saved',(await sent('setBoxDefaults')).length===before&&await page.evaluate(()=>document.getElementById('box-square').classList.contains('invalid')));
+ await page.evaluate(()=>window.__host({type:'boxDefaults',square:4,above:3,below:.2,unit:'feet',isDefault:false}));
+ check('host values replace the fields and enable Reset',await fields()==='9.84 0.66 13.12'&&!(await page.isDisabled('#restore-box-default')),await fields());
+ await page.click('#unit-meters');check('Meters shows metres and is saved',await fields()==='3.00 0.20 4.00'&&(await sent('setUnit')).pop()?.unit==='meters',await fields());
+ await page.click('#restore-box-default');check('Reset asks the host for the factory size',(await sent('restoreBoxDefault')).length===1);
+ const geo=await page.evaluate(()=>{const r=e=>e.getBoundingClientRect(),sw=r(document.querySelector('.unit-switch')),num=r(document.querySelector('#box-above').parentElement),b=r(document.getElementById('unit-feet'));return{switchRight:sw.right,fieldRight:num.right,switchH:sw.height,buttonH:b.height,fieldW:num.width,fieldH:num.height,gap:r(document.querySelector('.box-grid')).top-sw.bottom};});
+ check('Feet/Meters is 19 px high and lines up with the number fields (style guide)',Math.abs(geo.switchRight-geo.fieldRight)<=1&&geo.switchH===19&&geo.buttonH===17&&geo.fieldW===81&&geo.fieldH===23&&Math.abs(geo.gap-16)<=1,JSON.stringify(geo));
+ await page.screenshot({path:path.join(out,'viewer-3d-box-settings.png')});
+ await page.click('#unit-feet');
  // Navigator toggle.
  await page.uncheck('#navigator');check('turning off the cube hides cube and Home',await page.isHidden('.view-cube')&&await page.isHidden('#reset'));
  check('setting persists',await page.evaluate(()=>JSON.parse(localStorage.getItem('offline3d.view.v1')).navigator===false));
@@ -97,7 +110,7 @@ const results=[];const check=(name,ok,detail='')=>{results.push({name,ok,detail}
  const t0=await page.evaluate(async()=>(await import('./three.mjs')).testing.renderer.cameraState.alpha);await page.keyboard.press('Escape');
  await page.mouse.move(150,600);await page.mouse.down();await page.mouse.move(250,600,{steps:5});await page.mouse.up();
  const t1=await page.evaluate(async()=>(await import('./three.mjs')).testing.renderer.cameraState.alpha);check('Three.js orbit matches Babylon direction',t1>t0,`${t0.toFixed(3)} → ${t1.toFixed(3)}`);
- const r0=await page.evaluate(async()=>(await import('./three.mjs')).testing.renderer.cameraState.radius);await page.mouse.move(450,350);await page.mouse.down({button:'middle'});await page.mouse.up({button:'middle'});await page.mouse.down({button:'middle'});await page.mouse.up({button:'middle'});await page.waitForTimeout(500);
+ const r0=await page.evaluate(async()=>(await import('./three.mjs')).testing.renderer.cameraState.radius);await page.mouse.move(450,350);await page.mouse.down({button:'middle'});await page.mouse.up({button:'middle'});await page.mouse.down({button:'middle'});await page.mouse.up({button:'middle'});await page.waitForTimeout(1500);
  const fitted=await page.evaluate(async()=>{const r=(await import('./three.mjs')).testing.renderer;const f=r.fitState(r.bounds);return Math.abs(f.radius-r.cameraState.radius)/f.radius;});check('Three.js double-click on the wheel fits the box',fitted<1e-2,String(fitted));
  await page.screenshot({path:path.join(out,'viewer-3d-three.png')});
  await page.click('#settings-toggle');await page.selectOption('#engine','babylon');await page.waitForFunction(()=>!document.getElementById('engine').disabled,null,{timeout:60000});

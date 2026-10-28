@@ -1,7 +1,7 @@
 import {BabylonAdapter} from './renderer.mjs';
 import {navigation} from './navigation.mjs';
 import {SectionGrips} from './section-grips.mjs';
-import {MeasureTool,formatLength} from './measure.mjs';
+import {MeasureTool} from './measure.mjs';
 const $=id=>document.getElementById(id),bridge=window.chrome.webview;
 let renderer=navigation(new BabylonAdapter()),engineName='babylon',pending,sceneBytes,loaded=false,lastBounds=0,switching=false,awaitingBoundsEcho=false,identityByMesh=new Map(),identityByElement=new Map();
 let selected=null;const grips=new SectionGrips(()=>renderer);
@@ -22,11 +22,25 @@ function syncStyles(){const realistic=$('style').querySelector('option[value=rea
 function syncNavigator(){document.body.classList.toggle('no-navigator',!$('navigator').checked);}
 syncNavigator();
 
-// Section box size: the size last stretched to is remembered; Restore default puts back the factory size.
-let boxSize=null;
-function showBoxSize(){for(const u of ['feet','meters'])$('unit-'+u).setAttribute('aria-pressed',String(unit===u));if(!boxSize)return;const f=v=>formatLength(v,unit);$('box-size').textContent=`${f(boxSize.width)} × ${f(boxSize.depth)} · ${f(boxSize.above)} above · ${f(boxSize.below)} below`;$('restore-box-default').disabled=!!boxSize.isDefault;}
-for(const u of ['feet','meters'])$('unit-'+u).onclick=()=>{unit=u;showBoxSize();measure.draw();send({type:'setUnit',unit:u});};
-$('restore-box-default').onclick=()=>{$('defaults-status').classList.remove('error');$('defaults-status').textContent='';send({type:'restoreBoxDefault'});};
+// Section box settings, as in the ClickTo3D Revit add-in: the size every new 3D view
+// starts with. Changes are saved at once (and applied to the open box); a box
+// stretched in 3D is not saved. Values are kept in metres and shown in feet or metres.
+const keys=['above','below','square'],showDefault='';
+let boxSettings=null;
+const factor=()=>unit==='feet'?.3048:1,shown=v=>(v/factor()).toFixed(2);
+function showBoxSettings(){for(const u of ['feet','meters'])$('unit-'+u).setAttribute('aria-pressed',String(unit===u));document.querySelectorAll('.box-unit').forEach(e=>e.textContent=unit==='feet'?'ft':'m');if(!boxSettings)return;for(const k of keys){const input=$('box-'+k);if(document.activeElement!==input||!input.dataset.dirty)input.value=shown(boxSettings[k]);input.classList.remove('invalid');delete input.dataset.dirty;}$('restore-box-default').disabled=!!boxSettings.isDefault;}
+function status(text,error=false){$('defaults-status').textContent=text;$('defaults-status').classList.toggle('error',error);}
+// Commits one field. Height below may be 0; the others must be above 0.
+function commit(key){const input=$('box-'+key);if(!boxSettings)return;const value=Number(input.value.trim().replace(',','.'));delete input.dataset.dirty;
+ if(input.value.trim()===''||!Number.isFinite(value)||(key==='below'?value<0:value<=0)||value>1000000){input.classList.add('invalid');status(key==='below'?'Height below level must be 0 or more.':'Height above level and square size must be greater than 0.',true);return;}
+ input.classList.remove('invalid');status(showDefault);if(value.toFixed(2)===shown(boxSettings[key]))return;
+ boxSettings={...boxSettings,[key]:value*factor()};input.value=value.toFixed(2);send({type:'setBoxDefaults',square:boxSettings.square,above:boxSettings.above,below:boxSettings.below});}
+// ▲▼ and the arrow keys add or subtract exactly 1 in the current unit and never step to an invalid value.
+function step(key,direction){const input=$('box-'+key),value=Number(input.value.trim().replace(',','.'));if(!Number.isFinite(value))return;let next=Math.round((value+direction)*100)/100;if(key==='below'){if(next<0){if(value<=0)return;next=0;}}else if(next<=0)return;input.value=next.toFixed(2);commit(key);}
+for(const key of keys){const input=$('box-'+key);input.oninput=()=>{input.dataset.dirty='1';};input.onchange=()=>commit(key);input.onfocus=()=>input.select();input.onkeydown=e=>{if(e.key==='Enter'){commit(key);input.select();e.preventDefault();}else if(e.key==='ArrowUp'||e.key==='ArrowDown'){step(key,e.key==='ArrowUp'?1:-1);e.preventDefault();}else if(e.key==='Escape'){delete input.dataset.dirty;showBoxSettings();status(showDefault);}};
+ for(const button of input.parentElement.querySelectorAll('[data-step]'))button.onclick=()=>step(key,Number(button.dataset.step));}
+for(const u of ['feet','meters'])$('unit-'+u).onclick=()=>{if(unit===u)return;unit=u;showBoxSettings();measure.draw();send({type:'setUnit',unit:u});};
+$('restore-box-default').onclick=()=>{status(showDefault);send({type:'restoreBoxDefault'});};
 
 function options(){const result={};for(const name of ['quality','style'])result[name]=$(name).value;for(const name of ['shadows','occlusion','caps','edges'])result[name]=$(name).checked;result.brightness=Number($('brightness').value);return result;}
 function connect(){renderer.orbitSelection=selected;renderer.onViewChanged=state=>{updateCube(state);grips.update();measure.draw();};renderer.onBounds=(b,final)=>{pending=b;const now=performance.now();if(final||now-lastBounds>40){lastBounds=now;if(final)awaitingBoundsEcho=true;send({...b,final});}};}
@@ -64,8 +78,8 @@ bridge.addEventListener('message',async({data:m})=>{try{
  if(m.type==='box'){pending=m;if(loaded){renderer.box(m,false,awaitingBoundsEcho&&!m.fitBox);if(m.fitBox){const target=renderer,fit=()=>{if(target!==renderer||!loaded)return;cancelAnimationFrame(renderer.animation);const state=renderer.fitState?.(renderer.bounds)||renderer.getCameraState();if(!renderer.fitState){state.target=renderer.bounds.min.map((v,k)=>(v+renderer.bounds.max[k])/2);state.radius=Math.max(m.width,m.depth,m.above+m.below)*(.7/.45);}renderer.setCameraState(state);};
   // On reopen the panel may still be zero wide: fit once it has its real size.
   if(hasSize())fit();else whenSized().then(()=>requestAnimationFrame(fit));}}awaitingBoundsEcho=false;}
- if(m.type==='boxDefaults'){unit=m.unit==='meters'?'meters':'feet';boxSize={width:m.width,depth:m.depth,above:m.above,below:m.below,isDefault:m.isDefault};showBoxSize();measure.draw();}
- if(m.type==='settingsError'){$('defaults-status').classList.add('error');$('defaults-status').textContent='Could not save: '+m.message;}
+ if(m.type==='boxDefaults'){unit=m.unit==='meters'?'meters':'feet';boxSettings={square:m.square,above:m.above,below:m.below,isDefault:m.isDefault};showBoxSettings();measure.draw();}
+ if(m.type==='settingsError')status('Could not save: '+m.message,true);
  if(m.type==='docked')$('undock').textContent=m.value?'Undock':'Dock';
  }catch(e){$('engine').disabled=false;fail(e);}});
 $('brightness').oninput=()=>{renderer.configure(options());save();};

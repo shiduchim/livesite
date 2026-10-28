@@ -48,10 +48,26 @@ body.measuring #scene{cursor:crosshair}
 /* Settings menu. */
 .view-menu .settings label.check{justify-content:flex-start;gap:7px}
 .view-menu .range{display:flex;align-items:center;gap:6px}.view-menu .range button{font-size:11px;padding:2px 7px}
-.title-row{display:flex;align-items:center;justify-content:space-between}.box-defaults output.box-size{padding:0;font:12px 'Segoe UI',sans-serif;color:#263442}
-.box-defaults .note{position:static;margin:0;padding:0;font-size:11px;color:#6a7b8b;background:none}
-.box-defaults>button{justify-self:start}
-.unit-switch button{padding:2px 8px;font-size:11px}
 option:disabled{color:#9aa4ad}
 #hint:empty{display:none}
 body.measuring .section-grip{pointer-events:none}
+/* Section box settings: EK Revit Add-in UI Style Guide (ClickTo3D 1.0.0), light palette. */
+.view-menu .title-row{display:flex;align-items:center;justify-content:space-between;height:23px;padding:0 18px 0 5px;margin:2px 0 10px}
+.unit-switch{display:flex;height:19px;border:1px solid #d1d1d1;border-radius:4px;overflow:hidden;background:#fff}
+.view-menu .unit-switch button{height:17px;padding:0 6px;border:0;border-radius:0;font:400 11px/17px 'Segoe UI',sans-serif;color:#6e6e6e;background:#fff}
+.view-menu .unit-switch button+button{border-left:1px solid #d1d1d1}
+.view-menu .unit-switch button:hover{background:#f2f2f2}.view-menu .unit-switch button:active{background:#e6e6e6}
+.view-menu .unit-switch button[aria-pressed=true]{background:#e8e8e8;color:#1b1b1b}.view-menu .unit-switch button[aria-pressed=true]:active{background:#e2e2e2}
+.box-defaults{font:12px 'Segoe UI',sans-serif;color:#1b1b1b}
+.box-grid{display:grid;grid-template-columns:94px 1fr 81px 14px;grid-template-rows:repeat(3,42px);align-items:center;column-gap:0}
+.box-picture{grid-row:1/4;grid-column:1;align-self:start;margin-top:-1px;overflow:visible}
+.box-picture path{stroke:#758dbb;stroke-width:1;fill:none;stroke-linejoin:round}.box-picture .top{fill:#e1e8f5}.box-picture .front{fill:#eef2f9cc}.box-picture .faint{stroke-opacity:.5}
+.box-picture .level{fill:#758dbb1a;stroke:#5d75a5;stroke-width:1.2}.box-picture .dot{fill:#5d75a5}.box-picture .dim{stroke:#6b7280}.box-picture .faint-dim{stroke-opacity:.6}
+.box-defaults label.box-row{grid-column:2;font-size:12px;color:#1b1b1b;white-space:nowrap}
+.number{grid-column:3;box-sizing:border-box;width:81px;height:23px;display:flex;align-items:stretch;border:1px solid #c3c8cf;border-radius:4px;background:#fff;overflow:hidden}.number:focus-within{border-color:#5d75a5}
+.box-defaults .number input{width:62px;height:21px;border:0;border-radius:0;padding:0 4px;text-align:right;font:12px 'Segoe UI',sans-serif;color:#1b1b1b;caret-color:#1b1b1b;outline:none;background:transparent}.box-defaults .number input.invalid{color:#b3261e;background:#fdecea}
+.steps{width:17px;display:flex;flex-direction:column;border-left:1px solid #c3c8cf}.steps button{flex:1;border:0;border-radius:0;padding:0;font-size:6.5px;line-height:1;color:#5f6368;background:#fff}.steps button:hover{background:#f2f7fc}.steps button:active{background:#e6eff9}
+.box-grid .box-unit{grid-column:4;width:14px;margin-left:6px;font-size:12px;color:#5f6368}
+.box-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:6px;min-height:18px}.box-footer output{order:2;padding:0;font:11px 'Segoe UI',sans-serif;color:#b3261e;text-align:right}
+button.link{order:1;border:0;background:none;padding:0;color:#5f6368;font:12px 'Segoe UI',sans-serif;text-decoration:none;white-space:nowrap}button.link:hover{color:#1b1b1b;text-decoration:underline}button.link:disabled{color:#a7afb8;text-decoration:none;cursor:default}
+.view-menu{width:min(350px,calc(100% - 16px))}

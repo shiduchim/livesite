@@ -4,7 +4,7 @@
 
 ## Stage 1: 3D viewer behaviour
 
-Tested in headless Chromium (33 checks in `tests/web/viewer-3d-check.cjs`) and with the viewer's .NET test suites. The WebView2 host side (ClickTo3D, close and reopen) is compiled and unit-tested but **has not run on Windows yet**; see "Check on Windows" below.
+Tested in headless Chromium (39 checks in `tests/web/viewer-3d-check.cjs`) and with the viewer's .NET test suites. The WebView2 host side (ClickTo3D, close and reopen) is compiled and unit-tested but **has not run on Windows yet**; see "Check on Windows" below.
 
 ### Opening 3D: ClickTo3D
 
@@ -39,10 +39,17 @@ Tested in headless Chromium (33 checks in `tests/web/viewer-3d-check.cjs`) and w
 
 ### Section box size
 
-- The box now remembers the size you last stretched it to, whether in 3D or on the PDF. New boxes and **Reset box** use that size.
-- **Settings › Section box** shows the remembered size, has an ft/m switch, and a **Restore default size** button that puts back 10'-0" × 10'-0", 10'-0" above and 0'-6" below. It replaces the "Save defaults & apply" fields.
-- The size is stored in `%LOCALAPPDATA%\Offline3DPdfPrototype\section-box-defaults.json`, which now holds width and depth separately. Files from 0.5.3 still load.
-- `src/Core/SectionBoxDefaults.cs` is updated in both the reader and the exporter copy, which stay identical.
+- **Settings › Section box** follows the ClickTo3D add-in and the [UI style guide](../docs/EK_Revit_Addin_UI_Style_Guide.md):
+  - the box picture with its dimension lines;
+  - **Height above level**, **Height below level** and **Square size**, as 2-decimal fields with ▲▼ steppers (and the Up/Down keys) that step exactly 1 ft or 1 m;
+  - the small **Feet / Meters** segmented buttons, lined up with the right edge of the fields;
+  - a quiet **Reset** link.
+- This size is used every time 3D opens. Changes save at once (no Save button), last across viewer restarts, and resize the open box in place.
+- **Reset** puts back 10 ft above, 0.5 ft below and a 10 ft square, shown in Feet.
+- **Stretching a box** in 3D or on the PDF is not saved. It lasts until 3D is closed; the next open starts from the Settings size. While 3D stays open, clicking a new spot keeps the stretched size.
+- Invalid values are refused. Height above and square size must be greater than 0; height below may be 0.
+- **Reset box** in Tools returns the open box to the Settings size.
+- The settings are stored in `%LOCALAPPDATA%\Offline3DPdfPrototype\section-box-defaults.json`, the same file 0.5.3 used.
 
 ### Settings
 
@@ -72,7 +79,7 @@ Tested in headless Chromium (33 checks in `tests/web/viewer-3d-check.cjs`) and w
 1. Open a 3D PDF and press **ClickTo3D**. The pointer should turn blue and a dashed box should follow it over the plan. The 3D panel must stay closed.
 2. Click the plan. The panel should open straight away, showing the model or a spinner (never the Babylon.js logo).
 3. Close 3D and repeat steps 1–2 at least five times. The panel should reopen instantly each time.
-4. Stretch the box, close 3D, and click a new spot. The new box should have the stretched size. Then Settings › Restore default size.
+4. In Settings, change Height above level, close the viewer and reopen it. The value should be kept, and new boxes should use it. Stretch a box, close 3D, and open it again: the box should be back to the Settings size. Reset should give 10 / 0.5 / 10 ft.
 5. Scroll to zoom with the pointer over a blue arrow. Zoom should never stall.
 6. Shift + middle drag left and right. The model should turn the same way as in Revit.
 7. Switch to Three.js. Realistic should be greyed out.

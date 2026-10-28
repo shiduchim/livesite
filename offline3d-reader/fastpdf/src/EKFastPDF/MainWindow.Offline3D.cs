@@ -56,7 +56,7 @@ public partial class MainWindow
             if(session.IsClosed||!ReferenceEquals(session,_active))return;
             var package=await packageTask;boxPageMap=await mapTask;
             var panel=new BoxPanel(package);boxPanel=panel;
-            boxFootprint=new BoxFootprintOverlay(boxPageMap,(edge,x,y)=>boxPanel?.ResizeEdgeFromPdf(edge,x,y),()=>boxPanel?.CommitResize());
+            boxFootprint=new BoxFootprintOverlay(boxPageMap,(edge,x,y)=>boxPanel?.ResizeEdgeFromPdf(edge,x,y));
             panel.HideRequested+=Close3D;panel.Status+=text=>StatusText.Text=text;
             panel.UndockRequested+=ToggleBoxDock;
             panel.FootprintChanged+=points=>{if(boxShown){boxFootprint?.SetPoints(points);Viewport.RefreshOverlays();}};
@@ -91,7 +91,7 @@ public partial class MainWindow
             var (x,y)=boxPageMap.Apply(u,v);bool first=!boxShown;
             // Shown first, so the footprint raised by SetPoint is drawn.
             if(first){boxShown=true;boxArmed=false;ShowBoxColumn();AttachFootprint();SyncBoxButton();StatusText.Text="Click the plan again to move the box · drag its blue arrows to stretch it";}
-            boxPanel.SetPoint(x,y,fit:first);
+            boxPanel.SetPoint(x,y,fresh:first);
         }
         catch(Exception ex){StatusText.Text=ex.Message;}
     }
