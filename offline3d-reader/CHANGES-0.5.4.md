@@ -100,7 +100,7 @@ Built to `docs/mockups/viewer-layouts.png` and the UI style guide. **It compiles
 ### No + or × controls
 
 - **Tabs:** close a tab with the small circle shown on the active and hovered tab, a middle-click, Ctrl+W, or right-click › Close tab. The right-click menu also has Close other tabs and Open file location.
-- **Open:** an **Open** button sits next to the tabs.
+- **Open:** Browse… and Open newest PDF are in My PDFs (see Stage 5); Ctrl+O still opens files.
 - **Zoom:** the 100% ▾ list has Zoom in, Zoom out, Fit page, Fit width and preset sizes; there are no − / + buttons.
 - **Window:** minimize and maximize keep their icons, and the window's × is now the word **Close**.
 
@@ -119,7 +119,7 @@ Built to `docs/mockups/viewer-layouts.png` and the UI style guide. **It compiles
 ### Look
 
 - **Colours:** the style guide's palette (neutral greys, slate accent `#5D75A5`, 4 px corners, 24 px fields, 12 px text).
-- **Branding:** the window is titled EKPDF and the logo is in the title bar. The welcome screen says EKPDF, with a guide-style button.
+- **Branding:** the window is titled EKPDF and the logo is in the title bar. My PDFs replaces the welcome screen.
 
 ### Check on Windows
 
@@ -128,9 +128,69 @@ Built to `docs/mockups/viewer-layouts.png` and the UI style guide. **It compiles
 3. In ⋯, switch between Regular and Compact layouts. Restart the viewer: the layout is kept.
 4. In Compact, press Ctrl+F: search appears over the page, and Esc closes it.
 
+## Stage 5: My PDFs and New PDFs
+
+Mockups: `docs/mockups/library.png` (My PDFs, settings and delete) and `docs/mockups/themes.png`.
+
+### My PDFs (the first tab)
+
+- **Always there.** My PDFs is the first tab and cannot be closed. Closing the last PDF returns to it.
+- **Left column:** Size slider, Recent, your folders, Add folder…, Browse…, Open newest PDF, and Delete all in folder… at the bottom.
+- **Folders:**
+  - The list starts with Downloads. Add any folder.
+  - Drag folders up and down to reorder them.
+  - The ··· on a folder (or right-click) has Open new PDFs automatically, Open in File Explorer and Remove folder.
+  - Removing a folder only takes it off the list; the folder and its files stay on disk.
+- **Batches:** PDFs are grouped by when they arrived. Files no more than 2 minutes apart are one batch: "Today 10:42 · 3 PDFs · New", with Open all N.
+- **Size:** the slider goes from small pictures to fit width at the right end.
+- **Pages:** a PDF with several pages shows "N pages ▾". Its pages appear straight down under page 1, each the same size as page 1. Click a page to open the PDF at that page.
+- **Marks:** PDFs with clickable 3D show the ClickTo3D mark.
+- **Drag out:** drag a PDF into Revit, Explorer, mail or chat, like from a Windows folder.
+- **Delete all in folder…** asks once, then moves only the folder's PDFs to the Recycle Bin. Open tabs of those PDFs close first.
+- **Pictures:**
+  - Rendered by the same worker processes as the viewer, always behind the viewer's own work.
+  - Only visible ones are rendered.
+  - Small first-page pictures, page counts and 3D marks are cached in `%LOCALAPPDATA%\EKPDF\Pictures`, so the gallery fills at once next time.
+
+### New PDFs (More › New PDFs settings…)
+
+Everything can be off:
+
+1. Show the Open newest PDF button. The button opens the newest PDF, or every PDF that arrived together with it.
+2. "Recent" means arrived in the last N minutes (default 1).
+3. When EKPDF starts without files, open recent PDFs.
+4. When the EKPDF window comes forward, open recent PDFs not opened yet.
+5. Per folder: Open automatically or Nothing.
+
+A new PDF counts as arrived only when it is complete. Browser downloads that finish by renaming are caught, and a file still being written is not opened yet.
+
+### Themes (More › Theme, More › Pages)
+
+- **Themes:** Light, Soft grey, Warm, Dark grey, Dark, Night, or Match Windows.
+- **Pages:** As the theme, Original, Slightly dimmed, Dimmed, Dimmed more, Warm paper, and Dark.
+  - Dark gives light lines on black and keeps each colour's hue, so a red line stays red.
+- **Scope:** menus, scroll bars, dialogs and My PDFs follow the theme. The 3D view keeps its own look.
+
+### Checked here (no Windows run)
+
+- **Tests:** 55 viewer tests pass on Linux, 17 of them new:
+  - batching, recent rules, labels, folder scan and reordering;
+  - page pictures rendered by the real worker pool (aspect, later pages, bad files, buffer limit);
+  - page-look pixel maths.
+- **Build:** the viewer builds for Windows with no warnings.
+- **Not run:** WPF does not run under Wine, so the window itself was not run or screenshotted. Check it on Windows.
+
+### Check on Windows
+
+1. Start EKPDF: My PDFs shows Downloads. Drag the slider to the right end: pictures fill the width.
+2. On a multi-page PDF, click "N pages ▾": all pages appear under page 1 at the same size. Click page 3: the PDF opens at page 3.
+3. Drag a PDF into Revit: Revit receives it like a file from Explorer.
+4. Add a folder and drag it above Downloads. In its ···, turn on Open new PDFs automatically, then copy a PDF into it: it opens.
+5. More › Theme › Night: the window turns dark and pages show light lines on black. More › Pages › Original restores the page colours.
+
 ## Next stages
 
 2. Exporter: speed, overall progress and size estimate, a cleaned-up options dialog, a very low detail mode, a phase filter, the cut material on section caps, and the new icon.
 3. Separate installers for the reader and the Revit add-in.
 4. PDF viewer layout, with Compact and Regular modes, and the scroll direction.
-5. Library: recent PDFs gallery, folders, Open latest, drag into Revit.
+5. My PDFs, New PDFs and themes (done above).
