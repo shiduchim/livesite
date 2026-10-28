@@ -86,7 +86,19 @@ internal sealed class BoxPanel:IDisposable
         if(activeRegion!=null&&Math.Abs(activeRegion.PlaneNormal[2])<.99){var matrix=(activeRegion.ModelToPdf*package.Registration.ModelToGraphics.Inverse()).Values;int row=edge==1||edge==3?0:4;int axis=Enumerable.Range(0,3).OrderByDescending(i=>Math.Abs(matrix[row+i])).First();bool maximum=edge==1||edge==2;if(matrix[row+axis]<0)maximum=!maximum;double value=axis==0?p.X:axis==1?p.Y:p.Z;if(axis==0){if(maximum)next.MaxX=value;else next.MinX=value;}else if(axis==1){if(maximum)next.MaxY=value;else next.MinY=value;}else{if(maximum)next.MaxZ=value;else next.MinZ=value;}}
         else switch(edge){case 0:next.MinZ=p.Z;break;case 1:next.MaxX=p.X;break;case 2:next.MaxZ=p.Z;break;case 3:next.MinX=p.X;break;default:return;}
         try{next.Validate();}catch(InvalidDataException){return;}
-        volume=next;width=next.Width;depth=next.Depth;above=next.Above;below=next.Below;SendBox();
+        volume=next;width=next.Width;depth=next.Depth;above=next.Above;below=next.Below;SendLive();
+    }
+    private bool livePosted;
+    /// <summary>
+    /// A stretch from the plan: the plan outline follows at once; the 3D page gets the latest
+    /// box once per idle moment. Before 0.5.4 every mouse move was posted and the page worked
+    /// through the queue one by one, so 3D followed in slow motion.
+    /// </summary>
+    private void SendLive(){
+        if(volume==null)return;FootprintChanged?.Invoke(Footprint(volume,activeRegion));
+        if(livePosted||!ready||disposed)return;livePosted=true;
+        Control.Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background,()=>{livePosted=false;if(volume==null||!center.HasValue)return;
+            Post(new{type="box",live=true,fitBox=false,x=(volume.MinX+volume.MaxX)/2,y=volume.Level,z=(volume.MinZ+volume.MaxZ)/2,width=volume.Width,depth=volume.Depth,above=volume.Above,below=volume.Below,minX=volume.MinX,maxX=volume.MaxX,minY=volume.MinY,maxY=volume.MaxY,minZ=volume.MinZ,maxZ=volume.MaxZ});});
     }
     private void Post(object message){if(!disposed&&ready)Control.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(message,Contract.Json));}
     private void SendBox(bool fitBox=false){if(!center.HasValue||!ready||disposed)return;

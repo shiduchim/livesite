@@ -20,6 +20,83 @@ public static unsafe class WorkerHost
     {
         public IntPtr Handle;
         public readonly List<(int Index, IntPtr Page)> Pages = new(); // most recent last
+        /// <summary>The file reader PDFium uses (null when PDFium opened the file itself).</summary>
+        public SharedFileReader? Reader;
+    }
+
+    /// <summary>
+    /// Reads the PDF for PDFium through a handle opened with read, write and delete sharing,
+    /// so while EKPDF shows a PDF it can still be moved to the Recycle Bin, renamed, or
+    /// replaced by a new export. (PDFium's own fopen blocks delete and rename on Windows.)
+    /// Keeps the last block read: PDFium's parser asks for small pieces.
+    /// </summary>
+    private sealed class SharedFileReader : IDisposable
+    {
+        private const int Window = 1 << 20;
+        private readonly Microsoft.Win32.SafeHandles.SafeFileHandle _file;
+        private readonly byte[] _cache = new byte[Window];
+        private long _cacheStart = -1;
+        private int _cacheLength;
+        private GCHandle _self;
+        public readonly Pdfium.FPDF_FILEACCESS* Access;
+
+        public SharedFileReader(string path)
+        {
+            _file = File.OpenHandle(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete, FileOptions.RandomAccess);
+            Length = RandomAccess.GetLength(_file);
+            _self = GCHandle.Alloc(this);
+            Access = (Pdfium.FPDF_FILEACCESS*)NativeMemory.AllocZeroed((nuint)sizeof(Pdfium.FPDF_FILEACCESS));
+            Access->FileLen = new CULong((nuint)Length);
+            Access->GetBlock = &GetBlock;
+            Access->Param = GCHandle.ToIntPtr(_self);
+        }
+
+        public long Length { get; }
+
+        [UnmanagedCallersOnly(CallConvs = new[] { typeof(System.Runtime.CompilerServices.CallConvCdecl) })]
+        private static int GetBlock(IntPtr param, CULong position, byte* buffer, CULong size)
+        {
+            try
+            {
+                var reader = (SharedFileReader)GCHandle.FromIntPtr(param).Target!;
+                return reader.Read((long)position.Value, new Span<byte>(buffer, checked((int)size.Value))) ? 1 : 0;
+            }
+            catch (Exception) { return 0; } // never let an exception cross into PDFium
+        }
+
+        private bool Read(long position, Span<byte> target)
+        {
+            if (position < 0 || position + target.Length > Length) return false;
+            if (target.Length > Window / 4) return ReadFully(position, target);
+            if (_cacheStart < 0 || position < _cacheStart || position + target.Length > _cacheStart + _cacheLength)
+            {
+                _cacheStart = position & ~0xFFFFL;
+                _cacheLength = (int)Math.Min(Window, Length - _cacheStart);
+                if (!ReadFully(_cacheStart, _cache.AsSpan(0, _cacheLength))) { _cacheStart = -1; return false; }
+                if (position + target.Length > _cacheStart + _cacheLength) return ReadFully(position, target);
+            }
+            _cache.AsSpan((int)(position - _cacheStart), target.Length).CopyTo(target);
+            return true;
+        }
+
+        private bool ReadFully(long position, Span<byte> target)
+        {
+            while (target.Length > 0)
+            {
+                int n = RandomAccess.Read(_file, target, position);
+                if (n <= 0) return false;
+                target = target[n..];
+                position += n;
+            }
+            return true;
+        }
+
+        public void Dispose()
+        {
+            if (_self.IsAllocated) _self.Free();
+            NativeMemory.Free(Access);
+            _file.Dispose();
+        }
     }
 
     private static readonly Dictionary<int, WorkerDocument> Documents = new();
@@ -142,7 +219,7 @@ public static unsafe class WorkerHost
         if (!Documents.TryGetValue(docId, out var doc))
         {
             var sw = Stopwatch.StartNew();
-            IntPtr handle = LoadDocument(path, password);
+            IntPtr handle = LoadDocument(path, password, out var reader);
             if (handle == IntPtr.Zero)
             {
                 uint error = Pdfium.FPDF_GetLastError();
@@ -157,7 +234,7 @@ public static unsafe class WorkerHost
                 reply.U8((byte)status).Str($"PDFium error {error}");
                 return;
             }
-            doc = new WorkerDocument { Handle = handle };
+            doc = new WorkerDocument { Handle = handle, Reader = reader };
             Documents[docId] = doc;
             Log.Debug($"Opened document {docId} in {sw.ElapsedMilliseconds} ms");
         }
@@ -173,14 +250,34 @@ public static unsafe class WorkerHost
         }
     }
 
-    private static IntPtr LoadDocument(string path, string? password)
+    private static IntPtr LoadDocument(string path, string? password, out SharedFileReader? reader)
     {
+        reader = null;
+        byte[]? passBytes = password is null ? null : Encoding.UTF8.GetBytes(password + "\0");
+        // Normally through a shared handle (the file can be deleted or replaced while open).
+        // Files PDFium's custom reader cannot address (4 GB and up on Windows) and files that
+        // cannot be opened that way fall back to PDFium opening the file itself.
+        long limit = OperatingSystem.IsWindows() ? uint.MaxValue : long.MaxValue;
+        try
+        {
+            var shared = new SharedFileReader(path);
+            if (shared.Length > 0 && shared.Length < limit)
+            {
+                IntPtr handle;
+                fixed (byte* pw = passBytes) handle = Pdfium.FPDF_LoadCustomDocument(shared.Access, pw);
+                if (handle != IntPtr.Zero) { reader = shared; return handle; }
+                shared.Dispose();
+                return IntPtr.Zero; // FPDF_GetLastError tells why (password, format, security)
+            }
+            shared.Dispose();
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException) { }
+
         // PDFium opens the file itself (64-bit offsets, so no 4 GB limit) and reads on demand.
         string native = path;
         if (OperatingSystem.IsWindows() && native.Length >= 240 && !native.StartsWith(@"\\?\", StringComparison.Ordinal))
             native = native.StartsWith(@"\\", StringComparison.Ordinal) ? @"\\?\UNC\" + native[2..] : @"\\?\" + native;
         byte[] pathBytes = Encoding.UTF8.GetBytes(native + "\0");
-        byte[]? passBytes = password is null ? null : Encoding.UTF8.GetBytes(password + "\0");
         fixed (byte* p = pathBytes)
         fixed (byte* pw = passBytes)
             return Pdfium.FPDF_LoadDocument(p, pw);
@@ -197,6 +294,8 @@ public static unsafe class WorkerHost
         doc.Pages.Clear();
         if (doc.Handle != IntPtr.Zero) Pdfium.FPDF_CloseDocument(doc.Handle);
         doc.Handle = IntPtr.Zero;
+        doc.Reader?.Dispose();
+        doc.Reader = null;
     }
 
     /// <summary>Returns a parsed page, keeping recently used pages loaded. Parsing a dense

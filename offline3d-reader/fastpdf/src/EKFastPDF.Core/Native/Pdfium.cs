@@ -82,6 +82,18 @@ internal static unsafe class Pdfium
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern void FPDF_DestroyLibrary();
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr FPDF_LoadDocument(byte* utf8Path, byte* password);
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern void FPDF_CloseDocument(IntPtr document);
+
+    /// <summary>FPDF_FILEACCESS: PDFium reads the file through <see cref="GetBlock"/>.
+    /// "unsigned long" is 32-bit on Windows and 64-bit on Linux, hence CULong.</summary>
+    [StructLayout(LayoutKind.Sequential)]
+    public struct FPDF_FILEACCESS
+    {
+        public CULong FileLen;
+        public delegate* unmanaged[Cdecl]<IntPtr, CULong, byte*, CULong, int> GetBlock;
+        public IntPtr Param;
+    }
+
+    [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern IntPtr FPDF_LoadCustomDocument(FPDF_FILEACCESS* access, byte* password);
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern uint FPDF_GetLastError();
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern int FPDF_GetPageCount(IntPtr document);
     [DllImport(Dll, CallingConvention = CallingConvention.Cdecl)] public static extern int FPDF_GetPageSizeByIndexF(IntPtr document, int index, out FsSizeF size);

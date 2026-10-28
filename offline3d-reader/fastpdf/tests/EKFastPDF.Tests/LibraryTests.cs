@@ -147,3 +147,30 @@ public class ThumbnailTests
     }
 }
 
+
+[Collection("pool")]
+public class SharedOpenTests
+{
+    private readonly PoolFixture _f;
+    public SharedOpenTests(PoolFixture f) { _f = f; }
+
+    [Fact]
+    public async Task OpenPdf_CanBeRenamedAndDeleted_WhileStillRendering()
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "ekpdf-shared-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(dir);
+        try
+        {
+            string path = Path.Combine(dir, "sheet.pdf");
+            File.Copy(_f.PathOf(SampleDocuments.CadSet), path);
+            using var thumbs = new ThumbnailRenderer(_f.Pool);
+            Assert.NotNull(await thumbs.RenderAsync(path, 0, 200));
+            // Still open in a worker: moving it (what the Recycle Bin does) and deleting must work.
+            string moved = Path.Combine(dir, "moved.pdf");
+            File.Move(path, moved);
+            File.Delete(moved);
+            Assert.False(File.Exists(moved));
+        }
+        finally { Directory.Delete(dir, true); }
+    }
+}

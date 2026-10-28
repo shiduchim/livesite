@@ -28,13 +28,19 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <Image Grid.Column="0" Source="Assets/EKPDF-64.png" Width="18" Height="18" Margin="10,0,8,0" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality" ToolTip="EKPDF"/>
-            <DockPanel Grid.Column="1" LastChildFill="False" VerticalAlignment="Center">
-                <!-- My PDFs: always the first tab; it cannot be closed. -->
-                <Border x:Name="LibraryTab" DockPanel.Dock="Left" Height="26" Margin="0,0,2,0" Padding="12,0" CornerRadius="4" BorderThickness="1"
-                        Cursor="Hand" WindowChrome.IsHitTestVisibleInChrome="True" MouseLeftButtonDown="LibraryTab_Click" ToolTip="Your PDF folders">
-                    <TextBlock x:Name="LibraryTabText" Text="My PDFs" FontSize="12" VerticalAlignment="Center"/>
+            <!-- The EKPDF logo and My PDFs are one home button in the corner, set apart from the PDF tabs by a line. -->
+            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                <Border x:Name="LibraryTab" Height="28" Margin="6,0,0,0" Padding="6,0,11,0" CornerRadius="4" BorderThickness="1"
+                        Cursor="Hand" WindowChrome.IsHitTestVisibleInChrome="True" MouseLeftButtonDown="LibraryTab_Click"
+                        MouseEnter="LibraryTab_Hover" MouseLeave="LibraryTab_Hover" ToolTip="My PDFs: your PDF folders">
+                    <StackPanel Orientation="Horizontal">
+                        <Image Source="Assets/EKPDF-64.png" Width="18" Height="18" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
+                        <TextBlock x:Name="LibraryTabText" Text="My PDFs" FontSize="12" FontWeight="SemiBold" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
                 </Border>
+                <Border Width="1" Height="20" Margin="8,0,8,0" Background="{DynamicResource Line}" VerticalAlignment="Center"/>
+            </StackPanel>
+            <DockPanel Grid.Column="1" LastChildFill="False" VerticalAlignment="Center">
                 <ItemsControl x:Name="TabStrip" DockPanel.Dock="Left" WindowChrome.IsHitTestVisibleInChrome="True" Focusable="False">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate><StackPanel Orientation="Horizontal"/></ItemsPanelTemplate>
@@ -134,9 +140,9 @@
                 </Button>
                 <Border Style="{StaticResource Divider}"/>
                 <Grid>
-                    <TextBox x:Name="ZoomBox" Style="{StaticResource FieldBox}" Width="66" TextAlignment="Left" Padding="5,0,18,0"
+                    <TextBox x:Name="ZoomBox" Style="{StaticResource FieldBox}" Width="84" MinWidth="84" TextAlignment="Left" Padding="4,0,22,0"
                              PreviewKeyDown="ZoomBox_PreviewKeyDown" GotKeyboardFocus="SelectAllOnFocus" ToolTip="Zoom (type a percentage; Ctrl+wheel)"/>
-                    <Button HorizontalAlignment="Right" Width="18" Height="22" Margin="0,0,1,0" Style="{StaticResource IconButton}" Click="ZoomMenu_Click" ToolTip="Zoom in, zoom out, fit and sizes">
+                    <Button HorizontalAlignment="Right" Width="20" Height="22" Margin="0,0,1,0" Style="{StaticResource IconButton}" Click="ZoomMenu_Click" ToolTip="Zoom in, zoom out, fit and sizes">
                         <Path Data="{StaticResource IconDown}" Style="{StaticResource IconPath}" Width="9" Height="9"/>
                     </Button>
                 </Grid>

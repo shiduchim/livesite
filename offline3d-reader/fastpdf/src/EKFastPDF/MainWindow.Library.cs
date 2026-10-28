@@ -82,6 +82,13 @@ public partial class MainWindow
         if (f?.AutoOpen == true) OpenFromShell(new[] { path });
     }
 
+    private void LibraryTab_Hover(object sender, MouseEventArgs e)
+    {
+        if (_libraryShown) return;
+        if (LibraryTab.IsMouseOver) LibraryTab.SetResourceReference(Border.BackgroundProperty, "Hover");
+        else LibraryTab.Background = System.Windows.Media.Brushes.Transparent;
+    }
+
     private void LibraryTab_Click(object sender, MouseButtonEventArgs e)
     {
         ShowLibrary();
