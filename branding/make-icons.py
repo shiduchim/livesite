@@ -11,6 +11,7 @@ Writes:
   offline3d-reader/fastpdf/src/EKFastPDF/Assets/FastPDF.ico   viewer exe/window (16-256)
   offline3d-exporter/src/RevitExporter/Resources/Export3DPdf*.png   ribbon (32 DIP and 16 DIP sets)
   branding/png/ekpdf-<n>.png                                   installers and docs
+  offline3d-reader/fastpdf/src/EKFastPDF/Assets/ClickTo3D-<n>.png  ClickTo3D button (from clickto3d-icon-source.png)
 """
 import sys
 from collections import deque
@@ -22,6 +23,7 @@ SMALL = [16, 20, 24, 28, 32, 36, 40, 48]
 ICO = [16, 20, 24, 32, 40, 48, 64, 128, 256]
 
 def prepared(source: Path) -> Image.Image:
+    """Cropped to the logo, enclosed transparent areas filled white."""
     im = Image.open(source).convert('RGBA')
     im = im.crop(im.getchannel('A').getbbox())
     w, h = im.size; px = im.load()
@@ -58,6 +60,11 @@ def main(root: Path):
     ico = root / 'offline3d-reader' / 'fastpdf' / 'src' / 'EKFastPDF' / 'Assets' / 'FastPDF.ico'
     big = square(im, 256)
     big.save(ico, format='ICO', sizes=[(n, n) for n in ICO], append_images=[square(im, n) for n in ICO if n != 256])
+    # ClickTo3D button icon: 16 DIP at 100-300 % display scale.
+    click = prepared(root / 'branding' / 'clickto3d-icon-source.png')
+    assets = root / 'offline3d-reader' / 'fastpdf' / 'src' / 'EKFastPDF' / 'Assets'
+    for n in (16, 20, 24, 32, 48): square(click, n).save(assets / f'ClickTo3D-{n}.png')
+    square(click, 256).save(pngs / 'clickto3d-256.png')
 
 if __name__ == '__main__':
     main(Path(sys.argv[1]).resolve())
