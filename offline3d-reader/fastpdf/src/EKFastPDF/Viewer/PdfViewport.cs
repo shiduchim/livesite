@@ -307,10 +307,15 @@ public sealed class PdfViewport : FrameworkElement
     public void NextPage() { if (_session is { IsReady: true }) GoToPage(_session.View.CurrentPage(_session.Layout!) + 1); }
     public void PreviousPage() { if (_session is { IsReady: true }) GoToPage(_session.View.CurrentPage(_session.Layout!) - 1); }
 
+    /// <summary>
+    /// Moves the pages on screen by this many DIPs: negative y moves them up (reading
+    /// further down), as every caller passes (Down arrow -60, wheel-down delta, Space).
+    /// 0.5.3 and earlier negated this, so wheel and keyboard scrolling ran backwards.
+    /// </summary>
     public void ScrollBy(double dxDips, double dyDips)
     {
         if (!Ready(out var s, out var layout)) return;
-        s.View.Pan(-dxDips * s.View.DpiScale, -dyDips * s.View.DpiScale);
+        s.View.Pan(dxDips * s.View.DpiScale, dyDips * s.View.DpiScale);
         s.View.Clamp(layout);
         ViewMoved(zoomed: false);
     }
