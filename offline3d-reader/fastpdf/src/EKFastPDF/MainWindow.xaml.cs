@@ -121,7 +121,7 @@ public partial class MainWindow : Window
         var s = _active;
         bool ready = s?.IsReady == true;
         PrintButton.IsEnabled = ready;
-        Box3DButton.IsEnabled = ready;
+        Sync3DButton(s, ready);
         if (s is null || ready)
         {
             StatePanel.Visibility = Visibility.Collapsed;

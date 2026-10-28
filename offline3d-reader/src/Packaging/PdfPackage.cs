@@ -44,6 +44,24 @@ public sealed class PdfPackageService : IPdfPackageService
         using var output=new MemoryStream();var buffer=new byte[8192];int n;
         while((n=zip.Read(buffer,0,buffer.Length))>0){if(output.Length+n>limit)throw new InvalidDataException("Decompressed attachment too large");output.Write(buffer,0,n);}return output.ToArray();
     }
+    /// <summary>
+    /// Fast check whether a PDF carries an Offline 3D package: looks for the manifest's
+    /// attachment name in the file without parsing it (milliseconds, even for large
+    /// drawings). Used to show ClickTo3D; <see cref="Read"/> still validates everything.
+    /// </summary>
+    public static bool Has3D(string path) {
+        var needle=System.Text.Encoding.ASCII.GetBytes(Contract.ManifestName);
+        try{
+            using var file=new FileStream(path,FileMode.Open,FileAccess.Read,FileShare.ReadWrite|FileShare.Delete,1<<16);
+            var buffer=new byte[(1<<20)+needle.Length];int carry=0,read;
+            while((read=file.Read(buffer,carry,buffer.Length-carry))>0){
+                int length=carry+read;
+                if(buffer.AsSpan(0,length).IndexOf(needle)>=0)return true;
+                carry=Math.Min(needle.Length-1,length);Buffer.BlockCopy(buffer,length-carry,buffer,0,carry);
+            }
+        }catch(Exception ex) when (ex is IOException or UnauthorizedAccessException){}
+        return false;
+    }
     public OpenPackage Read(string path) {
         if(new FileInfo(path).Length>Contract.MaxPdf)throw new InvalidDataException("PDF too large");
         using var pdf=PdfReader.Open(path,PdfDocumentOpenMode.Import);

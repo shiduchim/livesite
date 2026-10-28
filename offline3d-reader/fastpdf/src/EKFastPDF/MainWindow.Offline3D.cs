@@ -33,6 +33,23 @@ public partial class MainWindow
     }
     private static readonly Brush ArmedBackground=new SolidColorBrush(Color.FromRgb(47,111,222)),ArmedBorder=new SolidColorBrush(Color.FromRgb(28,74,160));
 
+    // ClickTo3D shows only for PDFs that carry 3D (checked once per document, off the UI thread).
+    private readonly Dictionary<DocumentSession,bool?> has3D=new();
+    private void Sync3DButton(DocumentSession? session,bool ready)
+    {
+        bool show=false;
+        if(session!=null&&ready){
+            if(!has3D.TryGetValue(session,out var known)){
+                has3D[session]=null;
+                Task.Run(()=>PdfPackageService.Has3D(session.FilePath)).ContinueWith(t=>{has3D[session]=t.Status==TaskStatus.RanToCompletion&&t.Result;if(ReferenceEquals(session,_active))Sync3DButton(session,session.IsReady);},TaskScheduler.FromCurrentSynchronizationContext());
+            }
+            show=has3D[session]==true;
+        }
+        if(session!=null&&session.IsClosed)has3D.Remove(session);
+        Box3DButton.Visibility=show||boxArmed||boxShown?Visibility.Visible:Visibility.Collapsed;
+        Box3DButton.IsEnabled=ready;
+    }
+
     private void Box3D_Click(object sender,RoutedEventArgs e)
     {
         if(boxArmed||boxShown){Close3D();return;}
