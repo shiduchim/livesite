@@ -44,6 +44,34 @@
 .folder{display:flex;align-items:center;gap:8px;height:30px}.folder .p{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sf{border-top:1px solid #e1e1e1;padding:12px 26px 12px 30px;display:flex;justify-content:space-between;align-items:center}
 .dlg{position:absolute;left:330px;top:190px;width:340px;background:#f0f0f0;border:1px solid #bdbdbd}
+</style><style>
+.c-body{display:flex;height:600px}
+.c-side{width:168px;background:#f0f0f0;border-right:1px solid #e1e1e1;padding:6px 0;display:flex;flex-direction:column;flex:0 0 auto}
+.c-side .h{color:#5f6368;font-size:10.5px;padding:6px 12px 2px}
+.c-side .f{height:24px;display:flex;align-items:center;gap:7px;padding:0 10px 0 12px}.c-side .f .n{margin-left:auto;color:#5f6368;font-size:10.5px}.c-side .f.on{background:#e3e7ee;box-shadow:inset 3px 0 0 #5d75a5}
+.c-side .f svg{width:14px;height:14px;stroke:#5f6368;fill:none;stroke-width:1.4;flex:0 0 auto}.c-side .add{margin:4px 12px;color:#5f6368;font-size:11.5px}
+.c-main{flex:1;background:#e3e5e8;display:flex;flex-direction:column;min-width:0}
+.c-top{height:32px;display:flex;align-items:center;gap:8px;padding:0 10px;background:#f7f7f7;border-bottom:1px solid #e1e1e1}
+.c-list{flex:1;overflow:hidden;padding:8px 10px}
+.c-bh{display:flex;align-items:center;gap:6px;height:20px;color:#5f6368;font-size:11.5px;margin:2px 0 4px}.c-bh b{color:#1b1b1b;font-weight:600}.c-bh .new{color:#2f4a86;background:#e8edf7;border-radius:3px;padding:0 4px;font-size:10px}
+.dots{color:#5f6368;letter-spacing:1px;padding:0 4px}
+</style><style>
+.tb{height:34px;display:flex;align-items:flex-end;gap:2px;padding:0 0 0 8px;background:#e9e9ea;border-bottom:1px solid #d6d6d6}
+.tb .logo{align-self:center;margin:0 6px 0 2px}
+.tt{height:28px;display:flex;align-items:center;gap:7px;padding:0 10px;color:#5f6368;border-radius:6px 6px 0 0;margin-bottom:-1px;font-size:12px}
+.tt.on{background:#f7f7f7;color:#1b1b1b;border:1px solid #d6d6d6;border-bottom:1px solid #f7f7f7}
+.tt svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.3}
+.tt .x{width:11px;height:11px;border:1.2px solid #9aa0a6;border-radius:50%}
+.tbb{align-self:center;display:flex;gap:6px;margin-left:8px}
+.tb .win-btns span{height:34px}
+.k-card{width:150px}.k-card .thumb{height:97px;background:#fff;box-shadow:0 0 0 1px #d4d6da;position:relative;display:flex;align-items:center;justify-content:center}
+.k-card.sel>.thumb{box-shadow:0 0 0 2px #5d75a5}
+.k-card .nm{margin-top:3px;font-size:11.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k-card .m{color:#5f6368;font-size:10.5px;display:flex;gap:4px}.k-card .pages{color:#2f4a86}
+.k-card .pg{margin-top:6px;width:auto}
+.k-card .no{position:absolute;right:4px;bottom:3px;font-size:10px;color:#5f6368;background:#ffffffd0;padding:0 3px;border-radius:2px}
+.k-card .badge{position:absolute;right:3px;top:3px;width:15px;height:15px}
+.k-grid{display:grid;grid-template-columns:repeat(auto-fill,150px);gap:10px 8px;align-items:start;margin-bottom:10px}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute"><defs>
 <symbol id="fold" viewBox="0 0 16 16"><path d="M2 4.5h4l1.5 1.5H14v6.5H2z"/></symbol>
@@ -53,65 +81,50 @@
 <symbol id="doc" viewBox="0 0 150 106"><rect x="45" y="6" width="60" height="94" fill="#fff" stroke="#bbb"/><path d="M52 18h30M52 26h46M52 32h46M52 38h40M52 50h46M52 56h46M52 62h30" stroke="#999" stroke-width="1.5"/></symbol>
 <symbol id="sec" viewBox="0 0 150 106"><rect x="6" y="6" width="138" height="94" fill="none" stroke="#444"/><path d="M14 80h100M20 80V40h80v40M20 60h80M60 40V20h20v20" fill="none" stroke="#666" stroke-width=".8"/></symbol>
 </defs></svg>
-
-<div><div class="cap">1 · Library (start screen and "Library" tab): folders, batches newest first, Open latest, size slider; "8 pages ▴" expanded to show every page</div>
-<div class="win">
- <div class="bar"><svg class="logo" viewBox="0 0 18 20"><path d="M2 1h10l4 4v14H2z" fill="#6585c4"/><rect x="4" y="6.5" width="10" height="3.5" fill="#fff"/><path d="M9 11.5l3 1.7v3.4L9 18.3 6 16.6v-3.4z" fill="#fff"/></svg>
-  <div class="tab on">Library</div><div class="tab">A-101 Level 1 Floor Plan</div><div class="btn" style="margin-left:4px">Open</div>
+<div><div class="cap">1 · My PDFs is the first tab (always there, cannot be closed). Browse… and Open newest PDF sit beside the tabs. "8 pages ▴" opens all 8 pages straight down under page 1, each the same size as page 1</div>
+<div class="win" style="width:1000px"><div class="tb"><svg class="logo" width="18" height="20" viewBox="0 0 18 20"><path d="M2 1h10l4 4v14H2z" fill="#6585c4"/><rect x="4" y="6.5" width="10" height="3.5" fill="#fff"/><path d="M9 11.5l3 1.7v3.4L9 18.3 6 16.6v-3.4z" fill="#fff"/></svg>
+  <div class="tt on"><svg viewBox="0 0 16 16"><rect x="2.5" y="2.5" width="4.5" height="4.5"/><rect x="9" y="2.5" width="4.5" height="4.5"/><rect x="2.5" y="9" width="4.5" height="4.5"/><rect x="9" y="9" width="4.5" height="4.5"/></svg>My PDFs</div>
+  <div class="tt">A-101 Level 1 Floor Plan<span class="x"></span></div>
+  <div class="tbb"><div class="btn" style="height:24px">Browse…</div><div class="btn accent" style="height:24px">Open newest PDF</div></div>
   <div class="win-btns"><span>—</span><span>☐</span><span style="font-size:11.5px">Close</span></div></div>
- <div class="body">
-  <div class="side">
+ <div class="c-body" style="height:1190px"><div class="c-side">
    <div class="f"><svg><use href="#clock"/></svg>Recent<span class="n">48</span></div>
    <div class="h">Folders</div>
-   <div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="auto">auto-open</span><span class="n">12</span></div>
-   <div class="f"><svg><use href="#fold"/></svg>Teams – Project 2417<span class="n">31</span></div>
+   <div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="n">12</span></div>
+   <div class="f"><svg><use href="#fold"/></svg><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Teams – Project 2417</span><span class="n">31</span></div>
    <div class="f"><svg><use href="#fold"/></svg>Shop drawings<span class="n">7</span></div>
    <div class="f"><svg><use href="#fold"/></svg>Invoices<span class="n">22</span></div>
-   <div class="add">Add folder…</div>
-  </div>
-  <div class="main">
-   <div class="top"><span class="title">Downloads</span><span class="sec">12 PDFs</span><div style="flex:1"></div>
-    <div class="btn accent">Open latest</div>
-    <div class="slider">Size<div class="t"><i style="width:30%"></i><b style="left:27%"></b></div></div>
-   </div>
-   <div class="list">
-    <div class="batch new"><div class="bh"><b>Today 10:42</b><span>3 PDFs, downloaded together</span><span class="new">New</span><div style="flex:1"></div><span class="link">Open all 3</span></div>
-     <div class="grid">
-      <div class="card sel"><div class="thumb"><svg width="150" height="106"><use href="#plan"/></svg><img class="badge" src="clickto3d-256.png"></div><div class="name">A-101 Level 1 Floor Plan</div><div class="meta">10:42 · 4.2 MB · 3D · <span class="pages">2 pages ▾</span></div></div>
-      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#sec"/></svg></div><div class="name">A-301 Sections</div><div class="meta">10:42 · 2.8 MB · <span class="pages">8 pages ▴</span></div></div>
-      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#plan"/></svg><img class="badge" src="clickto3d-256.png"></div><div class="name">A-102 Level 2 Floor Plan</div><div class="meta">10:41 · 3.9 MB · 3D</div></div>
-      <div class="strip"><span class="sec" style="width:70px;flex:0 0 auto;line-height:1.4">A-301<br>Sections<br>8 pages</span><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">1</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">2</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">3</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">4</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">5</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">6</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">7</div></div><div class="pg"><div class="thumb"><svg width="74" height="52" viewBox="0 0 150 106"><use href="#sec"/></svg></div><div class="meta">8</div></div></div>
-     </div></div>
-    <div class="batch"><div class="bh"><b>Yesterday 16:05</b><span>2 PDFs</span></div>
-     <div class="grid">
-      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#doc"/></svg></div><div class="name">Invoice 2026-114</div><div class="meta">16:05 · 0.3 MB</div></div>
-      <div class="card"><div class="thumb"><svg width="150" height="106"><use href="#doc"/></svg></div><div class="name">Quote revision B</div><div class="meta">16:04 · 0.2 MB</div></div>
-     </div></div>
-    <div class="batch"><div class="bh"><b>Monday 09:12</b><span>1 PDF</span></div>
-     <div class="grid"><div class="card"><div class="thumb"><svg width="150" height="106"><use href="#sec"/></svg></div><div class="name">S-201 Framing</div><div class="meta">09:12 · 5.1 MB</div></div></div></div>
-   </div>
-   <div class="foot"><span>Drag a PDF into Revit, Explorer or an email, as from any folder · Double-click to open</span><span class="link">Delete all PDFs in Downloads…</span></div>
-  </div>
- </div>
-</div></div>
-
-<div><div class="cap">2 · Size slider at fit width with "8 pages" expanded: every page full width, one under the other (scroll for pages 3–8)</div>
-<div class="win">
- <div class="body" style="height:620px">
-  <div class="side"><div class="f"><svg><use href="#clock"/></svg>Recent<span class="n">48</span></div><div class="h">Folders</div><div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="n">12</span></div><div class="f"><svg><use href="#fold"/></svg>Teams – Project 2417<span class="n">31</span></div></div>
-  <div class="main"><div class="top"><span class="title">Downloads</span><div style="flex:1"></div><div class="btn accent">Open latest</div><div class="slider">Size<div class="t"><i style="width:100%"></i><b style="left:88%"></b></div></div></div>
-   <div class="list"><div class="bh" style="display:flex;gap:8px;color:#5f6368;margin-bottom:8px"><b style="color:#1b1b1b">Today 10:42</b>3 PDFs</div>
-    <div style="margin-bottom:6px">A-301 Sections · 2.8 MB · <span class="pages">8 pages ▴</span></div>
-    <div class="thumb" style="height:236px"><svg width="330" height="232" viewBox="0 0 150 106"><use href="#sec"/></svg><span class="sec" style="position:absolute;right:8px;bottom:6px">Page 1 of 8</span></div>
-    <div class="thumb" style="height:236px;margin-top:10px"><svg width="330" height="232" viewBox="0 0 150 106"><use href="#sec"/></svg><span class="sec" style="position:absolute;right:8px;bottom:6px">Page 2 of 8</span></div></div></div>
- </div></div></div>
-
+   <div class="add">Add folder…</div></div>
+  <div class="c-main"><div class="c-top"><b>Downloads</b><span class="sec" style="font-size:11.5px">12 PDFs</span><span class="dots">···</span><div style="flex:1"></div>
+    <div class="slider" style="font-size:11.5px">Size<div class="t" style="width:110px"><i style="width:30%"></i><b style="left:26%"></b></div></div></div>
+   <div class="c-list">
+    <div class="c-bh"><b>Today 10:42</b>3 PDFs<span class="new">New</span><div style="flex:1"></div><span class="link" style="font-size:11.5px">Open all 3</span></div>
+    <div class="k-grid"><div class="k-card sel" style="width:150px"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#plan"/></svg><img class=badge src=clickto3d-256.png></div><div class="nm">A-101 Level 1 Floor Plan</div><div class="m">4.2 MB · <span class="pages">2 pages ▾</span></div></div><div class="k-card" style="width:150px"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">1</span></div><div class="nm">A-301 Sections</div><div class="m">2.8 MB · <span class="pages">8 pages ▴</span></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">2</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">3</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">4</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">5</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">6</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">7</span></div></div><div class="pg"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">8</span></div></div></div><div class="k-card" style="width:150px"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#plan"/></svg><img class=badge src=clickto3d-256.png></div><div class="nm">A-102 Level 2 Floor Plan</div><div class="m">3.9 MB</div></div></div>
+    <div class="c-bh"><b>Yesterday 16:05</b>2 PDFs</div>
+    <div class="k-grid"><div class="k-card" style="width:150px"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#doc"/></svg></div><div class="nm">Invoice 2026-114</div><div class="m">0.3 MB</div></div><div class="k-card" style="width:150px"><div class="thumb" style="height:97px"><svg width="150" height="97" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#doc"/></svg></div><div class="nm">Quote revision B</div><div class="m">0.2 MB</div></div></div>
+   </div></div></div></div></div>
+<div><div class="cap">2 · Size at fit width: every PDF and every expanded page is full width, straight down</div>
+<div class="win" style="width:1000px">
+ <div class="c-body" style="height:760px"><div class="c-side">
+   <div class="f"><svg><use href="#clock"/></svg>Recent<span class="n">48</span></div>
+   <div class="h">Folders</div>
+   <div class="f on"><svg><use href="#dl"/></svg>Downloads<span class="n">12</span></div>
+   <div class="f"><svg><use href="#fold"/></svg><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Teams – Project 2417</span><span class="n">31</span></div>
+   <div class="f"><svg><use href="#fold"/></svg>Shop drawings<span class="n">7</span></div>
+   <div class="f"><svg><use href="#fold"/></svg>Invoices<span class="n">22</span></div>
+   <div class="add">Add folder…</div></div>
+  <div class="c-main"><div class="c-top"><b>Downloads</b><span class="sec" style="font-size:11.5px">12 PDFs</span><span class="dots">···</span><div style="flex:1"></div>
+    <div class="slider" style="font-size:11.5px">Size<div class="t" style="width:110px"><i style="width:100%"></i><b style="left:96%"></b></div></div></div>
+   <div class="c-list">
+    <div class="c-bh"><b>Today 10:42</b>3 PDFs<span class="new">New</span></div>
+    <div class="k-card" style="width:806px"><div class="thumb" style="height:569px"><svg width="806" height="569" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">1</span></div><div class="nm">A-301 Sections</div><div class="m">2.8 MB · <span class="pages">8 pages ▴</span></div><div class="pg"><div class="thumb" style="height:569px"><svg width="806" height="569" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">2</span></div></div><div class="pg"><div class="thumb" style="height:569px"><svg width="806" height="569" viewBox="0 0 150 106" preserveAspectRatio="xMidYMid meet"><use href="#sec"/></svg><span class="no">3</span></div></div></div>
+   </div></div></div></div></div>
 <div style="display:flex;gap:26px;align-items:flex-start">
 <div><div class="cap">3 · Settings › New PDFs (everything can be off)</div>
 <div class="sw">
  <div class="st"><span>EKPDF Settings</span><span>Close</span></div>
  <div class="sc">
-  <div class="row"><span class="box on"></span><span class="grow">Show the Open latest button</span></div>
+  <div class="row"><span class="box on"></span><span class="grow">Show the Open newest PDF button</span></div>
   <div class="hr"></div>
   <div class="row"><span class="grow">Recent means arrived in the last</span><span class="num">1</span><span class="sec">minute(s)</span></div>
   <div class="row"><span class="box on"></span><span class="grow">When EKPDF starts, open recent PDFs</span></div>
