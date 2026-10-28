@@ -184,20 +184,17 @@ public sealed class ExportCommand : IExternalCommand
 
                     // ---- options (the preview runs inside this call) ----
                     log.Stage("Export options");
-                    // Phase and phase filter: the source view's, or the filter chosen last time.
+                    // Phase filter: the filter chosen last time, else the source view's. The phase is always the view's own.
                     var preferences = new ExportPreferences(ExportPreferences.DefaultPath);
-                    var phases = doc.Phases.Cast<Phase>().Select(p => new NamedChoice { Name = ExportText.Clean(p.Name, 120), Id = p.Id }).ToArray();
                     var filters = new[] { new NamedChoice { Name = "None", Id = ElementId.InvalidElementId } }.Concat(new FilteredElementCollector(doc).OfClass(typeof(PhaseFilter)).Cast<PhaseFilter>().OrderBy(f => f.Name, StringComparer.CurrentCultureIgnoreCase).Select(f => new NamedChoice { Name = ExportText.Clean(f.Name, 120), Id = f.Id })).ToArray();
-                    var viewPhase = target.SourcePlan.get_Parameter(BuiltInParameter.VIEW_PHASE)?.AsElementId() ?? ElementId.InvalidElementId;
                     var viewFilter = target.SourcePlan.get_Parameter(BuiltInParameter.VIEW_PHASE_FILTER)?.AsElementId() ?? ElementId.InvalidElementId;
-                    int phaseIndex = Math.Max(0, Array.FindIndex(phases, p => p.Id == viewPhase));
                     string? rememberedFilter = preferences.Get("phaseFilter");
                     int filterIndex = rememberedFilter != null && Array.FindIndex(filters, f => f.Name == rememberedFilter) is int remembered && remembered >= 0 ? remembered : Math.Max(0, Array.FindIndex(filters, f => f.Id == viewFilter));
-                    using var options = new ExportOptionsDialog(target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan), phases, phaseIndex, filters, filterIndex);
+                    using var options = new ExportOptionsDialog(target.SourcePlan.Name, regions[0].BottomLabel, regions[0].TopLabel, approximateCount, regions.All(r => r.Source is ViewPlan), filters, filterIndex);
                     if (options.RunModal(owner, Preview) != OptionsOutcome.Export) { cancelled = true; log.Line("Cancelled in the options dialog"); return Result.Cancelled; }
                     var detail = options.DetailPreset;
                     preferences.Set("phaseFilter", options.PhaseFilterName); preferences.Save();
-                    log.Line("Options: detail " + detail + " (LOD " + options.TessellationLevel + "), phase " + options.Phase + ", phase filter " + ExportText.Clean(options.PhaseFilterName, 120) + ", outside crop " + options.OutsideCrop + ", all up " + options.AllUp + ", all down " + options.AllDown + ", hidden categories included " + options.IncludeAllCategories + ", tiny-part filter " + options.MinimumPartFeet.ToString("0.###", CultureInfo.InvariantCulture) + " ft, properties: " + string.Join(", ", options.ParameterNames));
+                    log.Line("Options: detail " + detail + " (LOD " + options.TessellationLevel + "), phase filter " + ExportText.Clean(options.PhaseFilterName, 120) + ", outside crop " + options.OutsideCrop + ", all up " + options.AllUp + ", all down " + options.AllDown + ", hidden categories included " + options.IncludeAllCategories + ", tiny-part filter " + options.MinimumPartFeet.ToString("0.###", CultureInfo.InvariantCulture) + " ft, properties: " + string.Join(", ", options.ParameterNames));
                     if (options.PreviewDiagnostics.Length > 0) File.AppendAllText(Path.Combine(work, "preview-timings.txt"), options.PreviewDiagnostics + Environment.NewLine);
 
                     string stem = string.Concat(target.FileStem.Select(c => Path.GetInvalidFileNameChars().Contains(c) ? '_' : c));

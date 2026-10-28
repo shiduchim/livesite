@@ -52,7 +52,6 @@ internal sealed class ExportOptionsDialog : Form
     private readonly CheckBox categories = new CheckBox { Text = "Include categories hidden in the view", Checked = true, AutoSize = true };
     private readonly TextBox parameterNames = new TextBox { Text = "Mark,Comments,Type Mark" };
     private readonly ComboBox detail = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
-    private readonly ComboBox phase = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly ComboBox phaseFilter = new ComboBox { DropDownStyle = ComboBoxStyle.DropDownList };
     private readonly Label detailHint = new Label();
     private readonly CheckBox skipTiny = new CheckBox { Text = "Skip parts smaller than", AutoSize = true };
@@ -98,17 +97,17 @@ internal sealed class ExportOptionsDialog : Form
     public int TessellationLevel => new[] { 0, 4, 8, 12, 15 }[(int)DetailPreset];
     /// <summary>Very low always skips parts under 2" (checked before Revit tessellates them).</summary>
     public double MinimumPartFeet => Math.Max(skipTiny.Checked ? (double)tinySize.Value / 30.48 : 0, DetailPreset == ExportDetail.VeryLow ? 2.0 / 12 : 0);
-    public Autodesk.Revit.DB.ElementId Phase => (phase.SelectedItem as NamedChoice)?.Id ?? Autodesk.Revit.DB.ElementId.InvalidElementId;
+    /// <summary>Always the plan view's own phase (InvalidElementId keeps it); only the phase filter is offered.</summary>
+    public Autodesk.Revit.DB.ElementId Phase => Autodesk.Revit.DB.ElementId.InvalidElementId;
     public Autodesk.Revit.DB.ElementId PhaseFilter => (phaseFilter.SelectedItem as NamedChoice)?.Id ?? Autodesk.Revit.DB.ElementId.InvalidElementId;
     public string PhaseFilterName => (phaseFilter.SelectedItem as NamedChoice)?.Name ?? "";
     public string PreviewDiagnostics { get; private set; } = "";
 
     private int S(int px) => (int)Math.Round(px * DeviceDpi / 96.0);
 
-    public ExportOptionsDialog(string viewName, string bottomLabel, string topLabel, int candidateCount, bool planHeight, NamedChoice[] phases, int phaseIndex, NamedChoice[] filters, int filterIndex)
+    public ExportOptionsDialog(string viewName, string bottomLabel, string topLabel, int candidateCount, bool planHeight, NamedChoice[] filters, int filterIndex)
     {
-        phase.Items.AddRange(phases); phaseFilter.Items.AddRange(filters);
-        if (phases.Length > 0) phase.SelectedIndex = Math.Max(0, Math.Min(phases.Length - 1, phaseIndex));
+        phaseFilter.Items.AddRange(filters);
         if (filters.Length > 0) phaseFilter.SelectedIndex = Math.Max(0, Math.Min(filters.Length - 1, filterIndex));
         this.viewName = viewName; this.bottomLabel = bottomLabel; this.topLabel = topLabel; this.candidateCount = Math.Max(0, candidateCount); this.planHeight = planHeight;
         SuspendLayout();
@@ -135,7 +134,6 @@ internal sealed class ExportOptionsDialog : Form
         allUp.CheckedChanged += (_, __) => OptionsChanged();
         allDown.CheckedChanged += (_, __) => OptionsChanged();
         categories.CheckedChanged += (_, __) => OptionsChanged();
-        phase.SelectedIndexChanged += (_, __) => OptionsChanged();
         phaseFilter.SelectedIndexChanged += (_, __) => OptionsChanged();
         detail.SelectedIndexChanged += (_, __) => { UpdateDetailHint(); UpdateEstimate(); };
         skipTiny.CheckedChanged += (_, __) => tinySize.Enabled = skipTiny.Checked;
@@ -217,11 +215,8 @@ internal sealed class ExportOptionsDialog : Form
 
         Add(SectionLabel("Content"));
         categories.Margin = new Padding(0, 0, 0, S(2)); Add(categories);
-        foreach (var (text, box) in new[] { ("Phase", phase), ("Phase filter", phaseFilter) })
-        {
-            Add(new Label { Text = text, AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, S(4), 0, S(2)) });
-            box.Anchor = AnchorStyles.Left | AnchorStyles.Right; box.Margin = new Padding(0, 0, 0, S(4)); Add(box);
-        }
+        Add(new Label { Text = "Phase filter", AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, S(4), 0, S(2)) });
+        phaseFilter.Anchor = AnchorStyles.Left | AnchorStyles.Right; phaseFilter.Margin = new Padding(0, 0, 0, S(4)); Add(phaseFilter);
         Add(SmallLabel("\"Show Complete\" leaves out demolished elements (shown red with \"Show All\")."));
         Add(new Label { Text = "Extra properties (comma separated)", AutoSize = true, Anchor = AnchorStyles.Left | AnchorStyles.Right, Margin = new Padding(0, S(2), 0, S(2)) });
         parameterNames.Anchor = AnchorStyles.Left | AnchorStyles.Right; parameterNames.Margin = new Padding(0, 0, 0, S(4)); Add(parameterNames);

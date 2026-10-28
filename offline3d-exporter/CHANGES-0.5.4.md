@@ -4,11 +4,11 @@ Built in stages from the feedback on 0.5.3. Version strings still say 0.5.3 unti
 
 ## Stage 2, part 1 (done)
 
-### Phase and phase filter
-- The options have **Phase** and **Phase filter**.
-- Both start from the plan view's settings. The phase filter you pick is remembered for the next export, in `%LOCALAPPDATA%\Offline3DPdfPrototype\export-options.txt`.
+### Phase filter
+- The options have a **Phase filter**. It starts from the plan view's filter, which often comes from its view template. The filter you pick is remembered for the next export, in `%LOCALAPPDATA%\Offline3DPdfPrototype\export-options.txt`.
+- The phase itself is always the plan view's own (Properties › Phasing › Phase). It is not offered, because view templates do not control it and the exported view already has the right one.
 - Pick **Show Complete** to leave out demolished elements. "Show All" makes Revit report them with the red *Phase - Demo* material, which is what appeared in the PDF.
-- The preview uses the same choices.
+- The preview uses the same filter.
 
 ### Very low detail
 - **Very low** replaces Quick. It uses:
