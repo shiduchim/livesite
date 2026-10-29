@@ -28,18 +28,20 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-            <!-- The EKPDF logo and My PDFs are one home button in the corner, set apart from the PDF tabs by a line. -->
-            <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                <Border x:Name="LibraryTab" Height="28" Margin="6,0,0,0" Padding="6,0,11,0" CornerRadius="4" BorderThickness="1"
-                        Cursor="Hand" WindowChrome.IsHitTestVisibleInChrome="True" MouseLeftButtonDown="LibraryTab_Click"
-                        MouseEnter="LibraryTab_Hover" MouseLeave="LibraryTab_Hover" ToolTip="My PDFs: your PDF folders">
-                    <StackPanel Orientation="Horizontal">
+            <!-- Home panel (docs mockup A): the EKPDF logo and My PDFs on their own full-height panel,
+                 a line after it, and a blue line under it while My PDFs is showing. Not a tab. -->
+            <Border x:Name="LibraryTab" Grid.Column="0" Padding="10,0,14,0" Margin="0,0,6,0" BorderThickness="0,0,1,0"
+                    Background="{DynamicResource HomeBack}" BorderBrush="{DynamicResource Line}"
+                    Cursor="Hand" WindowChrome.IsHitTestVisibleInChrome="True" MouseLeftButtonDown="LibraryTab_Click"
+                    MouseEnter="LibraryTab_Hover" MouseLeave="LibraryTab_Hover" ToolTip="My PDFs: your PDF folders">
+                <Grid>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                         <Image Source="Assets/EKPDF-64.png" Width="18" Height="18" VerticalAlignment="Center" RenderOptions.BitmapScalingMode="HighQuality"/>
-                        <TextBlock x:Name="LibraryTabText" Text="My PDFs" FontSize="12" FontWeight="SemiBold" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                        <TextBlock x:Name="LibraryTabText" Text="My PDFs" FontSize="12.5" FontWeight="SemiBold" Margin="8,0,0,0" VerticalAlignment="Center" Foreground="{DynamicResource Ink}"/>
                     </StackPanel>
-                </Border>
-                <Border Width="1" Height="20" Margin="8,0,8,0" Background="{DynamicResource Line}" VerticalAlignment="Center"/>
-            </StackPanel>
+                    <Border x:Name="LibraryActiveLine" Height="2" VerticalAlignment="Bottom" Margin="-10,0,-14,0" Background="{DynamicResource Accent}"/>
+                </Grid>
+            </Border>
             <DockPanel Grid.Column="1" LastChildFill="False" VerticalAlignment="Center">
                 <ItemsControl x:Name="TabStrip" DockPanel.Dock="Left" WindowChrome.IsHitTestVisibleInChrome="True" Focusable="False">
                     <ItemsControl.ItemsPanel>
@@ -140,7 +142,7 @@
                 </Button>
                 <Border Style="{StaticResource Divider}"/>
                 <Grid>
-                    <TextBox x:Name="ZoomBox" Style="{StaticResource FieldBox}" Width="84" MinWidth="84" TextAlignment="Left" Padding="4,0,22,0"
+                    <TextBox x:Name="ZoomBox" Style="{StaticResource FieldBox}" Width="84" MinWidth="84" TextAlignment="Center" Padding="2,0,20,0" HorizontalScrollBarVisibility="Hidden"
                              PreviewKeyDown="ZoomBox_PreviewKeyDown" GotKeyboardFocus="SelectAllOnFocus" ToolTip="Zoom (type a percentage; Ctrl+wheel)"/>
                     <Button HorizontalAlignment="Right" Width="20" Height="22" Margin="0,0,1,0" Style="{StaticResource IconButton}" Click="ZoomMenu_Click" ToolTip="Zoom in, zoom out, fit and sizes">
                         <Path Data="{StaticResource IconDown}" Style="{StaticResource IconPath}" Width="9" Height="9"/>
@@ -190,6 +192,9 @@
             <ContentControl x:Name="BoxHost" Grid.Column="2"/>
 
             <viewer:PdfViewport x:Name="Viewport"/>
+            <!-- Scroll bars over the page view (they move the view; the view stays custom drawn). -->
+            <ScrollBar x:Name="VScroll" Orientation="Vertical" HorizontalAlignment="Right" Margin="0,0,0,16" Style="{StaticResource PdfScrollBar}" Scroll="VScroll_Scroll" Visibility="Collapsed"/>
+            <ScrollBar x:Name="HScroll" Orientation="Horizontal" VerticalAlignment="Bottom" Margin="0,0,16,0" Style="{StaticResource PdfScrollBar}" Scroll="HScroll_Scroll" Visibility="Collapsed"/>
 
             <Grid x:Name="StatePanel" Background="{DynamicResource DocBackground}" Visibility="Collapsed">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="460">

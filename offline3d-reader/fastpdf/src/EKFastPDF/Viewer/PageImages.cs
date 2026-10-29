@@ -262,6 +262,9 @@ public sealed class PageImages : IDisposable
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { }
     });
 
+    /// <summary>Lets go of every PDF the gallery has open (before deleting files).</summary>
+    public void ReleaseFiles() => _renderer.CloseIdle();
+
     public void Dispose()
     {
         _saveTimer?.Stop();

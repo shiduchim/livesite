@@ -24,6 +24,9 @@ public sealed class ThumbnailRenderer : IDisposable
     private readonly Dictionary<string, DocumentInfo?> _infos = new(StringComparer.OrdinalIgnoreCase);
     private long _use, _sequence;
     private bool _disposed;
+    private readonly Timer _idle;
+    /// <summary>Documents are closed this long after the last picture, so the gallery never keeps PDFs open.</summary>
+    public static readonly TimeSpan IdleClose = TimeSpan.FromSeconds(3);
 
     private sealed class Entry
     {
@@ -38,6 +41,20 @@ public sealed class ThumbnailRenderer : IDisposable
         _pool = pool;
         _maxOpen = Math.Max(1, maxOpenDocuments);
         _slots = new SemaphoreSlim(Math.Max(1, concurrentRenders));
+        _idle = new Timer(_ => CloseIdle(), null, Timeout.Infinite, Timeout.Infinite);
+    }
+
+    /// <summary>Closes every document no picture is being made from (e.g. before deleting files).</summary>
+    public void CloseIdle()
+    {
+        List<int> ids;
+        lock (_gate)
+        {
+            var idle = _open.Where(p => p.Value.Busy == 0).ToList();
+            foreach (var (key, _) in idle) _open.Remove(key);
+            ids = idle.Select(p => p.Value.DocId).ToList();
+        }
+        foreach (int id in ids) _pool.CloseDocument(id);
     }
 
     /// <summary>Cache key: the same path with a different size or time is a different file.</summary>
@@ -159,7 +176,11 @@ public sealed class ThumbnailRenderer : IDisposable
 
     private void Release(Entry entry)
     {
-        lock (_gate) entry.Busy--;
+        lock (_gate)
+        {
+            entry.Busy--;
+            if (!_disposed) _idle.Change(IdleClose, Timeout.InfiniteTimeSpan);
+        }
     }
 
     private void Forget(string key)
@@ -179,6 +200,7 @@ public sealed class ThumbnailRenderer : IDisposable
         {
             if (_disposed) return;
             _disposed = true;
+            _idle.Dispose();
             ids = _open.Values.Select(e => e.DocId).ToList();
             _open.Clear();
         }

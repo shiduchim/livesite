@@ -113,7 +113,8 @@ public static class PdfLibrary
     {
         try
         {
-            using var s = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+            // Read sharing only: fails while anything writes the file. Delete sharing: never blocks a delete.
+            using var s = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
             return s.Length > 0;
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException) { return false; }

@@ -147,10 +147,10 @@ public static class RecycleBin
 
     [DllImport("shell32.dll", CharSet = CharSet.Unicode)] private static extern int SHFileOperationW(ref SHFILEOPSTRUCT op);
     private const uint FO_DELETE = 3;
-    private const ushort FOF_SILENT = 0x4, FOF_NOCONFIRMATION = 0x10, FOF_ALLOWUNDO = 0x40;
+    private const ushort FOF_SILENT = 0x4, FOF_NOCONFIRMATION = 0x10, FOF_ALLOWUNDO = 0x40, FOF_NOERRORUI = 0x400;
 
     /// <summary>Returns true when Windows reports success. Missing files are skipped.</summary>
-    public static bool Send(IntPtr owner, IReadOnlyCollection<string> files)
+    public static bool Send(IntPtr owner, IReadOnlyCollection<string> files, bool showErrors = true)
     {
         var existing = files.Where(File.Exists).ToList();
         if (existing.Count == 0) return true;
@@ -158,7 +158,7 @@ public static class RecycleBin
         {
             hwnd = owner, wFunc = FO_DELETE,
             pFrom = string.Join('\0', existing) + "\0\0",
-            fFlags = FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT,
+            fFlags = (ushort)(FOF_ALLOWUNDO | FOF_NOCONFIRMATION | FOF_SILENT | (showErrors ? 0 : FOF_NOERRORUI)),
         };
         return SHFileOperationW(ref op) == 0 && op.fAnyOperationsAborted == 0;
     }

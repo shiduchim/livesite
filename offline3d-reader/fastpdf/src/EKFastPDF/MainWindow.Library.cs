@@ -84,9 +84,8 @@ public partial class MainWindow
 
     private void LibraryTab_Hover(object sender, MouseEventArgs e)
     {
-        if (_libraryShown) return;
         if (LibraryTab.IsMouseOver) LibraryTab.SetResourceReference(Border.BackgroundProperty, "Hover");
-        else LibraryTab.Background = System.Windows.Media.Brushes.Transparent;
+        else LibraryTab.SetResourceReference(Border.BackgroundProperty, "HomeBack");
     }
 
     private void LibraryTab_Click(object sender, MouseButtonEventArgs e)
@@ -112,8 +111,7 @@ public partial class MainWindow
         SearchToggle.Visibility = !lib && _compact ? Visibility.Visible : Visibility.Collapsed;
         SearchField.Visibility = lib ? Visibility.Collapsed : Visibility.Visible;
         if (lib) SearchOverlay.Visibility = Visibility.Collapsed;
-        if (lib) { LibraryTab.SetResourceReference(Border.BackgroundProperty, "Surface"); LibraryTab.SetResourceReference(Border.BorderBrushProperty, "TabBorder"); LibraryTabText.SetResourceReference(TextBlock.ForegroundProperty, "Ink"); }
-        else { LibraryTab.Background = System.Windows.Media.Brushes.Transparent; LibraryTab.BorderBrush = System.Windows.Media.Brushes.Transparent; LibraryTabText.SetResourceReference(TextBlock.ForegroundProperty, "InkSoft"); }
+        LibraryActiveLine.Visibility = lib ? Visibility.Visible : Visibility.Hidden;
     }
 
     private void ShowNewPdfsSettings()
@@ -151,11 +149,8 @@ public partial class MainWindow
     {
         var root = new MenuItem { Header = "Pages" };
         string chosen = _services.Settings.Pages;
-        string asTheme = PageTint.Label(Themes.DefaultPages(Themes.Current));
-        root.Items.Add(Choice("As the theme (" + asTheme.ToLowerInvariant() + ")", chosen == "Theme", () => SetTheme(null, "Theme")));
-        root.Items.Add(new Separator());
         foreach (var look in Enum.GetValues<PageLook>())
-            root.Items.Add(Choice(PageTint.Label(look), chosen == look.ToString(), () => SetTheme(null, look.ToString())));
+            root.Items.Add(Choice(PageTint.Label(look), chosen == look.ToString() || (look == PageLook.Original && chosen == "Theme"), () => SetTheme(null, look.ToString())));
         return root;
     }
 

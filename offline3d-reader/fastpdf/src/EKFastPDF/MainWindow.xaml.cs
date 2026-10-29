@@ -282,8 +282,30 @@ public partial class MainWindow : Window
 
     // ------------------------------------------------------------------ toolbar
 
+    private bool _syncingScroll;
+
+    /// <summary>Scroll bars follow the page view; hidden when everything fits or no PDF is shown.</summary>
+    private void SyncScrollBars()
+    {
+        foreach (var (bar, vertical) in new[] { (VScroll, true), (HScroll, false) })
+        {
+            var info = _libraryShown ? null : Viewport.ScrollInfo(vertical);
+            if (info is not { Maximum: > 1 } i) { bar.Visibility = Visibility.Collapsed; continue; }
+            _syncingScroll = true;
+            bar.Minimum = 0; bar.Maximum = i.Maximum; bar.ViewportSize = i.Viewport;
+            bar.LargeChange = i.Viewport * 0.9; bar.SmallChange = 60;
+            bar.Value = Math.Clamp(i.Value, 0, i.Maximum);
+            bar.Visibility = Visibility.Visible;
+            _syncingScroll = false;
+        }
+    }
+
+    private void VScroll_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e) { if (!_syncingScroll) Viewport.ScrollTo(true, e.NewValue); }
+    private void HScroll_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e) { if (!_syncingScroll) Viewport.ScrollTo(false, e.NewValue); }
+
     private void SyncToolbar()
     {
+        SyncScrollBars();
         var s = _active;
         if (s is not { IsReady: true })
         {
@@ -294,7 +316,18 @@ public partial class MainWindow : Window
         }
         if (!PageBox.IsKeyboardFocused) PageBox.Text = (s.CurrentPage + 1).ToString(CultureInfo.CurrentCulture);
         PageCountText.Text = "/ " + s.PageCount.ToString("N0", CultureInfo.CurrentCulture);
-        if (!ZoomBox.IsKeyboardFocused) ZoomBox.Text = (s.View.Zoom * 100).ToString(s.View.Zoom < 0.1 ? "0.#" : "0", CultureInfo.CurrentCulture) + "%";
+        if (!ZoomBox.IsKeyboardFocused)
+        {
+            string zoom = (s.View.Zoom * 100).ToString(s.View.Zoom < 0.1 ? "0.#" : "0", CultureInfo.CurrentCulture) + "%";
+            if (ZoomBox.Text != zoom)
+            {
+                ZoomBox.Text = zoom;
+                // A text box keeps its old sideways scroll when the text gets shorter, which hid
+                // the first digits ("|4%" for 14%). Always show the start.
+                ZoomBox.CaretIndex = 0;
+                ZoomBox.ScrollToHorizontalOffset(0);
+            }
+        }
         PrevPageButton.IsEnabled = s.CurrentPage > 0;
         NextPageButton.IsEnabled = s.CurrentPage < s.PageCount - 1;
         SharpDot.Fill = Viewport.IsSharp ? (Brush)FindResource("Accent") : new SolidColorBrush(Color.FromRgb(0xE0, 0xA4, 0x2E));

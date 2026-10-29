@@ -40,6 +40,9 @@ public sealed class LibraryView : Grid
     private LibraryFolder? _selected; // null = Recent
     private bool _showAll;
     private double _cardWidth = 150;
+    private const double MaxBeyondFit = 6;
+    private double _beyondFit = 1;
+    private bool _settingSlider;
     private int _scanVersion;
 
     public LibraryView(AppServices services, PageImages images)
@@ -90,7 +93,10 @@ public sealed class LibraryView : Grid
         Children.Add(_scroll);
 
         _size.Value = Math.Clamp(services.Settings.LibrarySize, 0, 1);
-        _size.ValueChanged += (_, _) => { _services.Settings.LibrarySize = _size.Value; ApplySize(); };
+        _beyondFit = Math.Clamp(services.Settings.LibraryBeyondFit, 1, MaxBeyondFit);
+        // The slider goes up to fit width; Ctrl+wheel can go further.
+        _size.ValueChanged += (_, _) => { if (!_settingSlider) _beyondFit = 1; _services.Settings.LibrarySize = _size.Value; _services.Settings.LibraryBeyondFit = _beyondFit; ApplySize(); };
+        _scroll.PreviewMouseWheel += (_, e) => { if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) { ZoomBy(e.Delta > 0 ? 1.15 : 1 / 1.15, e.GetPosition(_scroll)); e.Handled = true; } };
         _size.PreviewMouseUp += (_, _) => _services.Settings.Save();
         _scroll.ScrollChanged += (_, e) => { if (e.ViewportWidthChange != 0) ApplySize(); _realize.Stop(); _realize.Start(); };
         IsVisibleChanged += (_, _) => { if (IsVisible) { _realize.Stop(); _realize.Start(); } };
@@ -378,19 +384,51 @@ public sealed class LibraryView : Grid
         _realize.Stop(); _realize.Start();
     }
 
-    /// <summary>Slider 0..1 → card width from 110 px to fit width (logarithmic, so the small end has room).</summary>
-    private void ApplySize()
+    private double FitWidth()
     {
         double fit = Math.Max(MinCard, _scroll.ViewportWidth - 2 * ListPadding - 1);
         if (double.IsNaN(fit) || _scroll.ViewportWidth <= 0) fit = Math.Max(MinCard, ActualWidth - SideWidth - 2 * ListPadding - 20);
+        return fit;
+    }
+
+    /// <summary>Slider 0..1 → card width from 110 px to fit width (logarithmic, so the small end has
+    /// room); past fit width only with Ctrl+wheel, scrolling sideways.</summary>
+    private void ApplySize()
+    {
+        double fit = FitWidth();
         double v = _size.Value;
-        double width = v >= 0.999 ? fit : MinCard * Math.Pow(fit / MinCard, v);
-        width = Math.Floor(Math.Clamp(width, MinCard, fit));
+        double width = v >= 0.999 ? fit * _beyondFit : MinCard * Math.Pow(fit / MinCard, v);
+        width = Math.Floor(Math.Clamp(width, MinCard, fit * MaxBeyondFit));
+        bool beyond = width > fit + 0.5;
+        _scroll.HorizontalScrollBarVisibility = beyond ? ScrollBarVisibility.Auto : ScrollBarVisibility.Disabled;
+        // Past fit width the list is as wide as one card, so cards still go one per row.
+        _list.Width = beyond ? width + 2 * ListPadding + Gap : double.NaN;
         if (Math.Abs(width - _cardWidth) < 0.5 && _cards.All(c => Math.Abs(c.Width - width) < 0.5)) return;
         _cardWidth = width;
         foreach (var c in _cards) c.SetWidth(width);
         _realize.Stop(); _realize.Start();
     }
+
+    /// <summary>Ctrl+wheel: bigger or smaller pictures, keeping the spot under the pointer in place.</summary>
+    private void ZoomBy(double factor, Point pointer)
+    {
+        double fit = FitWidth(), old = _cardWidth;
+        double next = Math.Clamp(old * factor, MinCard, fit * MaxBeyondFit);
+        if (Math.Abs(next - old) < 0.5) return;
+        _settingSlider = true;
+        if (next >= fit) { _beyondFit = next / fit; _size.Value = 1; }
+        else { _beyondFit = 1; _size.Value = Math.Clamp(Math.Log(next / MinCard) / Math.Log(fit / MinCard), 0, 1); }
+        _settingSlider = false;
+        _services.Settings.LibrarySize = _size.Value; _services.Settings.LibraryBeyondFit = _beyondFit;
+        ApplySize();
+        double ratio = _cardWidth / old;
+        double x = (_scroll.HorizontalOffset + pointer.X) * ratio - pointer.X, y = (_scroll.VerticalOffset + pointer.Y) * ratio - pointer.Y;
+        Dispatcher.BeginInvoke(DispatcherPriority.Loaded, () => { _scroll.ScrollToHorizontalOffset(Math.Max(0, x)); _scroll.ScrollToVerticalOffset(Math.Max(0, y)); });
+        _saveSize ??= new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.Background, (_, _) => { _saveSize!.Stop(); _services.Settings.Save(); }, Dispatcher);
+        _saveSize.Stop(); _saveSize.Start();
+    }
+
+    private DispatcherTimer? _saveSize;
 
     private void RealizeVisible()
     {
@@ -407,7 +445,7 @@ public sealed class LibraryView : Grid
         }
     }
 
-    private void DeleteAll_Click()
+    private async void DeleteAll_Click()
     {
         if (_selected is not { } folder || !_files.TryGetValue(folder.Path, out var files) || files.Count == 0) return;
         var owner = Window.GetWindow(this)!;
@@ -416,8 +454,17 @@ public sealed class LibraryView : Grid
             "Other files and subfolders are not touched. You can restore the PDFs from the Recycle Bin.", "Move to Recycle Bin")) return;
         var paths = files.Select(f => f.Path).ToList();
         Deleting?.Invoke(paths);
+        _images.ReleaseFiles();
         var hwnd = new System.Windows.Interop.WindowInteropHelper(owner).Handle;
-        if (!RecycleBin.Send(hwnd, paths)) Core.Diagnostics.Log.Warn("Some PDFs could not be moved to the Recycle Bin");
+        // Tabs and pictures close their files at once, but the render workers let go a moment
+        // later: try quietly a few times before Windows shows its "file in use" message.
+        for (int attempt = 0; attempt < 6; attempt++)
+        {
+            bool last = attempt == 5;
+            if (RecycleBin.Send(hwnd, paths.Where(File.Exists).ToList(), showErrors: last)) break;
+            if (last) Core.Diagnostics.Log.Warn("Some PDFs could not be moved to the Recycle Bin");
+            else await Task.Delay(400);
+        }
         _ = RescanAsync(new[] { folder.Path });
     }
 

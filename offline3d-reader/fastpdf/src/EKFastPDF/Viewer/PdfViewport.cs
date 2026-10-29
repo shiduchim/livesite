@@ -325,6 +325,32 @@ public sealed class PdfViewport : FrameworkElement
     /// further down), as every caller passes (Down arrow -60, wheel-down delta, Space).
     /// 0.5.3 and earlier negated this, so wheel and keyboard scrolling ran backwards.
     /// </summary>
+    /// <summary>Scroll bar position for one axis, in device pixels: 0 at the top (left)
+    /// margin; null when no document is shown. Maximum 0 means everything fits.</summary>
+    public (double Value, double Maximum, double Viewport)? ScrollInfo(bool vertical)
+    {
+        if (!Ready(out var s, out var layout)) return null;
+        var v = s.View;
+        double margin = Core.Layout.Viewport.MarginDips * v.DpiScale;
+        var b = layout.Bounds;
+        double start = vertical ? b.Y : b.X, length = vertical ? b.Height : b.Width;
+        double offset = vertical ? v.OffsetY : v.OffsetX, size = vertical ? v.Height : v.Width;
+        double content = length * v.Scale + 2 * margin;
+        return (margin - start * v.Scale - offset, Math.Max(0, content - size), size);
+    }
+
+    /// <summary>Moves to a scroll bar position from <see cref="ScrollInfo"/>.</summary>
+    public void ScrollTo(bool vertical, double value)
+    {
+        if (!Ready(out var s, out var layout)) return;
+        var v = s.View;
+        double margin = Core.Layout.Viewport.MarginDips * v.DpiScale;
+        var b = layout.Bounds;
+        if (vertical) v.OffsetY = margin - b.Y * v.Scale - value; else v.OffsetX = margin - b.X * v.Scale - value;
+        v.Clamp(layout);
+        ViewMoved(zoomed: false);
+    }
+
     public void ScrollBy(double dxDips, double dyDips)
     {
         if (!Ready(out var s, out var layout)) return;

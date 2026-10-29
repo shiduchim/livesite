@@ -35,6 +35,8 @@ public sealed class AppSettings
     public List<LibraryFolder>? Folders { get; set; }
     /// <summary>Size slider, 0 (smallest) to 1 (fit width).</summary>
     public double LibrarySize { get; set; } = 0.25;
+    /// <summary>Ctrl+wheel zoom past fit width in My PDFs (1 = not past fit width).</summary>
+    public double LibraryBeyondFit { get; set; } = 1;
     public bool ShowNewestButton { get; set; } = true;
     /// <summary>"Recent" means arrived in the last this many minutes (start and window-forward options).</summary>
     public int RecentMinutes { get; set; } = 1;
