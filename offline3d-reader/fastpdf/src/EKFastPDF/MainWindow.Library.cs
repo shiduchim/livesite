@@ -32,7 +32,7 @@ public partial class MainWindow
         _library.Open += (paths, page) => OpenFiles(paths, page);
         _library.Browse += () => Open_Click(this, new RoutedEventArgs());
         _library.OpenNewest += OpenNewest;
-        _library.FoldersChanged += () => { _watcher?.Watch(_library.Folders.Select(f => f.Path)); _ = _library.RescanAsync(); };
+        _library.FoldersChanged += () => { WatchFolders(); _ = _library.RescanAsync(); };
         _library.Deleting += paths =>
         {
             foreach (var s in Sessions.Where(s => paths.Contains(s.FilePath, StringComparer.OrdinalIgnoreCase)).ToList()) CloseSession(s);
@@ -41,9 +41,17 @@ public partial class MainWindow
         _watcher = new PdfArrivalWatcher(action => Dispatcher.BeginInvoke(action));
         _watcher.Changed += folders => _ = _library.RescanAsync(folders);
         _watcher.Arrived += OnPdfArrived;
-        _watcher.Watch(_library.Folders.Select(f => f.Path));
+        WatchFolders();
         Activated += (_, _) => { if (_started && _services.Settings.OpenRecentOnActivate) OpenRecent(); };
         ShowLibrary();
+    }
+
+    /// <summary>All folders get Windows change notifications (they redraw My PDFs); only folders set to
+    /// Open automatically are also listed every few seconds, as a backup for lost notifications.</summary>
+    private void WatchFolders()
+    {
+        if (_watcher is null || _library is null) return;
+        _watcher.Watch(_library.Folders.Select(f => f.Path), _library.Folders.Where(f => f.AutoOpen).Select(f => f.Path));
     }
 
     private bool _started;
@@ -125,7 +133,7 @@ public partial class MainWindow
         if (_library is null) return;
         if (new NewPdfsDialog(this, _services.Settings, _library.Folders).ShowDialog() != true) return;
         _library.SetNewestVisible(_services.Settings.ShowNewestButton);
-        _watcher?.Watch(_library.Folders.Select(f => f.Path));
+        WatchFolders();
         _ = _library.RescanAsync();
     }
 

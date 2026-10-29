@@ -37,7 +37,7 @@ public sealed class ArrivalWatcherTests : IDisposable
         File.WriteAllBytes(Path.Combine(_dir, "sheet.pdf"), Pdf);
         Assert.True(await WaitFor(() => Count("sheet.pdf") == 1, 2000), "arrived");
         Assert.True((_arrived.First().At - start).TotalMilliseconds < 600, "fast: " + (_arrived.First().At - start).TotalMilliseconds + " ms");
-        await Task.Delay(2500); // late notifications and the 1 s listing must not report it again
+        await Task.Delay(6000); // late notifications and the listing must not report it again
         Assert.Equal(1, Count("sheet.pdf"));
         Assert.Equal(0, Count("already-here.pdf"));
     }
@@ -80,9 +80,9 @@ public sealed class ArrivalWatcherTests : IDisposable
     public async Task FolderCreatedAfterWatching_IsFoundByTheListing()
     {
         string later = Path.Combine(_dir, "later");
-        _watcher.Watch(new[] { _dir, later });
+        _watcher.Watch(new[] { _dir, later }, listed: new[] { later });
         Directory.CreateDirectory(later);
         File.WriteAllBytes(Path.Combine(later, "late.pdf"), Pdf);
-        Assert.True(await WaitFor(() => Count("late.pdf") == 1, 4000), "found by listing");
+        Assert.True(await WaitFor(() => Count("late.pdf") == 1, 12000), "found by listing");
     }
 }

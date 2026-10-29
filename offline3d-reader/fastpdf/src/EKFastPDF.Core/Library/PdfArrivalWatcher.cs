@@ -5,7 +5,7 @@ namespace EKFastPDF.Core.Library;
 /// <summary>
 /// Watches PDF folders and reports each new or rewritten PDF the moment it is complete.
 /// Two sources: Windows change notifications (instant) and a listing of each folder every
-/// second (for folders where notifications are lost: synced or network folders, buffer
+/// few seconds (for folders where notifications are lost: synced or network folders, buffer
 /// overflows). A PDF counts as complete when nothing is writing it any more and its size
 /// held for one check (150 ms), so a half-written export or download is never opened.
 /// Events are raised through <c>post</c> (the UI thread in the app).
@@ -13,7 +13,7 @@ namespace EKFastPDF.Core.Library;
 public sealed class PdfArrivalWatcher : IDisposable
 {
     public static readonly TimeSpan CheckInterval = TimeSpan.FromMilliseconds(150);
-    public static readonly TimeSpan ListInterval = TimeSpan.FromSeconds(1);
+    public static readonly TimeSpan ListInterval = TimeSpan.FromSeconds(5);
     private static readonly TimeSpan GiveUp = TimeSpan.FromMinutes(10);
 
     private readonly Action<Action> _post;
@@ -41,17 +41,20 @@ public sealed class PdfArrivalWatcher : IDisposable
     /// <summary>A new or rewritten PDF is complete: (folder, file).</summary>
     public event Action<string, string>? Arrived;
 
-    public void Watch(IEnumerable<string> folders)
+    /// <summary>Watches <paramref name="folders"/> through Windows notifications; <paramref name="listed"/>
+    /// (default: all of them) are also listed every few seconds as a backup.</summary>
+    public void Watch(IEnumerable<string> folders, IEnumerable<string>? listed = null)
     {
         var list = folders.Distinct(StringComparer.OrdinalIgnoreCase).ToList();
+        var backup = (listed ?? list).Distinct(StringComparer.OrdinalIgnoreCase).ToList();
         lock (_gate)
         {
             foreach (var w in _watchers) w.Dispose();
             _watchers.Clear();
-            _folders = list;
-            foreach (var gone in _snapshots.Keys.Where(k => !list.Contains(k, StringComparer.OrdinalIgnoreCase)).ToList()) _snapshots.Remove(gone);
+            _folders = backup;
+            foreach (var gone in _snapshots.Keys.Where(k => !backup.Contains(k, StringComparer.OrdinalIgnoreCase)).ToList()) _snapshots.Remove(gone);
             // What is in a folder now is not new: take the first listing before watching.
-            foreach (var folder in list) if (!_snapshots.ContainsKey(folder)) _snapshots[folder] = Listing(folder);
+            foreach (var folder in backup) if (!_snapshots.ContainsKey(folder)) _snapshots[folder] = Listing(folder);
             foreach (var folder in list)
             {
                 try
