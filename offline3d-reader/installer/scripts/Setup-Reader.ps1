@@ -26,6 +26,29 @@ function Ensure-WebView([string]$Payload){
     if($process.ExitCode -ne 0 -and $process.ExitCode -ne 3010){throw ('WebView2 setup failed: '+$process.ExitCode)}
 }
 
+# Each install goes to a new release folder and the old one is removed, so shortcuts the user
+# pinned (taskbar, Start, desktop) would point at a deleted file. Any shortcut to the viewer,
+# including ones from "Offline 3D PDF" 0.5.x, is pointed at the new copy.
+function Update-UserShortcuts([string]$Exe){
+    $folders=@([Environment]::GetFolderPath('Desktop'),[Environment]::GetFolderPath('Programs'),
+        (Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch'),
+        (Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\TaskBar'),
+        (Join-Path $env:APPDATA 'Microsoft\Internet Explorer\Quick Launch\User Pinned\StartMenu'))
+    $shell=New-Object -ComObject WScript.Shell;$fixed=0
+    foreach($folder in $folders){
+        if(-not $folder -or -not (Test-Path -LiteralPath $folder)){continue}
+        foreach($file in @(Get-ChildItem -LiteralPath $folder -Filter '*.lnk' -File -ErrorAction SilentlyContinue)){
+            try{
+                $link=$shell.CreateShortcut($file.FullName);$target=[string]$link.TargetPath
+                if(-not $target -or (Split-Path $target -Leaf) -ne 'Offline3D.FastPDF.Dev.exe' -or $target -eq $Exe){continue}
+                $link.TargetPath=$Exe;$link.WorkingDirectory=Split-Path $Exe -Parent;$link.IconLocation=$Exe+',0';$link.Save();$fixed++
+                Write-Host ('Shortcut updated: '+$file.FullName)
+            }catch{Write-Host ('Shortcut not changed: '+$file.FullName+' ('+$_.Exception.Message+')')}
+        }
+    }
+    return $fixed
+}
+
 function Install-Reader {
     $payload=Join-Path $packageRoot 'payload'
     $package=Test-Payload $payload 'EKPDF' @('Viewer/Offline3D.FastPDF.Dev.exe')
@@ -37,6 +60,7 @@ function Install-Reader {
     $support=Join-Path $EkpdfRoot 'Support\reader';if(Test-Path $support){Remove-Item -LiteralPath $support -Recurse -Force}
     $null=New-Item $support -ItemType Directory -Force;Copy-Item (Join-Path $PSScriptRoot '*') $support -Recurse
     Write-Shortcut $shortcut $exe 'EKPDF - fast PDF reader with clickable 3D'
+    $null=Update-UserShortcuts $exe
     # Where the Revit add-in (and anything else) finds the reader.
     $null=New-Item $EkpdfKey -Force
     Set-ItemProperty $EkpdfKey -Name ViewerExe -Value $exe;Set-ItemProperty $EkpdfKey -Name Version -Value $package.version;Set-ItemProperty $EkpdfKey -Name InstallRoot -Value $EkpdfRoot
