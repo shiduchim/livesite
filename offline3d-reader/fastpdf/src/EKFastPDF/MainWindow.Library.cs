@@ -77,9 +77,13 @@ public partial class MainWindow
 
     private void OnPdfArrived(string folder, string path)
     {
-        if (_library is null || _opened.Contains(path)) return;
+        if (_library is null) return;
         var f = _library.Folders.FirstOrDefault(x => PdfLibrary.SamePath(x.Path, folder));
-        if (f?.AutoOpen == true) OpenFromShell(new[] { path });
+        if (f?.AutoOpen != true) return;
+        // Already open (the same sheet exported again): show the new version in its place.
+        var open = Sessions.FirstOrDefault(s => string.Equals(s.FilePath, path, StringComparison.OrdinalIgnoreCase));
+        if (open != null) CloseSession(open);
+        OpenFromShell(new[] { path });
     }
 
     private void LibraryTab_Hover(object sender, MouseEventArgs e)

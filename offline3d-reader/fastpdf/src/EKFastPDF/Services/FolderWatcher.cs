@@ -28,7 +28,7 @@ public sealed class FolderWatcher : IDisposable
 
     /// <summary>A folder's PDFs changed (added, removed, renamed).</summary>
     public event Action<IReadOnlyCollection<string>>? Changed;
-    /// <summary>A new PDF is complete: (folder, file).</summary>
+    /// <summary>A new or rewritten PDF is complete: (folder, file).</summary>
     public event Action<string, string>? Arrived;
 
     public void Watch(IEnumerable<string> folders)
@@ -49,7 +49,8 @@ public sealed class FolderWatcher : IDisposable
                 string f = folder;
                 w.Created += (_, e) => OnEvent(f, e.FullPath, isNew: true);
                 w.Renamed += (_, e) => OnEvent(f, e.FullPath, isNew: true);
-                w.Changed += (_, e) => OnEvent(f, e.FullPath, isNew: false);
+                // Written over an existing file (re-export, re-print with the same name): also an arrival.
+                w.Changed += (_, e) => OnEvent(f, e.FullPath, isNew: true);
                 w.Deleted += (_, e) => OnEvent(f, e.FullPath, isNew: false);
                 w.Error += (_, e) => { Log.Warn($"Folder watch error in {f}: {e.GetException().Message}"); _ui.BeginInvoke(() => MarkChanged(f)); };
                 w.EnableRaisingEvents = true;
