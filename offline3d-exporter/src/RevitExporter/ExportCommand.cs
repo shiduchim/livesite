@@ -124,7 +124,7 @@ public sealed class ExportCommand : IExternalCommand
                         tx.Commit();
                     }
 
-                    BoundingBoxXYZ? fullBounds = null; bool? fullBoundsCategories = null;
+                    BoundingBoxXYZ? fullBounds = null; bool? fullBoundsCategories = null, fullBoundsOutside = null;
                     void PrepareScope(bool outside, bool allUp, bool allDown, bool allCategories, ElementId phase, ElementId phaseFilter, Action<string> report)
                     {
                         EnsureCandidates(report);
@@ -134,11 +134,15 @@ public sealed class ExportCommand : IExternalCommand
                         ConfigureVisibility(doc, target.SourcePlan, view, allCategories, Warn, phase, phaseFilter);
                         if (outside || allUp || allDown)
                         {
-                            if (fullBounds == null || fullBoundsCategories != allCategories)
+                            if (fullBounds == null || fullBoundsCategories != allCategories || fullBoundsOutside != outside)
                             {
                                 doc.Regenerate();
-                                fullBounds = PreviewFraming.ModelBounds(doc, view) ?? throw new ExportSetupException("No model bounds were found for the expanded export scope.");
-                                fullBoundsCategories = allCategories;
+                                // Outside the crop needs the whole model; all up / all down only the
+                                // model above and below the crop (far-away site or link parts ignored).
+                                fullBounds = (outside ? PreviewFraming.ModelBounds(doc, view) : PreviewFraming.FootprintBounds(doc, view, regions))
+                                    ?? throw new ExportSetupException("No model bounds were found for the expanded export scope.");
+                                fullBoundsCategories = allCategories; fullBoundsOutside = outside;
+                                log.Line("Expanded scope bounds (" + (outside ? "whole model" : "above/below the crop") + "): Z " + fullBounds.Min.Z.ToString("0.##", CultureInfo.InvariantCulture) + " to " + fullBounds.Max.Z.ToString("0.##", CultureInfo.InvariantCulture) + " ft");
                             }
                         }
                         foreach (var region in regions) region.ConfigureBounds(outside, allUp, allDown, fullBounds);

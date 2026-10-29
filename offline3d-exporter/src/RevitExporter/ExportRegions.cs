@@ -10,6 +10,8 @@ internal sealed class ExportRegion
     public ExportVolume Volume {get;private set;}=null!;
     public Point3 Min=>BroadPhase.Min;
     public Point3 Max=>BroadPhase.Max;
+    /// <summary>The view's own crop (before any all up / all down / outside expansion), world axes.</summary>
+    public (Point3 Min,Point3 Max) Footprint{get{var p=BoxPoints(originalBox).ToArray();return (new Point3(p.Min(v=>v.X),p.Min(v=>v.Y),p.Min(v=>v.Z)),new Point3(p.Max(v=>v.X),p.Max(v=>v.Y),p.Max(v=>v.Z)));}}
     public string TopLabel {get;private set;}="";
     public string BottomLabel {get;private set;}="";
     public ViewRegion Mapping {get;private set;}=null!;

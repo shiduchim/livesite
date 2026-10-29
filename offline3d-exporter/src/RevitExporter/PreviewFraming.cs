@@ -11,6 +11,33 @@ internal static class PreviewFraming
         var crop=view.CropBox;var inverse=crop.Transform.Inverse;var corners=ExportRegion.BoxPoints(bounds).Select(inverse.OfPoint).ToArray();double minX=corners.Min(p=>p.X),maxX=corners.Max(p=>p.X),minY=corners.Min(p=>p.Y),maxY=corners.Max(p=>p.Y),z=corners.Min(p=>p.Z),Z=corners.Max(p=>p.Z);double aspect=previewSize.Height>0?(double)previewSize.Width/previewSize.Height:1.5,w=Math.Max(.01,maxX-minX)*1.12,h=Math.Max(.01,maxY-minY)*1.12;aspect=Math.Max(.2,Math.Min(5,aspect));w=Math.Max(w,h*aspect);h=Math.Max(h,w/aspect);double x=(minX+maxX)/2,y=(minY+maxY)/2;
         crop.Min=new XYZ(x-w/2,y-h/2,z-2);crop.Max=new XYZ(x+w/2,y+h/2,Z+2);view.CropBox=crop;view.CropBoxActive=true;view.CropBoxVisible=false;
     }
+    /// <summary>
+    /// Height range of the model above and below the export crops only (for "all up" and
+    /// "all down" without "outside the crop"). The whole model's bounds include site,
+    /// topography and anything far away in links; one such element made the box miles tall
+    /// and the preview showed a white image with the building as a sliver.
+    /// </summary>
+    internal static BoundingBoxXYZ? FootprintBounds(Document doc,View3D view,IEnumerable<ExportRegion> regions){
+        double minX=double.MaxValue,minY=double.MaxValue,maxX=double.MinValue,maxY=double.MinValue;
+        foreach(var r in regions){var (a,b)=r.Footprint;minX=Math.Min(minX,a.X);minY=Math.Min(minY,a.Y);maxX=Math.Max(maxX,b.X);maxY=Math.Max(maxY,b.Y);}
+        if(minX>maxX)return null;
+        const double Far=1e5;double lo=double.MaxValue,hi=double.MinValue;
+        bool Skip(Element e)=>e.Category?.CategoryType!=CategoryType.Model||e.ViewSpecific||e is DatumPlane||e is Group||e.Category.Id.Value==(long)BuiltInCategory.OST_VolumeOfInterest||e.Category.Id.Value==(long)BuiltInCategory.OST_SectionBox||e.Category.Id.Value==(long)BuiltInCategory.OST_CLines;
+        void Take(BoundingBoxXYZ? box,Transform? toHost){if(box==null)return;foreach(var raw in ExportRegion.BoxPoints(box)){var p=toHost==null?raw:toHost.OfPoint(raw);lo=Math.Min(lo,p.Z);hi=Math.Max(hi,p.Z);}}
+        var column=new BoundingBoxIntersectsFilter(new Outline(new XYZ(minX,minY,-Far),new XYZ(maxX,maxY,Far)));
+        foreach(var e in new FilteredElementCollector(doc,view.Id).WhereElementIsNotElementType().WherePasses(column)){
+            if(Skip(e))continue;
+            if(e is RevitLinkInstance link){
+                var linked=link.GetLinkDocument();if(linked==null)continue;var t=link.GetTotalTransform();var inv=t.Inverse;
+                var corners=new[]{new XYZ(minX,minY,0),new XYZ(maxX,minY,0),new XYZ(maxX,maxY,0),new XYZ(minX,maxY,0)}.Select(inv.OfPoint).ToArray();
+                var linkColumn=new BoundingBoxIntersectsFilter(new Outline(new XYZ(corners.Min(c=>c.X),corners.Min(c=>c.Y),-Far),new XYZ(corners.Max(c=>c.X),corners.Max(c=>c.Y),Far)));
+                foreach(var le in new FilteredElementCollector(linked).WhereElementIsNotElementType().WherePasses(linkColumn))if(!Skip(le)&&!(le is RevitLinkInstance))Take(le.get_BoundingBox(null),t);
+            }
+            else Take(e.get_BoundingBox(view),null);
+        }
+        if(lo>hi)return null;
+        return new BoundingBoxXYZ{Min=new XYZ(minX,minY,lo),Max=new XYZ(maxX,maxY,hi)};
+    }
     internal static BoundingBoxXYZ? ModelBounds(Document doc,View3D view){
         XYZ? min=null,max=null;
         void Include(XYZ p){min=min==null?p:new XYZ(Math.Min(min.X,p.X),Math.Min(min.Y,p.Y),Math.Min(min.Z,p.Z));max=max==null?p:new XYZ(Math.Max(max.X,p.X),Math.Max(max.Y,p.Y),Math.Max(max.Z,p.Z));}
