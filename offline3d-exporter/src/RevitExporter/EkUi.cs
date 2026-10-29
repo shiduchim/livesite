@@ -41,10 +41,33 @@ internal static class EkUi
     /// <summary>Lets a borderless window be dragged by a control (the title bar).</summary>
     public static void DragWindow(Form form) { ReleaseCapture(); SendMessage(form.Handle, WM_NCLBUTTONDOWN, (IntPtr)HTCAPTION, IntPtr.Zero); }
 
-    public static int S(Control c, double px) => (int)Math.Round(px * c.DeviceDpi / 96.0);
+    [DllImport("user32.dll")] private static extern uint GetDpiForWindow(IntPtr window);
+    private static readonly float SystemScale = ReadSystemScale();
 
-    /// <summary>Segoe UI 12 px (style guide: one size for everything) at the control's DPI.</summary>
-    public static Font Font(double px = 12) => new Font("Segoe UI", (float)(px * .75), FontStyle.Regular, GraphicsUnit.Point);
+    private static float ReadSystemScale()
+    {
+        try { using var g = Graphics.FromHwnd(IntPtr.Zero); return g.DpiX > 0 ? g.DpiX / 96f : 1f; }
+        catch (Exception e) when (e is ExternalException or ArgumentException or OutOfMemoryException) { return 1f; }
+    }
+
+    /// <summary>
+    /// The window's scale (1 = 100 %, 1.5 = 150 %), read from the window itself. Control.DeviceDpi
+    /// is not used: under .NET Framework 4.8 in Revit 2024 it reports 96 while Windows draws text
+    /// at the real scale, so boxes stayed at 100 % and the text was cut off.
+    /// </summary>
+    public static float Scale(Control c)
+    {
+        if (c.IsHandleCreated)
+            try { uint dpi = GetDpiForWindow(c.Handle); if (dpi > 0) return dpi / 96f; }
+            catch (EntryPointNotFoundException) { }
+        return SystemScale;
+    }
+
+    public static int S(Control c, double px) => (int)Math.Round(px * Scale(c));
+
+    /// <summary>Segoe UI 12 px (style guide: one size for everything) at the window's scale.
+    /// Sized in pixels from <see cref="Scale"/>, so text and boxes always scale together.</summary>
+    public static Font Font(Control c, double px = 12) => new Font("Segoe UI", (float)(px * Scale(c)), FontStyle.Regular, GraphicsUnit.Pixel);
 
     public static GraphicsPath Rounded(RectangleF r, float radius)
     {
@@ -76,12 +99,12 @@ internal abstract class EkControl : Control
     {
         Palette = palette;
         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.OptimizedDoubleBuffer | ControlStyles.UserPaint | ControlStyles.ResizeRedraw | ControlStyles.SupportsTransparentBackColor, true);
-        Font = EkUi.Font(); BackColor = palette.Body; ForeColor = palette.Text;
+        Font = EkUi.Font(this); BackColor = palette.Body; ForeColor = palette.Text;
     }
     [System.ComponentModel.DesignerSerializationVisibility(System.ComponentModel.DesignerSerializationVisibility.Hidden)]
     public EkPalette Palette { get; set; }
     protected bool Hot, Down;
-    protected float Dpi => DeviceDpi / 96f;
+    protected float Dpi => EkUi.Scale(this);
     protected override void OnMouseEnter(EventArgs e) { Hot = true; Invalidate(); base.OnMouseEnter(e); }
     protected override void OnMouseLeave(EventArgs e) { Hot = false; Down = false; Invalidate(); base.OnMouseLeave(e); }
     protected override void OnMouseDown(MouseEventArgs e) { if (e.Button == MouseButtons.Left && Enabled) { Down = true; Invalidate(); } base.OnMouseDown(e); }
@@ -107,7 +130,7 @@ internal sealed class EkTitleBar : EkControl
     protected override void OnLayout(LayoutEventArgs e) { Height = EkUi.S(this, 30); base.OnLayout(e); }
     private Rectangle ActionBounds(Graphics? g = null)
     {
-        using var font = EkUi.Font(11.5);
+        using var font = EkUi.Font(this, 11.5);
         int w = TextRenderer.MeasureText(Action, font, Size.Empty, TextFormatFlags.NoPadding).Width + EkUi.S(this, 24);
         return new Rectangle(Width - w, 0, w, Height);
     }
@@ -117,7 +140,7 @@ internal sealed class EkTitleBar : EkControl
         EkUi.Text(g, Text, Font, new Rectangle(EkUi.S(this, 12), 0, action.Left - EkUi.S(this, 12), Height), Palette.Text);
         var mouse = PointToClient(Cursor.Position); bool over = action.Contains(mouse) && Hot && Enabled;
         if (over) using (var b = new SolidBrush(Down ? Palette.ClosePressed : Palette.CloseHover)) g.FillRectangle(b, action);
-        using var font = EkUi.Font(11.5);
+        using var font = EkUi.Font(this, 11.5);
         EkUi.Text(g, Action, font, action, Enabled ? Palette.Secondary : Color.FromArgb(140, Palette.Secondary), TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPrefix);
     }
     protected override void OnMouseMove(MouseEventArgs e) { Invalidate(); base.OnMouseMove(e); }
@@ -295,14 +318,24 @@ internal class EkWindow : Form
     public EkWindow(EkPalette palette, string title, string action)
     {
         Palette = palette;
-        AutoScaleMode = AutoScaleMode.None; // sizes come from DeviceDpi (EkUi.S)
+        AutoScaleMode = AutoScaleMode.None; // sizes and fonts come from EkUi.Scale
         FormBorderStyle = FormBorderStyle.None; ShowInTaskbar = false; StartPosition = FormStartPosition.Manual; KeyPreview = true;
-        Font = EkUi.Font(); BackColor = palette.Body; ForeColor = palette.Text; Text = title;
+        Font = EkUi.Font(this); BackColor = palette.Body; ForeColor = palette.Text; Text = title;
         DoubleBuffered = true; Padding = new Padding(1);
         TitleBar = new EkTitleBar(palette) { Text = title, Action = action };
         Controls.Add(TitleBar);
     }
     protected int S(double px) => EkUi.S(this, px);
+    protected override void OnHandleCreated(EventArgs e) { base.OnHandleCreated(e); ApplyFonts(); }
+    protected override void OnDpiChanged(DpiChangedEventArgs e) { base.OnDpiChanged(e); ApplyFonts(); }
+    /// <summary>Every control gets the 12 px font at this window's scale.</summary>
+    private void ApplyFonts()
+    {
+        var font = EkUi.Font(this);
+        Font = font;
+        void Walk(Control parent) { foreach (Control c in parent.Controls) { c.Font = font; Walk(c); } }
+        Walk(this);
+    }
     protected override void OnPaint(PaintEventArgs e)
     {
         base.OnPaint(e);
