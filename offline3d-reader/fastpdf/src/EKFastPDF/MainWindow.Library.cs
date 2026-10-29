@@ -18,7 +18,7 @@ public partial class MainWindow
 {
     private PageImages? _images;
     private LibraryView? _library;
-    private FolderWatcher? _watcher;
+    private PdfArrivalWatcher? _watcher;
     private bool _libraryShown;
     /// <summary>Every PDF opened in this run (recent PDFs open only once).</summary>
     private readonly HashSet<string> _opened = new(StringComparer.OrdinalIgnoreCase);
@@ -37,7 +37,8 @@ public partial class MainWindow
         {
             foreach (var s in Sessions.Where(s => paths.Contains(s.FilePath, StringComparer.OrdinalIgnoreCase)).ToList()) CloseSession(s);
         };
-        _watcher = new FolderWatcher();
+        // Events come back on the UI thread.
+        _watcher = new PdfArrivalWatcher(action => Dispatcher.BeginInvoke(action));
         _watcher.Changed += folders => _ = _library.RescanAsync(folders);
         _watcher.Arrived += OnPdfArrived;
         _watcher.Watch(_library.Folders.Select(f => f.Path));
@@ -79,7 +80,8 @@ public partial class MainWindow
     {
         if (_library is null) return;
         var f = _library.Folders.FirstOrDefault(x => PdfLibrary.SamePath(x.Path, folder));
-        if (f?.AutoOpen != true) return;
+        if (f?.AutoOpen != true) { Core.Diagnostics.Log.Info("New PDF not opened (folder set to Nothing): " + path); return; }
+        Core.Diagnostics.Log.Info("Opening new PDF automatically: " + path);
         // Already open (the same sheet exported again): show the new version in its place.
         var open = Sessions.FirstOrDefault(s => string.Equals(s.FilePath, path, StringComparison.OrdinalIgnoreCase));
         if (open != null) CloseSession(open);
