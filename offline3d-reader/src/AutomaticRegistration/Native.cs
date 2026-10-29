@@ -33,6 +33,8 @@ internal static class Native
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern int FPDFPage_GenerateContent(IntPtr page);
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern int FPDFPageObj_GetStrokeColor(IntPtr obj,out uint r,out uint g,out uint b,out uint a);
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern int FPDFPath_CountSegments(IntPtr obj);
+    /// <summary>fillMode: 0 none, 1 alternate, 2 winding; stroke: nonzero when the path is stroked.</summary>
+    [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern int FPDFPath_GetDrawMode(IntPtr path,out int fillMode,out int stroke);
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern IntPtr FPDFPath_GetPathSegment(IntPtr obj,int index);
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern int FPDFPathSegment_GetPoint(IntPtr segment,out float x,out float y);
     [DllImport(Dll,CallingConvention=CallingConvention.Cdecl)]internal static extern IntPtr FPDFBitmap_Create(int width,int height,int alpha);

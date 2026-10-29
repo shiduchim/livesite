@@ -18,4 +18,4 @@
     <!-- The bench executable doubles as the render worker process in integration tests. -->
     <ProjectReference Include="..\..\tools\EKFastPDF.Bench\EKFastPDF.Bench.csproj" />
   </ItemGroup>
-<ItemGroup><ProjectReference Include="../../../src/Packaging/Packaging.csproj"/><Content Include="../../../samples/SYNTHETIC-Offline3D.pdf" Link="SYNTHETIC-Offline3D.pdf" CopyToOutputDirectory="PreserveNewest"/></ItemGroup></Project>
+<ItemGroup><ProjectReference Include="../../../src/Packaging/Packaging.csproj"/><ProjectReference Include="../../../src/AutomaticRegistration/AutomaticRegistration.csproj"/><Content Include="../../../samples/SYNTHETIC-Offline3D.pdf" Link="SYNTHETIC-Offline3D.pdf" CopyToOutputDirectory="PreserveNewest"/></ItemGroup></Project>
