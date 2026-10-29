@@ -16,6 +16,13 @@ public sealed class NewPdfsDialog : EkDialog
     private readonly CheckBox _newest, _onStart, _onActivate;
     private readonly TextBox _minutes;
     private readonly List<(LibraryFolder Folder, Button Choice)> _folders = new();
+    private readonly Button _closed;
+    private static readonly (string Label, string Value)[] ClosedChoices =
+    {
+        ("Do nothing", "Nothing"),
+        ("Start EKPDF when a PDF lands", "Watcher"),
+        ("Keep EKPDF in the tray", "Tray"),
+    };
 
     public NewPdfsDialog(Window owner, AppSettings s, IReadOnlyList<LibraryFolder> folders) : base(owner, "EKPDF Settings · New PDFs", 470)
     {
@@ -40,6 +47,15 @@ public sealed class NewPdfsDialog : EkDialog
         panel.Children.Add(_onActivate);
         panel.Children.Add(Line());
 
+        // Open automatically folders while EKPDF is closed.
+        var closedRow = new DockPanel { Height = 30 };
+        _closed = Dropdown(ClosedChoices, s.ClosedMode, 210);
+        DockPanel.SetDock(_closed, Dock.Right);
+        closedRow.Children.Add(_closed);
+        closedRow.Children.Add(new TextBlock { Text = "When EKPDF is closed", VerticalAlignment = VerticalAlignment.Center });
+        panel.Children.Add(closedRow);
+        panel.Children.Add(Line());
+
         var header = Soft("Folders"); header.FontSize = 11; header.Margin = new Thickness(0, 4, 0, 4);
         panel.Children.Add(header);
         foreach (var f in folders)
@@ -59,6 +75,7 @@ public sealed class NewPdfsDialog : EkDialog
         {
             _newest.IsChecked = true; _onStart.IsChecked = true; _onActivate.IsChecked = false;
             _minutes.Text = "1";
+            SetDropdown(_closed, ClosedChoices, "Nothing");
             foreach (var (_, c) in _folders) SetChoice(c, false);
         });
         AddButton("Cancel", false);
@@ -69,6 +86,7 @@ public sealed class NewPdfsDialog : EkDialog
             s.OpenRecentOnActivate = _onActivate.IsChecked == true;
             if (int.TryParse(_minutes.Text.Trim(), NumberStyles.Integer, CultureInfo.CurrentCulture, out int m)) s.RecentMinutes = Math.Clamp(m, 1, 24 * 60);
             foreach (var (f, c) in _folders) f.AutoOpen = (bool)c.Tag;
+            s.ClosedMode = (string)_closed.Tag;
             s.Save();
             DialogResult = true;
         });
@@ -93,6 +111,40 @@ public sealed class NewPdfsDialog : EkDialog
         var t = new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center };
         t.SetResourceReference(TextBlock.ForegroundProperty, "InkSoft");
         return t;
+    }
+
+    /// <summary>A dropdown with any number of choices (a button with a menu).</summary>
+    private static Button Dropdown((string Label, string Value)[] choices, string value, double width)
+    {
+        var b = new Button { Width = width, HorizontalContentAlignment = HorizontalAlignment.Stretch };
+        b.SetResourceReference(StyleProperty, "SoftButton");
+        SetDropdown(b, choices, value);
+        b.Click += (_, _) =>
+        {
+            var menu = new ContextMenu { PlacementTarget = b, Placement = PlacementMode.Bottom, MinWidth = width };
+            foreach (var (label, v) in choices)
+            {
+                var item = new MenuItem { Header = label, IsChecked = (string)b.Tag == v };
+                item.Click += (_, _) => SetDropdown(b, choices, v);
+                menu.Items.Add(item);
+            }
+            menu.IsOpen = true;
+        };
+        return b;
+    }
+
+    private static void SetDropdown(Button b, (string Label, string Value)[] choices, string value)
+    {
+        var chosen = choices.FirstOrDefault(c => c.Value == value);
+        if (chosen.Label is null) chosen = choices[0];
+        b.Tag = chosen.Value;
+        var row = new DockPanel { Width = b.Width - 22 };
+        var arrow = new TextBlock { Text = "▾" };
+        arrow.SetResourceReference(TextBlock.ForegroundProperty, "InkSoft");
+        DockPanel.SetDock(arrow, Dock.Right);
+        row.Children.Add(arrow);
+        row.Children.Add(new TextBlock { Text = chosen.Label, TextTrimming = TextTrimming.CharacterEllipsis });
+        b.Content = row;
     }
 
     /// <summary>A dropdown with two choices (a button with a menu; no combo box chrome).</summary>

@@ -128,6 +128,7 @@ public partial class MainWindow : Window
 
     public void OpenFromShell(IReadOnlyList<string> files)
     {
+        if (!IsVisible) Show(); // kept in the tray
         if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
         Activate();
         OpenFiles(files);
@@ -634,6 +635,18 @@ public partial class MainWindow : Window
         }
     }
 
+    private void SavePlacement()
+    {
+        var s = _services.Settings;
+        var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
+        if (!bounds.IsEmpty)
+        {
+            s.WindowLeft = bounds.Left; s.WindowTop = bounds.Top; s.WindowWidth = bounds.Width; s.WindowHeight = bounds.Height;
+        }
+        s.WindowMaximized = WindowState == WindowState.Maximized;
+        if (!Program.Arguments.Contains("--benchmark")) s.Save();
+    }
+
     private void RestorePlacement()
     {
         var s = _services.Settings;
@@ -653,14 +666,9 @@ public partial class MainWindow : Window
 
     private void Window_Closing(object? sender, CancelEventArgs e)
     {
-        var s = _services.Settings;
-        var bounds = WindowState == WindowState.Normal ? new Rect(Left, Top, Width, Height) : RestoreBounds;
-        if (!bounds.IsEmpty)
-        {
-            s.WindowLeft = bounds.Left; s.WindowTop = bounds.Top; s.WindowWidth = bounds.Width; s.WindowHeight = bounds.Height;
-        }
-        s.WindowMaximized = WindowState == WindowState.Maximized;
-        if (!Program.Arguments.Contains("--benchmark")) s.Save();
+        if (KeepInTray) { e.Cancel = true; SavePlacement(); HideToTray(); return; }
+        RemoveTray();
+        SavePlacement();
         _statusTimer.Stop();
         foreach (var session in Sessions.ToList()) session.Dispose();
         Sessions.Clear();

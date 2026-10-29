@@ -61,6 +61,12 @@ public static class Program
                 MessageBox.Show(ex.Message+"\n\nNo new validated PDF was delivered. Diagnostics: "+args[1],"Export 3D PDF — error",MessageBoxButton.OK,MessageBoxImage.Error);return 1;
             }
         }
+        if (args.Length == 1 && args[0] == BackgroundWatcher.Argument)
+        {
+            Log.Initialize(LogDirectory, "watcher.log");
+            try { return BackgroundWatcher.Run(); }
+            catch (Exception e) { Log.Error("Background watcher stopped", e); return 1; }
+        }
         Arguments = args;
         Log.Initialize(LogDirectory, "fastpdf.log");
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>

@@ -13,7 +13,7 @@ namespace EKFastPDF.Core.Library;
 public sealed class PdfArrivalWatcher : IDisposable
 {
     public static readonly TimeSpan CheckInterval = TimeSpan.FromMilliseconds(150);
-    public static readonly TimeSpan ListInterval = TimeSpan.FromSeconds(5);
+    public static readonly TimeSpan ListInterval = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan GiveUp = TimeSpan.FromMinutes(10);
 
     private readonly Action<Action> _post;

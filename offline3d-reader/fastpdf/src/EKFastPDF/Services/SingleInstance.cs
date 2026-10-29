@@ -17,7 +17,7 @@ public sealed class SingleInstance : IDisposable
     private readonly Mutex _mutex;
     private readonly string _pipeName;
     private readonly CancellationTokenSource _stop = new();
-    private static readonly string Id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
+    internal static readonly string Id = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(
         Environment.UserDomainName + "\\" + Environment.UserName + "|EKFastPDF")))[..16];
 
     [DllImport("user32.dll")] private static extern bool AllowSetForegroundWindow(int processId);
@@ -52,6 +52,14 @@ public sealed class SingleInstance : IDisposable
             Log.Warn("Running instance did not respond (" + e.Message + "); starting a separate window");
             return new SingleInstance(new Mutex(false));
         }
+    }
+
+    /// <summary>True while an EKPDF window is running for this user.</summary>
+    public static bool IsRunning()
+    {
+        if (!Mutex.TryOpenExisting("Local\\Offline3D-FastPDF-Dev-" + Id, out var m)) return false;
+        m.Dispose();
+        return true;
     }
 
     public void Listen(Action<string[]> filesReceived)

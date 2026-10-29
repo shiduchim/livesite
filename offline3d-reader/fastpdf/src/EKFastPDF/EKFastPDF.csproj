@@ -4,6 +4,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Only for the tray icon (System.Windows.Forms.NotifyIcon); its names are not imported. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <!-- WFAC010: WinForms wants DPI mode set in code; this is a WPF app whose manifest sets it on purpose. -->
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>Offline3D.FastPDF.Dev</AssemblyName>
     <Version>0.5.4</Version>
@@ -33,6 +37,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\EKFastPDF.Core\EKFastPDF.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
   </ItemGroup>
 <ItemGroup>
     <ProjectReference Include="../../../src/Packaging/Packaging.csproj" /><ProjectReference Include="../../../src/AutomaticRegistration/AutomaticRegistration.csproj" />

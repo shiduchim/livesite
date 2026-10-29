@@ -44,6 +44,9 @@ public sealed class AppSettings
     public bool OpenRecentOnStart { get; set; } = true;
     /// <summary>When the EKPDF window comes forward, open recent PDFs not opened yet.</summary>
     public bool OpenRecentOnActivate { get; set; }
+    /// <summary>When EKPDF is closed: "Nothing", "Watcher" (a small background watcher starts EKPDF
+    /// when a PDF lands in an Open automatically folder) or "Tray" (Close keeps EKPDF in the tray).</summary>
+    public string ClosedMode { get; set; } = "Nothing";
 
     /// <summary>Light, Soft grey, Warm, Dark grey, Dark, Night or "Match Windows".</summary>
     public string Theme { get; set; } = "Light";

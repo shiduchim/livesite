@@ -44,6 +44,7 @@ public partial class MainWindow
         WatchFolders();
         Activated += (_, _) => { if (_started && _services.Settings.OpenRecentOnActivate) OpenRecent(); };
         ShowLibrary();
+        ApplyClosedMode();
     }
 
     /// <summary>All folders get Windows change notifications (they redraw My PDFs); only folders set to
@@ -133,6 +134,7 @@ public partial class MainWindow
         if (_library is null) return;
         if (new NewPdfsDialog(this, _services.Settings, _library.Folders).ShowDialog() != true) return;
         _library.SetNewestVisible(_services.Settings.ShowNewestButton);
+        ApplyClosedMode();
         WatchFolders();
         _ = _library.RescanAsync();
     }
@@ -183,5 +185,54 @@ public partial class MainWindow
         foreach (var session in Sessions) _services.Tiles.ForgetDocument(session.DocId);
         Viewport.ApplyTheme();
         _library?.ApplyTheme();
+    }
+}
+
+public partial class MainWindow
+{
+    // ------------------------------------------------------------------ when EKPDF is closed
+
+    private System.Windows.Forms.NotifyIcon? _tray;
+    private bool _exitRequested;
+
+    /// <summary>"Keep EKPDF in the tray": Close hides the window; the tray icon brings it back.</summary>
+    private bool KeepInTray => _services.Settings.ClosedMode == "Tray" && !_exitRequested && !Program.Arguments.Contains("--benchmark");
+
+    private void HideToTray()
+    {
+        if (_tray is null)
+        {
+            _tray = new System.Windows.Forms.NotifyIcon { Text = "EKPDF", Visible = true };
+            try { _tray.Icon = System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath!); } catch (Exception e) when (e is ArgumentException or IOException) { }
+            _tray.MouseClick += (_, e) => { if (e.Button == System.Windows.Forms.MouseButtons.Left) ShowFromTray(); };
+            var menu = new System.Windows.Forms.ContextMenuStrip();
+            menu.Items.Add("Open EKPDF", null, (_, _) => ShowFromTray());
+            menu.Items.Add("Exit EKPDF", null, (_, _) => { _exitRequested = true; Close(); });
+            _tray.ContextMenuStrip = menu;
+        }
+        _tray.Visible = true;
+        Hide();
+    }
+
+    private void ShowFromTray()
+    {
+        if (!IsVisible) Show();
+        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
+        Activate();
+    }
+
+    private void RemoveTray()
+    {
+        if (_tray is null) return;
+        _tray.Visible = false;
+        _tray.Dispose();
+        _tray = null;
+    }
+
+    /// <summary>Applies "When EKPDF is closed" (at start and after Settings).</summary>
+    private void ApplyClosedMode()
+    {
+        BackgroundWatcher.Apply(_services.Settings.ClosedMode);
+        if (_services.Settings.ClosedMode != "Tray" && IsVisible) RemoveTray();
     }
 }

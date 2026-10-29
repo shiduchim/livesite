@@ -49,11 +49,21 @@ function Update-UserShortcuts([string]$Exe){
     return $fixed
 }
 
+# "When EKPDF is closed" can leave EKPDF running without a window (background watcher or
+# tray). Setup stops those copies before replacing files and starts the watcher again after.
+$runKey='HKCU:\Software\Microsoft\Windows\CurrentVersion\Run';$runValue='EKPDF watcher'
+function Stop-ReaderProcesses {
+    foreach($p in @(Get-Process -Name 'Offline3D.FastPDF.Dev' -ErrorAction SilentlyContinue)){
+        try{if($p.Path -and $p.Path.StartsWith($releases,[StringComparison]::OrdinalIgnoreCase)){Stop-Process -Id $p.Id -Force;Write-Host ('Stopped EKPDF process '+$p.Id)}}catch{}
+    }
+}
+
 function Install-Reader {
     $payload=Join-Path $packageRoot 'payload'
     $package=Test-Payload $payload 'EKPDF' @('Viewer/Offline3D.FastPDF.Dev.exe')
     Ensure-WebView $payload
     $release=Join-Path $releases $package.releaseId
+    Stop-ReaderProcesses
     Copy-Release $payload $release
     $null=Test-Payload $release 'EKPDF' @('Viewer/Offline3D.FastPDF.Dev.exe')
     $exe=Join-Path $release 'Viewer\Offline3D.FastPDF.Dev.exe'
@@ -61,6 +71,8 @@ function Install-Reader {
     $null=New-Item $support -ItemType Directory -Force;Copy-Item (Join-Path $PSScriptRoot '*') $support -Recurse
     Write-Shortcut $shortcut $exe 'EKPDF - fast PDF reader with clickable 3D'
     $null=Update-UserShortcuts $exe
+    $watcher=Get-ItemProperty $runKey -Name $runValue -ErrorAction SilentlyContinue
+    if($watcher){Set-ItemProperty $runKey -Name $runValue -Value ('"'+$exe+'" --watch');Start-Process -FilePath $exe -ArgumentList '--watch' -WindowStyle Hidden}
     # Where the Revit add-in (and anything else) finds the reader.
     $null=New-Item $EkpdfKey -Force
     Set-ItemProperty $EkpdfKey -Name ViewerExe -Value $exe;Set-ItemProperty $EkpdfKey -Name Version -Value $package.version;Set-ItemProperty $EkpdfKey -Name InstallRoot -Value $EkpdfRoot
@@ -77,6 +89,8 @@ function Uninstall-Reader {
     if(Test-Path (Join-Path $EkpdfRoot 'revit-addin.json')){
         if(-not (Confirm-Choice 'The EKPDF Revit add-in is installed and needs EKPDF to finish 3D PDF exports. Uninstall EKPDF anyway?')){return}
     }
+    Stop-ReaderProcesses
+    Remove-ItemProperty $runKey -Name $runValue -ErrorAction SilentlyContinue
     if(Test-Path -LiteralPath $shortcut){Remove-Item -LiteralPath $shortcut}
     if(Test-Path $releases){Remove-Item -LiteralPath $releases -Recurse -Force}
     foreach($name in 'ViewerExe','Version','InstallRoot'){Remove-ItemProperty $EkpdfKey -Name $name -ErrorAction SilentlyContinue}
