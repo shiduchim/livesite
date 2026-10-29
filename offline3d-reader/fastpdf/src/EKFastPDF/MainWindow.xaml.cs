@@ -128,10 +128,46 @@ public partial class MainWindow : Window
 
     public void OpenFromShell(IReadOnlyList<string> files)
     {
-        if (!IsVisible) Show(); // kept in the tray
-        if (WindowState == WindowState.Minimized) WindowState = WindowState.Normal;
-        Activate();
         OpenFiles(files);
+        BringToFront();
+    }
+
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr window, IntPtr processId);
+    [DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+    [DllImport("user32.dll")] private static extern bool AttachThreadInput(uint attach, uint attachTo, bool attachState);
+    [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("user32.dll")] private static extern bool BringWindowToTop(IntPtr window);
+    [DllImport("user32.dll")] private static extern bool ShowWindow(IntPtr window, int command);
+    [DllImport("user32.dll")] private static extern bool IsIconic(IntPtr window);
+
+    /// <summary>
+    /// Puts EKPDF in front, restored if it was minimized or in the tray. A PDF that lands in a
+    /// folder (or is opened from another app) starts or wakes EKPDF from the background, and
+    /// Windows then only flashes the taskbar button; joining the input of the window in front
+    /// for a moment is the documented way an app the user is waiting for may come forward.
+    /// </summary>
+    public void BringToFront()
+    {
+        if (!IsVisible) Show(); // kept in the tray
+        var hwnd = new WindowInteropHelper(this).Handle;
+        if (hwnd == IntPtr.Zero) { Activate(); return; }
+        if (IsIconic(hwnd) || WindowState == WindowState.Minimized)
+        {
+            ShowWindow(hwnd, 9 /*SW_RESTORE*/);
+            WindowState = _services.Settings.WindowMaximized ? WindowState.Maximized : WindowState.Normal;
+        }
+        uint target = GetCurrentThreadId(), front = GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero);
+        bool joined = front != 0 && front != target && AttachThreadInput(front, target, true);
+        try
+        {
+            BringWindowToTop(hwnd);
+            SetForegroundWindow(hwnd);
+            Activate();
+        }
+        finally { if (joined) AttachThreadInput(front, target, false); }
+        // Last resort when Windows still refuses: be topmost for a moment.
+        if (!IsActive) { Topmost = true; Topmost = false; }
     }
 
     /// <summary>Opens PDFs in tabs (an already open one is brought forward). <paramref name="page"/>:

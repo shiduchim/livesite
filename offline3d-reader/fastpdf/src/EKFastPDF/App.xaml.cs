@@ -41,7 +41,8 @@ public partial class App : Application
         }
         else
         {
-            if (StartupFiles.Count > 0) window.OpenFiles(StartupFiles);
+            // Started for a PDF (double-click, or a PDF landing in a watched folder): come to the front.
+            if (StartupFiles.Count > 0) { window.OpenFiles(StartupFiles); window.BringToFront(); }
             _ = window.StartLibraryAsync(StartupFiles.Count > 0);
         }
     }
